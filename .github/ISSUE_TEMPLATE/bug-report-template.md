@@ -1,3 +1,12 @@
+---
+name: Bug Report
+about: 버그 관련 이슈 템플릿
+title: '[bug] 내용'
+labels: bug
+assignees: ''
+
+---
+
 ## 🐞버그 설명
 
 <!-- 어떤 상황에서 어떤 문제가 발생했는지 구체적으로 작성해주세요 -->

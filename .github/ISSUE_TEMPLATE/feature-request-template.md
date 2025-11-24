@@ -1,3 +1,11 @@
+---
+name: Feature Request         
+about: 기능 관련 이슈 템플릿    
+title: '[type] 내용'            
+assignees: ''
+
+---
+
 ## 🏷 작업 타입
 - [ ] feat
 - [ ] chore
