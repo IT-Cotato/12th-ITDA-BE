@@ -38,3 +38,6 @@ out/
 
 ### Application ###
 .env
+.env.properties
+.env.local
+.env.prod
