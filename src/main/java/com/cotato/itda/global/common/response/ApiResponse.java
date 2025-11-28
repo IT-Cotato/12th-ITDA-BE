@@ -1,5 +1,4 @@
 package com.cotato.itda.global.common.response;
-package com.cotato.itda.global.common.response;
 
 import java.time.LocalDateTime;
 import java.util.Map;
