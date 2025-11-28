@@ -2,16 +2,16 @@ spring:
   application:
     name: itda-backend
 
-  # .env ??? Spring ???? ???? ?? ??
-  # - ???? ??? .env(.properties) ??? ?? ?? ???? ????.
-  # - DB ????, Redis ???? ? ?? ??? .env?? ????.
+  # .env 파일을 Spring 환경으로 불러오기 위한 설정
+  # - 프로젝트 루트에 .env(.properties) 파일이 있을 경우 자동으로 가져온다.
+  # - DB 비밀번호, Redis 비밀번호 등 민감 정보는 .env에서 관리한다.
   config:
     import: optional:file:.env[.properties]
 
   jackson:
-    time-zone: Asia/Seoul        # KST ???? ???
+    time-zone: Asia/Seoul        # KST 기준으로 직렬화
     serialization:
-      write-dates-as-timestamps: false  # 2025-11-28T13:00:00 ?? ISO ???? ??
+      write-dates-as-timestamps: false  # 2025-11-28T13:00:00 이런 ISO 문자열로 보냄
 
   jpa:
     properties:
@@ -20,9 +20,9 @@ spring:
     open-in-view: false
     show-sql: true
 
-# ?? ?? ?? ??
-# TRACE -> DEBUG -> INFO -> WARN -> ERROR -> OFF ?
-# root? ?? ?? ??? ????, com.cotato.itda ???? ?? ??? DEBUG? ??
+# 공통 로그 레벨 설정
+# TRACE -> DEBUG -> INFO -> WARN -> ERROR -> OFF 순
+# root는 전체 로그 레벨을 설정하며, com.cotato.itda 패키지의 로그 레벨은 DEBUG로 설정
 logging:
   level:
     root: INFO
