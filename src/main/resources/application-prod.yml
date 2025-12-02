@@ -1,0 +1,27 @@
+# 운영(prod) 환경 전용 설정
+# 실행 시: -Dspring.profiles.active=prod 또는 SPRING_PROFILES_ACTIVE=prod
+spring:
+  datasource:
+    # 운영에서는 반드시 .env에서 URL 지정 (기본값 없음)
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  jpa:
+    # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
+    hibernate:
+      ddl-auto: none
+
+# 운영 환경 로그 설정
+# - root: INFO → 전체 로그는 INFO 이상
+logging:
+  level:
+    root: INFO
+    com.cotato.itda: INFO

@@ -1,0 +1,24 @@
+# 로컬 개발 환경 전용 설정
+# 실행 시: -Dspring.profiles.active=local 또는 SPRING_PROFILES_ACTIVE=local
+spring:
+  # 로컬 MySQL (docker-compose로 띄운 DB를 가정)
+  datasource:
+    # 기본값은 localhost:3306 / itda_local DB로 연결
+    # .env에 DB_URL이 있으면 그 값이 우선 적용됨
+    url: ${DB_URL:jdbc:mysql://localhost:3306/itda_local?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Seoul}
+    username: ${DB_USERNAME:itda_local}       # .env에 없으면 itda_local 사용
+    password: ${DB_PASSWORD:itda_local_pw}    # .env에 없으면 itda_local_pw 사용
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # 로컬 Redis (docker-compose로 띄운 Redis 가정)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}  # 비밀번호 없으면 비워두면 됨
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # 로컬에서는 엔티티 바뀌면 스키마 자동 반영 (개발 편의용)
+
+
