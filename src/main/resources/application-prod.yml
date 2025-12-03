@@ -1,21 +1,27 @@
+# 운영(prod) 환경 전용 설정
+# 실행 시: -Dspring.profiles.active=prod 또는 SPRING_PROFILES_ACTIVE=prod
 spring:
   datasource:
-    url: jdbc:mysql://${DB_URL}/symtalk?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    # 운영에서는 반드시 .env에서 URL 지정 (기본값 없음)
+    url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-  jpa:
-    database-platform: org.hibernate.dialect.MySQL8Dialect
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-        use_sql_comments: true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
 
+  jpa:
+    # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
+    hibernate:
+      ddl-auto: none
+
+# 운영 환경 로그 설정
+# - root: INFO → 전체 로그는 INFO 이상
 logging:
   level:
     root: INFO
-    com.cotato.itda: DEBUG
+    com.cotato.itda: INFO
