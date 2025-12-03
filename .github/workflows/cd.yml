@@ -75,7 +75,7 @@ jobs:
           envs: DB_URL, DB_USERNAME, DB_PASSWORD
           script: |
             cd /home/ubuntu/compose
-            sudo docker-compose -f docker-compose.prod.yml down
+            sudo docker compose -f docker-compose.prod.yml down
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/symtalk-be
             sudo docker pull ${{ secrets.DOCKER_USERNAME }}/nginx
-            sudo -E DB_URL=$DB_URL DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD docker-compose -f docker-compose.prod.yml up -d
+            sudo -E DB_URL=$DB_URL DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD docker compose -f docker-compose.prod.yml up -d
