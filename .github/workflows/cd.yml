@@ -68,11 +68,14 @@ jobs:
           DB_URL: ${{ secrets.DB_URL }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          REDIS_HOST: ${{ secrets.REDIS_HOST }}
+          REDIS_PORT: ${{ secrets.REDIS_PORT }}
+          REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
         with:
           username: ubuntu
           host: ${{ secrets.EC2_HOST }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          envs: DB_URL, DB_USERNAME, DB_PASSWORD
+          envs: DB_URL, DB_USERNAME, DB_PASSWORD, REDIS_HOST, REDIS_PORT, REDIS_PASSWORD
           script: |
             cd /home/ubuntu/compose
 
@@ -86,4 +89,4 @@ jobs:
             docker compose -f docker-compose.prod.yml down || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/symtalk-be
             docker pull ${{ secrets.DOCKER_USERNAME }}/nginx
-            DB_URL=$DB_URL DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD docker compose -f docker-compose.prod.yml up -d
+            DB_URL=$DB_URL DB_USERNAME=$DB_USERNAME DB_PASSWORD=$DB_PASSWORD REDIS_HOST=$REDIS_HOST REDIS_PORT=$REDIS_PORT REDIS_PASSWORD=$REDIS_PASSWORD docker compose -f docker-compose.prod.yml up -d
