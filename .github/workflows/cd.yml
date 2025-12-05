@@ -75,6 +75,14 @@ jobs:
           envs: DB_URL, DB_USERNAME, DB_PASSWORD
           script: |
             cd /home/ubuntu/compose
+
+            # Docker Compose V2 플러그인 설치 확인
+            if ! docker compose version > /dev/null 2>&1; then
+              echo "Installing Docker Compose V2 plugin..."
+              sudo apt-get update
+              sudo apt-get install -y docker-compose-plugin
+            fi
+
             docker compose -f docker-compose.prod.yml down || true
             docker pull ${{ secrets.DOCKER_USERNAME }}/symtalk-be
             docker pull ${{ secrets.DOCKER_USERNAME }}/nginx
