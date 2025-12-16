@@ -14,6 +14,7 @@
 
 1. **컨트롤러는 성공 응답만 직접 만든다.**
     - 성공 시: `ApiResponse.success(...)` 사용
+    - 모든 성공 응답(생성 포함)은 HTTP 200 OK로 통일한다.
     - 실패 시: 예외를 던지고 글로벌 핸들러에 위임
 2. **비즈니스 실패는 서비스/도메인에서 `BusinessException` 또는 `ValidationException`을 던진다.**
     - “기대한 실패”는 모두 ErrorCode 기반 예외로 표현
@@ -32,7 +33,10 @@
 
 ```java
 public static <T> ApiResponse<T> success(T data);
-public static <T> ApiResponse<T> success(T data, HttpStatus status);
+// public -> private로 변경
+// 200 OK로 성공 응답 고정 
+// 밑의 private는 내부에서만 사용
+private static <T> ApiResponse<T> success(T data, HttpStatus status);
 
 public static ApiResponse<Void> error(ErrorCode errorCode, String path);
 public static ApiResponse<Void> error(ErrorCode errorCode, String path, Map<String, Object> reasons);
@@ -152,6 +156,8 @@ public class ValidationException extends BusinessException {
 ### 3.1 성공 응답만 직접 작성
 
 컨트롤러는 **정상 플로우**에만 집중한다.
+성공 응답은 200 OK로 고정한다.
+- 컨트롤러는 기본적으로 ApiResponse.success(...)만 반환한다.
 
 ```java
 @RestController
@@ -162,19 +168,17 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<UserResponse>> getUser(@PathVariable Long id) {
+    public ApiResponse<UserResponse> getUser(@PathVariable Long id) {
         UserResponse response = userService.getUser(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<UserResponse>> createUser(
+    public ApiResponse<UserResponse> createUser(
         @Valid @RequestBody UserCreateRequest request
     ) {
         UserResponse response = userService.createUser(request);
-        return ResponseEntity
-            .status(HttpStatus.CREATED)
-            .body(ApiResponse.success(response, HttpStatus.CREATED));
+        return ApiResponse.success(response);
     }
 }
 
@@ -188,7 +192,7 @@ public class UserController {
     // ❌ 이렇게 하지 말 것
     try {
         UserResponse response = userService.getUser(id);
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ApiResponse.success(response);
     } catch (BusinessException e) {
         // 여기서 ApiResponse.error(...)를 만들지 않는다.
     }
@@ -385,7 +389,7 @@ if (userRepository.existsByNickname(request.getNickname())) {
 3. 컨트롤러
     - `UserResponse`를 `ApiResponse.success(...)`로 감싸서 반환
 4. 응답
-    - 성공: 201 + `success=true` + `data=UserResponse`
+    - 성공: 200 + `success=true` + `data=UserResponse`
     - 실패(중복 이메일): 400 + `success=false` + `code=USER_ERROR_400_DUPLICATE_EMAIL`
 
 ---

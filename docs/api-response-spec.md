@@ -15,6 +15,7 @@
 ### 1.1 JSON 구조
 
 백엔드에서 사용하는 공통 응답 DTO는 아래와 같은 구조를 갖습니다.
+- 성공 시에는 200 OK 상태 고정합니다.
 
 ```json
 {
@@ -27,7 +28,7 @@
     "email": "gimin1463@naver.com",
     "nickname": "기민"
   },
-  "path": "/api/users/1",
+  "path": null,
   "timestamp": "2025-11-28T11:23:45.123",
   "reasons": null
 }
@@ -42,7 +43,7 @@
     - `false` : 비즈니스 예외 / 검증 실패 / 시스템 예외 등 실패한 경우
 - `status` (number)
     - HTTP 상태 코드 숫자 값.
-    - 예: `200`, `201`, `400`, `401`, `403`, `404`, `500` 등.
+    - 예: `200`, `400`, `401`, `403`, `404`, `500` 등.
 - `code` (string)
     - 우리 서비스에서 정의한 에러/상태 코드 문자열.
     - 성공 응답: `"SUCCESS"`
@@ -60,6 +61,7 @@
     - 실패(`success = false`)인 경우에는 항상 `null`.
 - `path` (string or null)
     - 요청 경로(URI).
+    - 성공 응답에서는 null이며, 에러 응답에서는 요청 URL를 포함한다.
     - 예: `/api/users/1`, `/api/auth/kakao/login`
     - 주로 에러 응답에서 어떤 요청에서 에러가 났는지 디버깅용으로 활용.
 - `timestamp` (string)
@@ -77,7 +79,7 @@
 
 ## 2. 성공 응답 예시
 
-### 2.1 단일 리소스 조회
+### 성공 응답은 모두 200 OK 상태이며, `success`가 `true`로 설정됩니다.
 
 ```json
 {
@@ -90,28 +92,10 @@
     "email": "gimin1463@naver.com",
     "nickname": "기민"
   },
-  "path": "/api/users/1",
+  "path": null,
   "timestamp": "2025-11-28T11:23:45.123",
-  "reasons": null}
-
-```
-
-### 2.2 리소스 생성 (201 Created)
-
-```json
-{
-  "success": true,
-  "status": 201,
-  "code": "SUCCESS",
-  "message": "요청이 성공적으로 처리되었습니다.",
-  "data": {
-    "id": 10,
-    "email": "gimin@google.com",
-    "nickname": "기민2"
-  },
-  "path": "/api/users",
-  "timestamp": "2025-11-28T11:30:00.000",
-  "reasons": null}
+  "reasons": null
+}
 
 ```
 
@@ -159,7 +143,7 @@
 
 ```
 
-- DTO에 선언한 `@NotBlank`, `@Email` 등의 메시지가 `reasons`에 맵핑된다.
+- DTO에 선언한 `@NotBlank`, `@Email` 등의 메시지가 `reasons`에 매핑된다.
 - `reasons`의 key = 필드명, value = 에러 메시지.
 
 ### 3.3 카카오 로그인/연동 에러
