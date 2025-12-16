@@ -103,10 +103,13 @@ public class ApiResponse<T> {
 	}
 
 	/**
+	 * 현재 단게에서는 성공 응답 200 OK로 고정
+	 * 즉, private로 메서드를 두어 내부(기본 200 OK 성공 응답)에서만 사용
+	 * 추후)
 	 * 상태 코드를 지정하는 성공 응답
 	 * - 예) 생성 시 201 Created
 	 */
-	public static <T> ApiResponse<T> success(T data, HttpStatus status) {
+	private static <T> ApiResponse<T> success(T data, HttpStatus status) {
 		return new ApiResponse<>(
 			true,
 			status.value(),
@@ -118,6 +121,7 @@ public class ApiResponse<T> {
 			null
 		);
 	}
+
 
 	// ==========================
 	// 에러 응답용 팩토리 메서드
