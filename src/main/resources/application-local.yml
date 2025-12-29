@@ -21,4 +21,16 @@ spring:
     hibernate:
       ddl-auto: update   # 로컬에서는 엔티티 바뀌면 스키마 자동 반영 (개발 편의용)
 
+  cloud:
+    aws:
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+        default-image: https://${AWS_S3_BUCKET}.s3.${spring.cloud.aws.region.static}.amazonaws.com/profile/5c303f56-06a4-491a-a8dd-6a0a71a0e506_default.jpg # 기본 프로필 이미지 경로
+      region:
+        static: ${AWS_REGION:ap-northeast-2} # 기본값 서울
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      stack:
+        auto: false # 로컬 개발 시 불필요한 스택 생성 방지
 

@@ -1,0 +1,31 @@
+package com.cotato.itda.domain.profile.dto.response;
+
+import com.cotato.itda.domain.member.entity.Member;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record ProfileResponse(
+        @Schema(description = "프로필 이미지 URL")
+        String profileImageUrl,
+
+        @Schema(description = "프로필 이름")
+        String profileName,
+
+        @Schema(description = "회원 이름")
+        String name,
+
+        @Schema(description = "전화번호")
+        String phoneNumber,
+
+        @Schema(description = "생년월일")
+        String birthDate
+) {
+    public static ProfileResponse from(Member member) {
+        return new ProfileResponse(
+                member.getProfileImageUrl(),
+                member.getProfileName(),
+                member.getName(),
+                member.getPhoneNumber(),
+                member.getBirthDate()
+        );
+    }
+}
