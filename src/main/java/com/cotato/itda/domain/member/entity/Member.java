@@ -29,15 +29,9 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 
-    public void completeOnboardingProfile(String profileImageUrl, String profileName) {
+    public void updateProfile(String profileImageUrl, String profileName) {
         this.profileImageUrl = profileImageUrl;
         this.profileName = profileName;
-    }
-
-    public void updateProfile(String profileImageUrl, String profileName, String birthDate) {
-        this.profileImageUrl = profileImageUrl;
-        this.profileName = profileName;
-        this.birthDate = birthDate;
     }
 
     public void updateToDefaultProfileImage(String defaultProfileImageUrl) {

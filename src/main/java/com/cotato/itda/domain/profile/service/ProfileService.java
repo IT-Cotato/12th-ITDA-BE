@@ -37,7 +37,7 @@ public class ProfileService {
         String profileImageUrl = getOrDefaultImageUrl(request.profileImageUrl());
         String profileName = getOrDefaultProfileName(request.profileName(), member.getName());
 
-        member.completeOnboardingProfile(profileImageUrl, profileName);
+        member.updateProfile(profileImageUrl, profileName);
 
         return new ProfileCreateResponse(member.getProfileImageUrl(), member.getProfileName());
     }
@@ -51,7 +51,7 @@ public class ProfileService {
         String profileImageUrl = handleProfileImageUpdate(member.getProfileImageUrl(), request.profileImageUrl());
         String profileName = getOrDefaultProfileName(request.profileName(), member.getName());
 
-        member.updateProfile(profileImageUrl, profileName, request.birthDate());
+        member.updateProfile(profileImageUrl, profileName);
 
         return ProfileResponse.from(member);
     }
