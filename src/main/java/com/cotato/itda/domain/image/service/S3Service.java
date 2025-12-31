@@ -33,8 +33,9 @@ public class S3Service {
     /**
      * Presigned URL 생성
      */
-    public PresignedUrlResponse getPresignedUrl(S3Folder folder, String fileName) {
+    public PresignedUrlResponse getPresignedUrl(String folderName, String fileName) {
 
+        S3Folder folder = S3Folder.from(folderName);
         String contentType = getContentType(fileName);
         String key = createS3Key(folder, fileName);
 
@@ -70,6 +71,10 @@ public class S3Service {
      * 확장자 추출 및 content-type 매핑
      */
     private String getContentType(String fileName) {
+        if (!fileName.contains(".") || fileName.endsWith(".")) {
+            throw new BusinessException(ImageErrorCode.INVALID_FILE_NAME, Map.of("fileName", fileName));
+        }
+
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
         return mapContentType(extension);
     }
@@ -80,7 +85,7 @@ public class S3Service {
             case "png" -> "image/png";
             case "webp" -> "image/webp";
             case "gif" -> "image/gif";
-            default -> "application/octet-stream";
+            default -> throw new BusinessException(ImageErrorCode.UNSUPPORTED_FILE_EXTENSION, Map.of("extension", extension));
         };
     }
 

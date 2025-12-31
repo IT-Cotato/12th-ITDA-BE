@@ -75,7 +75,7 @@ public class ProfileService {
 
         // 기본 이미지거나 null인 경우 삭제 불가
         if (currentProfileImageUrl.equals(defaultProfileImageUrl) || currentProfileImageUrl == null) {
-            throw new BusinessException(ProfileErrorCode.PROFILE_IMAGE_NOT_FOUND);
+            throw new BusinessException(ProfileErrorCode.PROFILE_IMAGE_NOT_FOUND, Map.of("profileImageUrl", currentProfileImageUrl));
         }
 
         // S3에서 기존 프로필 이미지 파일 삭제

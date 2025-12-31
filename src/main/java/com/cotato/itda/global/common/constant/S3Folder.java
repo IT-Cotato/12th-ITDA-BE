@@ -1,5 +1,7 @@
 package com.cotato.itda.global.common.constant;
 
+import com.cotato.itda.global.error.constant.ImageErrorCode;
+import com.cotato.itda.global.error.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -22,4 +24,12 @@ public enum S3Folder {
         return value;
     }
 
+    public static S3Folder from(String folderName) {
+        for (S3Folder folder : S3Folder.values()) {
+            if (folder.value.equalsIgnoreCase(folderName)) {
+                return folder;
+            }
+        }
+        throw new BusinessException(ImageErrorCode.INVALID_S3_FOLDER);
+    }
 }
