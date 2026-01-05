@@ -9,10 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix="signup")
+@ConfigurationProperties(prefix = "signup")
 public class SignupProperties {
 	/**
 	 * signup.draft-ttl-minutes 로 주입
 	 */
-	private long draftTtlMinutes = 10;
+	private long draftTtlMinutes;
 }
