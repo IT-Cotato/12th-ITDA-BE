@@ -1,7 +1,6 @@
 package com.cotato.itda.domain.signup.service;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,9 +8,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.cotato.itda.domain.signup.dto.CreateDraftResponse;
-import com.cotato.itda.domain.signup.dto.Data;
-import com.cotato.itda.domain.signup.dto.Flags;
+import com.cotato.itda.domain.signup.dto.response.CreateDraftResponse;
 import com.cotato.itda.domain.signup.dto.SignupDraftRedisValue;
 import com.cotato.itda.domain.signup.dto.TermsItem;
 import com.cotato.itda.domain.signup.model.SignupStep;
@@ -58,13 +55,11 @@ public class SignupDraftService {
 
 		// 5) Redis에 저장할 값 만들기
 		// step은 최초 생성이므로 TERMS_REQUIRED 고정
-		SignupDraftRedisValue redisValue = new SignupDraftRedisValue(
-			draftKey,
-			SignupStep.TERMS_REQUIRED,
+		SignupDraftRedisValue.Policy policy = new SignupDraftRedisValue.Policy(
 			bundle.bundleType(),
-			bundle.bundleVersion(),
-			OffsetDateTime.now()
+			bundle.bundleVersion()
 		);
+		SignupDraftRedisValue redisValue = SignupDraftRedisValue.newDraft(draftKey,policy);
 		log.info("Redis 저장용 Draft 값 생성 완료");
 
 		// 6) TTL 설정
@@ -78,16 +73,19 @@ public class SignupDraftService {
 		// 8) 응답 바디 구성
 		CreateDraftResponse response = new CreateDraftResponse(
 			SignupStep.TERMS_REQUIRED,
-			new Flags(bundle),
-			new Data(terms)
+			new CreateDraftResponse.Flags(bundle),
+			new CreateDraftResponse.Data(terms)
 		);
 		log.info("CreateDraftResponse 생성 완료");
 
 		return new DraftCreationResult(draftKey, response);
 	}
 
+
+
 	public record DraftCreationResult(
 		String draftKey,
 		CreateDraftResponse response
 	){}
+
 }
