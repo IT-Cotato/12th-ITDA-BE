@@ -36,24 +36,37 @@ public class TermsItemEntity extends BaseEntity {
 	@JoinColumn(name = "bundle_id", nullable = false)
 	private TermsBundleEntity bundle;
 
+	// 약관 코드
+	// 예: TERMS_OF_SERVICE, PRIVACY_POLICY
 	@Column(name = "code", nullable = false, length = 50)
 	private String code;
 
+	// 약관 버전
+	// 예: 2025-12
 	@Column(name = "version", nullable = false, length = 20)
 	private String version;
 
+	// 약관 제목
+	// 예: "서비스 이용 약관", "개인정보 처리 방침"
 	@Column(name = "title", nullable = false, length = 200)
 	private String title;
 
+	// 필수 동의 여부
+	// true = 필수, false = 선택
 	@Column(name = "required", nullable = false)
 	private boolean required;
 
+	// 화면 표시 순서
+	// 낮은 숫자가 먼저 표시됨
 	@Column(name = "display_order", nullable = false)
 	private int displayOrder;
 
+	// 상세 약관 URL
+	// 예: "https://example.com/terms-of-service-2025-12"
 	@Column(name = "detail_url", length = 500)
 	private String detailUrl;
 
+	// 약관 현재 상태
 	// ACTIVE / INACTIVE
 	@Column(name = "status", nullable = false, length = 20)
 	private String status;

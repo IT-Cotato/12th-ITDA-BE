@@ -3,10 +3,12 @@ package com.cotato.itda.domain.signup.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.cotato.itda.domain.signup.entity.TermsItemEntity;
 
-public interface TermsItemJpaRepository extends JpaRepository<TermsItemEntity,Long> {
+public interface TermsItemJpaRepository extends JpaRepository<TermsItemEntity, Long> {
 
 	/**
 	 * 특정 번들(FK) + ACTIVE 약관 아이템들을 displayOrder 오름차순으로 모두 조회
@@ -18,5 +20,20 @@ public interface TermsItemJpaRepository extends JpaRepository<TermsItemEntity,Lo
 	List<TermsItemEntity> findByBundle_IdAndStatusOrderByDisplayOrderAsc(
 		Long bundleId,
 		String status
+	);
+
+	@Query("""
+		select i
+		from TermsItemEntity i
+		join i.bundle b
+		where b.bundleType = :bundleType
+		and b.bundleVersion = :bundleVersion
+		and b.status = 'ACTIVE'
+		and i.status = 'ACTIVE'
+		order by i.displayOrder asc		
+		""")
+	List<TermsItemEntity> findActiveByBundle(
+		@Param("bundleType") String bundleType,
+		@Param("bundleVersion") String bundleVersion
 	);
 }
