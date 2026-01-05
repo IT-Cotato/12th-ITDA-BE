@@ -56,27 +56,23 @@ services:
     image: ccjngwn/nginx:latest
     ports:
       - 80:80
-      # 도메인 발급 후 HTTPS 포트 활성화
-      # - 443:443
-    # 도메인 발급 후 SSL 인증서 볼륨 활성화
-    # volumes:
-    #   - ./certbot/conf:/etc/letsencrypt
-    #   - ./certbot/www:/var/www/certbot
+      - 443:443
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     depends_on:
       - application
     networks:
       - symtalk_net
-    # 도메인 발급 후 certbot 자동 갱신 활성화
-    # command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
 
-  # 도메인 발급 후 certbot 활성화
-  # certbot:
-  #   container_name: certbot
-  #   image: certbot/certbot
-  #   volumes:
-  #     - ./certbot/conf:/etc/letsencrypt
-  #     - ./certbot/www:/var/www/certbot
-  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  certbot:
+    container_name: certbot
+    image: certbot/certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 volumes:
   mysql_data:
