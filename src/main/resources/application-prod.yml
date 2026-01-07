@@ -18,6 +18,20 @@ spring:
     # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
     hibernate:
       ddl-auto: none
+  cloud:
+    openfeign:
+      client:
+        config:
+          solapiClient:
+            connectTimeout: 3000
+            readTimeout: 5000
+
+
+solapi:
+  base-uri: "https://api.solapi.com"
+  api-key: ${SOLAPI_API_KEY}
+  api-secret: ${SOLAPI_API_SECRET}
+  default-from: "${SOLAPI_DEFAULT_FROM}"
 
 # 운영 환경 로그 설정
 # - root: INFO → 전체 로그는 INFO 이상
@@ -25,3 +39,14 @@ logging:
   level:
     root: INFO
     com.cotato.itda: INFO
+
+jwt:
+  access:
+    algorithm: HS256
+    secret-key: ${JWT_ACCESS_SECRET_BASE64}
+    validity-in-seconds: 3600 #1시간
+
+  refresh:
+    algorithm: HS256
+    secret-key: ${JWT_REFRESH_SECRET_BASE64}
+    validity-in-seconds: 1209600 #14일

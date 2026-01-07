@@ -9,6 +9,10 @@ spring:
     username: ${DB_USERNAME:itda_local}       # .env에 없으면 itda_local 사용
     password: ${DB_PASSWORD:itda_local_pw}    # .env에 없으면 itda_local_pw 사용
     driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+      write-date-timestamps-as-nanoseconds: false
 
   # 로컬 Redis (docker-compose로 띄운 Redis 가정)
   data:
@@ -21,4 +25,34 @@ spring:
     hibernate:
       ddl-auto: update   # 로컬에서는 엔티티 바뀌면 스키마 자동 반영 (개발 편의용)
 
+  cloud:
+    openfeign:
+      client:
+        config:
+          solapiClient:
+            connectTimeout: 3000
+            readTimeout: 5000
 
+solapi:
+  base-url: '${SOLAPI_BASE_URL:https://api.solapi.com}'
+  api-key: '${SOLAPI_API_KEY}'
+  api-secret: '${SOLAPI_API_SECRET}'
+  default-from: "${SOLAPI_DEFAULT_FROM}"
+
+signup:
+  otp:
+    length: 4
+    ttl-seconds: 180
+    resend-windows-seconds: 60
+  draft-ttl-minutes: 60
+
+jwt:
+  access:
+    algorithm: HS256
+    secret-key: ${JWT_ACCESS_SECRET_BASE64}
+    validity-in-seconds: 3600 #1시간
+
+  refresh:
+    algorithm: HS256
+    secret-key: ${JWT_REFRESH_SECRET_BASE64}
+    validity-in-seconds: 1209600 #14일
