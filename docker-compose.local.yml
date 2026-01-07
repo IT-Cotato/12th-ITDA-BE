@@ -7,7 +7,7 @@ services:
     container_name: itda-mysql-local # 컨테이너 이름을 지정한다.
     restart: unless-stopped # 수동 중지가 아니면 항상 재시작하도록 설정한다.
     env_file:
-      - .env # .env 파일에서 환경 변수를 읽어 컨테이너에 주입한다 (예: MySQL 비밀번호).
+      - .env.local # .env 파일에서 환경 변수를 읽어 컨테이너에 주입한다 (예: MySQL 비밀번호).
     command: # MySQL 서버 실행 시 추가 옵션을 전달한다.
       - --character-set-server=utf8mb4 # 서버 문자 셋을 utf8mb4로 설정하여 다국어/이모지를 지원한다.
       - --collation-server=utf8mb4_unicode_ci # 정렬 방식을 지정한다.
@@ -22,7 +22,7 @@ services:
     container_name: itda-redis-local # 컨테이너 이름을 지정한다.
     restart: unless-stopped # 수동 중지가 아니면 항상 재시작하도록 설정한다.
     env_file:
-      - .env # .env 파일에서 환경 변수를 읽어 컨테이너에 주입한다.
+      - .env.local # .env 파일에서 환경 변수를 읽어 컨테이너에 주입한다.
     command: ["redis-server", "--appendonly", "yes"] # Redis 서버를 실행하고, AOF(Append Only File) 기능을 활성화하여 데이터 안전성을 높인다.
     ports:
       - "6379:6379" # 로컬 포트 6379를 컨테이너 포트 6379에 연결한다.

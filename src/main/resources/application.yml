@@ -19,6 +19,8 @@ spring:
         format_sql: true
     open-in-view: false
     show-sql: true
+  profiles:
+    active: local
 
 # 공통 로그 레벨 설정
 # TRACE -> DEBUG -> INFO -> WARN -> ERROR -> OFF 순
@@ -27,3 +29,6 @@ logging:
   level:
     root: INFO
     com.cotato.itda: DEBUG
+
+signup:
+  draft-ttl-minutes: 10

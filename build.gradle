@@ -24,16 +24,39 @@ repositories {
 	mavenCentral()
 }
 
+ext {
+	set('springCloudVersion', "2024.0.1")
+}
+
+dependencyManagement {
+	imports {
+		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
     // swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
 	// Redis 사용
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// security
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+	//JJWT
+	implementation "io.jsonwebtoken:jjwt-api:0.13.0"
+	runtimeOnly  "io.jsonwebtoken:jjwt-impl:0.13.0"
+	runtimeOnly  "io.jsonwebtoken:jjwt-jackson:0.13.0"
+
+	// feign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
     // MySQL Driver
     runtimeOnly 'com.mysql:mysql-connector-j'
