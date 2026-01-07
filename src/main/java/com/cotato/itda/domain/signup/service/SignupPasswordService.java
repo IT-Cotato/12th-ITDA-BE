@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cotato.itda.domain.auth.dto.Tokens;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.entity.MemberRole;
 import com.cotato.itda.domain.member.repository.MemberRepository;
@@ -40,7 +41,7 @@ public class SignupPasswordService {
 	private final SignupDraftRedisRepository signupDraftRedisRepository;
 	private final MemberRepository memberRepository;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final PasswordEncoder paswordEncoder;
+	private final PasswordEncoder passwordEncoder;
 	private final MemberTermsConsentRepository memberTermsConsentRepository;
 	private final TermsItemJpaRepository termsItemJpaRepository;
 
@@ -68,11 +69,11 @@ public class SignupPasswordService {
 				.getId();
 
 			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(memberId, "ROLE_USER");
-			if(issuedAccessToken==null){
+			if (issuedAccessToken == null) {
 				throw new BusinessException(SignupErrorCode.TOKEN_ISSUANCE_FAILED);
 			}
 			IssuedToken issuedRefreshToken = jwtTokenProvider.createRefreshToken(memberId);
-			if(issuedRefreshToken==null){
+			if (issuedRefreshToken == null) {
 				throw new BusinessException(SignupErrorCode.TOKEN_ISSUANCE_FAILED);
 			}
 			return toResponse(memberId, issuedAccessToken, issuedRefreshToken);
@@ -113,10 +114,10 @@ public class SignupPasswordService {
 		log.info("중복 가입 검증 통과, 신규 회원 생성 진행");
 
 		// 6. 비밀번호 해시(BCrypt)
-		String passwordHash = paswordEncoder.encode(password);
+		String passwordHash = passwordEncoder.encode(password);
 		log.info("비밀번호 해시 생성 완료 : {}", password);
 
-		try{
+		try {
 			// 7. 회원 생성 및 저장
 			Member saved = memberRepository.save(
 				Member.createLocalMember(
@@ -133,7 +134,7 @@ public class SignupPasswordService {
 			// 번들 기준으로 약관 아이템 전체를 조회
 			List<TermsItemEntity> items = termsItemJpaRepository
 				.findActiveByBundle(draft.policy().bundleType(), draft.policy().bundleVersion());
-			if(items.isEmpty()){
+			if (items.isEmpty()) {
 				throw new BusinessException(SignupErrorCode.INVALID_TERMS_BUNDLE_PARAMETERS);
 			}
 			log.info("약관 항목 조회 완료: {}개", items.size());
@@ -163,26 +164,29 @@ public class SignupPasswordService {
 			log.info("COMPLETED 상태 Draft Redis 업데이트 완료");
 			return toResponse(saved.getId(), issuedAccessToken, issuedRefreshToken);
 
-
-		}catch(DataIntegrityViolationException e){
+		} catch (DataIntegrityViolationException e) {
 			// 동시성 이슈로 인해 중복 가입이 발생한 경우
 			throw new BusinessException(SignupErrorCode.MEMBER_ALREADY_EXISTS);
 		}
 
 	}
 
-
 	private SubmitPasswordResponse toResponse(Long memberId, IssuedToken issuedAccessToken,
 		IssuedToken issuedRefreshToken) {
 		return new SubmitPasswordResponse(
 			SignupStep.COMPLETED.name(),
 			memberId,
-			new SubmitPasswordResponse.Tokens(
-				((IssuedAccessToken)issuedAccessToken).token(),
-				((IssuedRefreshToken)issuedRefreshToken).token(),
-				((IssuedAccessToken)issuedAccessToken).expiresAt(),
-				((IssuedRefreshToken)issuedRefreshToken).expiresAt()
+			new Tokens(
+				new Tokens.AccessTokenOnly(
+					issuedAccessToken.token(),
+					issuedAccessToken.expiresAt()
+				),
+				new Tokens.RefreshTokenOnly(
+					issuedRefreshToken.token(),
+					issuedRefreshToken.expiresAt()
+				)
 			)
+
 		);
 	}
 
@@ -195,16 +199,16 @@ public class SignupPasswordService {
 
 	/**
 	 * 비밀번호 정책 검증 메서드
-	 *
+	 * <p>
 	 * [정책 요약]
 	 * 1) null 불가
 	 * 2) 길이: 8 ~ 64
 	 * 3) 공백 포함 불가
 	 * 4) 문자 종류(영문/숫자/특수문자) 중 최소 2종 이상 포함
-	 *
+	 * <p>
 	 * [주의]
 	 * - 여기서 "문자"는 Character::isLetter 기준이라 한글도 letter로 잡힐 수 있음
-	 *   (정확히 영문만 허용하려면 별도 정규식/범위 체크가 필요)
+	 * (정확히 영문만 허용하려면 별도 정규식/범위 체크가 필요)
 	 */
 	private void validatePasswordPolicy(String password) {
 
@@ -249,7 +253,6 @@ public class SignupPasswordService {
 		// - 여기서는 '0'~'9' 사이 문자가 하나라도 있는지 확인한다.
 		boolean hasDigit = password.chars().anyMatch(ch -> ch >= '0' && ch <= '9');
 
-
 		// 4-3) 특수문자 포함 여부
 		boolean hasSpecial = password.chars().anyMatch(
 			ch -> "!@#$%^&*()_+-=[]{};':\",.<>/?\\|`~".indexOf(ch) >= 0
@@ -263,9 +266,12 @@ public class SignupPasswordService {
 		// - 예: 영문+숫자 있으면 2종 → 통과
 		// - 예: 숫자+특수문자 있으면 2종 → 통과
 		int kinds = 0;
-		if (hasLetter) kinds++;
-		if (hasDigit) kinds++;
-		if (hasSpecial) kinds++;
+		if (hasLetter)
+			kinds++;
+		if (hasDigit)
+			kinds++;
+		if (hasSpecial)
+			kinds++;
 
 		// 최소 2종 미만이면 정책 위반
 		if (kinds < 2) {

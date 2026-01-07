@@ -20,6 +20,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * JwtTokenValidator
@@ -33,6 +34,7 @@ import lombok.RequiredArgsConstructor;
  * <p>
  * 2. Header의 alg(서명 알고리즘)도 정책과 일치하는지 검증한다.
  */
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtTokenValidator {
@@ -57,21 +59,24 @@ public class JwtTokenValidator {
 				.verifyWith(key) // 서명 검증용 키 지정
 				.build()
 				.parseSignedClaims(token); //서명된 JWT를 파싱하고 Claims까지 반환
-
+			log.info("JWT 서명 검증 통과");
 			// payload(Claims) 추출
 			Claims claims = jws.getPayload();
+			log.info("검증된 JWT Claims: {}", claims);
 
 			// purpose 클레임 검증
 			String claimPurpose = claims.get(CLAIM_PURPOSE, String.class);
 			if (claimPurpose == null) {
 				throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
 			}
+			log.info("JWT purpose 클레임: {}", claimPurpose);
 			if (!expectedPurpose.name().equals(claimPurpose)) {
 				throw new BusinessException(JwtErrorCode.TOKEN_PURPOSE_MISMATCH);
 			}
+			log.info("JWT purpose 클레임 검증 통과: expected={}, actual={}", expectedPurpose.name(), claimPurpose);
 			// header alg 검증
 			validateHeaderAlgorithm(jws.getHeader(), expectedAlg);
-
+			log.info("JWT header alg 검증 통과: expected={}", expectedAlg.getId());
 			return claims;
 
 		} catch (ExpiredJwtException e) {

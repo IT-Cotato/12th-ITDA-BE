@@ -34,7 +34,7 @@ spring:
             readTimeout: 5000
 
 solapi:
-  base-url: "https://api.solapi.com"
+  base-url: '${SOLAPI_BASE_URL:https://api.solapi.com}'
   api-key: '${SOLAPI_API_KEY}'
   api-secret: '${SOLAPI_API_SECRET}'
   default-from: "${SOLAPI_DEFAULT_FROM}"
