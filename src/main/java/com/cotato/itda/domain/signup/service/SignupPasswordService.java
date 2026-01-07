@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cotato.itda.domain.auth.dto.Tokens;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.entity.MemberRole;
 import com.cotato.itda.domain.member.repository.MemberRepository;
@@ -40,7 +41,7 @@ public class SignupPasswordService {
 	private final SignupDraftRedisRepository signupDraftRedisRepository;
 	private final MemberRepository memberRepository;
 	private final JwtTokenProvider jwtTokenProvider;
-	private final PasswordEncoder paswordEncoder;
+	private final PasswordEncoder passwordEncoder;
 	private final MemberTermsConsentRepository memberTermsConsentRepository;
 	private final TermsItemJpaRepository termsItemJpaRepository;
 
@@ -113,7 +114,7 @@ public class SignupPasswordService {
 		log.info("중복 가입 검증 통과, 신규 회원 생성 진행");
 
 		// 6. 비밀번호 해시(BCrypt)
-		String passwordHash = paswordEncoder.encode(password);
+		String passwordHash = passwordEncoder.encode(password);
 		log.info("비밀번호 해시 생성 완료 : {}", password);
 
 		try{
@@ -177,7 +178,7 @@ public class SignupPasswordService {
 		return new SubmitPasswordResponse(
 			SignupStep.COMPLETED.name(),
 			memberId,
-			new SubmitPasswordResponse.Tokens(
+			new Tokens(
 				((IssuedAccessToken)issuedAccessToken).token(),
 				((IssuedRefreshToken)issuedRefreshToken).token(),
 				((IssuedAccessToken)issuedAccessToken).expiresAt(),

@@ -71,7 +71,8 @@ public class SignupController {
 	 */
 	@Operation(
 		summary = "Step1) 회원가입 Draft 생성",
-		description = "회원가입 절차를 시작하기 위한 임시 Draft를 생성하고, draftKey를 응답 헤더(Signup-Draft-Key)로 반환한다."
+		description = "회원가입 절차를 시작하기 위한 임시 Draft를 생성하고, draftKey를 응답 헤더(Signup-Draft-Key)로 반환한다.",
+		security = {}
 	)
 	@PostMapping("/drafts")
 	public ResponseEntity<ApiResponse<CreateDraftResponse>> createSignupDraft() {
@@ -93,7 +94,8 @@ public class SignupController {
 	 */
 	@Operation(
 		summary = "Step2) 약관 동의 제출",
-		description = "DraftKey로 식별되는 회원가입 흐름에서 약관 동의 내용을 제출한다. 성공 시 다음 단계로 진행된다."
+		description = "DraftKey로 식별되는 회원가입 흐름에서 약관 동의 내용을 제출한다. 성공 시 다음 단계로 진행된다.",
+		security = {}
 	)
 	@PostMapping("/drafts/terms")
 	public ApiResponse<SubmitTermsResponse> submitTerms(
@@ -122,7 +124,8 @@ public class SignupController {
 	 */
 	@Operation(
 		summary = "Step3) 인증번호 SMS 발송",
-		description = "입력된 전화번호로 OTP 인증번호를 SMS로 발송한다. DraftKey가 유효해야 한다."
+		description = "입력된 전화번호로 OTP 인증번호를 SMS로 발송한다. DraftKey가 유효해야 한다.",
+		security = {}
 	)
 	@PostMapping("/sms/send")
 	public ApiResponse<SendOtpSmsResponse> sendOptSms(
@@ -154,7 +157,8 @@ public class SignupController {
 	 */
 	@Operation(
 		summary = "Step4) OTP 검증",
-		description = "DraftKey 기반 회원가입 흐름에서 OTP를 검증한다. 결과는 nextAction으로 분기한다."
+		description = "DraftKey 기반 회원가입 흐름에서 OTP를 검증한다. 결과는 nextAction으로 분기한다.",
+		security = {}
 	)
 	@PostMapping("/otp/verify")
 	public ApiResponse<VerifyOtpResponse> verifyOtp(
@@ -179,7 +183,8 @@ public class SignupController {
 			
 			- Header: Signup-Draft-Key (Step1에서 발급)
 			- Body: 이름/생년월일 등 프로필 입력값
-			"""
+			""",
+		security = {}
 	)
 	@PostMapping("/profile")
 	public ApiResponse<SubmitProfileResponse> submitProfile(
@@ -209,7 +214,8 @@ public class SignupController {
 			- Header: Signup-Draft-Key (Step1에서 발급)
 			- Body: password / passwordConfirm(또는 confirmPassword) 등 비밀번호 입력값
 			- 성공 시: 회원 DB 커밋 + 로그인 토큰 발급(Access/Refresh) 또는 완료 응답 반환
-			"""
+			""",
+		security = {}
 	)
 	@PostMapping("/password")
 	public ApiResponse<SubmitPasswordResponse> submitPassword(
