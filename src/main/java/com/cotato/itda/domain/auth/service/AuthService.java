@@ -9,8 +9,6 @@ import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.AuthErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
-import com.cotato.itda.global.security.jwt.token.IssuedAccessToken;
-import com.cotato.itda.global.security.jwt.token.IssuedRefreshToken;
 import com.cotato.itda.global.security.jwt.token.IssuedToken;
 import com.cotato.itda.global.security.jwt.token.JwtTokenProvider;
 

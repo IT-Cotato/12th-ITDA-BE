@@ -2,11 +2,9 @@ package com.cotato.itda.global.config;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
-import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
-import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 
@@ -53,11 +51,11 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi SignupApi() {
+    public GroupedOpenApi signupApi() {
         return GroupedOpenApi.builder()
             .group("Signup")
             .displayName("Signup API")
-            .packagesToScan("com.cotato.itda.oneco.domain.signup.controller")
+            .packagesToScan("com.cotato.itda.domain.signup.controller")
             .pathsToMatch("/api/signup/**")
             .build();
     }
