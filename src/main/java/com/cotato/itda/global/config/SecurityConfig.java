@@ -64,7 +64,8 @@ public class SecurityConfig {
 					"/api/auth/login",
 					"/api/auth/refresh",
 					"/swagger-ui/**",
-					"/v3/api-docs/**"
+					"/v3/api-docs/**",
+                    "/api/image/**"
 				).permitAll()
 				//관리자 전용 URL 패턴
 				//                        .requestMatchers(

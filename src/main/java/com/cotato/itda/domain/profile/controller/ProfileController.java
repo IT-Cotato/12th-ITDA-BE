@@ -6,11 +6,14 @@ import com.cotato.itda.domain.profile.dto.response.ProfileCreateResponse;
 import com.cotato.itda.domain.profile.dto.response.ProfileResponse;
 import com.cotato.itda.domain.profile.service.ProfileService;
 import com.cotato.itda.global.common.response.ApiResponse;
+import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,12 +30,12 @@ public class ProfileController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력값 또는 S3에 존재하지 않는 파일"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 회원")
     })
-    @PostMapping("/{memberId}")
-    // TODO: 인증 로직 통합 후 토큰 정보를 사용하도록 @PathVariable memberId 제거 및 수정
+    @PostMapping
     public ApiResponse<ProfileCreateResponse> createProfile(
-            @PathVariable(name = "memberId") Long memberId,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Valid @RequestBody ProfileCreateRequest request) {
 
+        Long memberId = jwtPrincipal.memberId();
         ProfileCreateResponse response = profileService.createProfile(memberId, request);
 
         return ApiResponse.success(response);
@@ -45,12 +48,12 @@ public class ProfileController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 회원"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "S3 서버 통신 오류(기존 이미지 삭제 실패)")
     })
-    @PutMapping("/{memberId}")
-    // TODO: 인증 로직 통합 후 토큰 정보를 사용하도록 @PathVariable memberId 제거 및 수정
+    @PutMapping
     public ApiResponse<ProfileResponse> updateProfile(
-            @PathVariable(name = "memberId") Long memberId,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Valid @RequestBody ProfileUpdateRequest request) {
 
+        Long memberId = jwtPrincipal.memberId();
         ProfileResponse response = profileService.updateProfile(memberId, request);
 
         return ApiResponse.success(response);
@@ -61,11 +64,10 @@ public class ProfileController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 회원"),
     })
-    @GetMapping("/{memberId}")
-    // TODO: 인증 로직 통합 후 토큰 정보를 사용하도록 @PathVariable memberId 제거 및 수정
-    public ApiResponse<ProfileResponse> getProfile(
-            @PathVariable(name = "memberId") Long memberId) {
+    @GetMapping
+    public ApiResponse<ProfileResponse> getProfile(@Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal) {
 
+        Long memberId = jwtPrincipal.memberId();
         ProfileResponse response = profileService.getProfile(memberId);
 
         return ApiResponse.success(response);
@@ -78,9 +80,10 @@ public class ProfileController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 회원"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "S3 서버 통신 오류"),
     })
-    @DeleteMapping("/{memberId}/profile-image")
-    // TODO: 인증 로직 통합 후 토큰 정보를 사용하도록 @PathVariable memberId 제거 및 수정
-    public ApiResponse<ProfileResponse> deleteProfileImage(@PathVariable(name = "memberId") Long memberId) {
+    @DeleteMapping
+    public ApiResponse<ProfileResponse> deleteProfileImage(@Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal) {
+
+        Long memberId = jwtPrincipal.memberId();
         ProfileResponse response = profileService.deleteProfileImage(memberId);
 
         return ApiResponse.success(response);

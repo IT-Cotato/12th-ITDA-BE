@@ -29,7 +29,7 @@ spring:
     aws:
       s3:
         bucket: ${AWS_S3_BUCKET}
-        default-image: https://${AWS_S3_BUCKET}.s3.${spring.cloud.aws.region.static}.amazonaws.com/profile/5c303f56-06a4-491a-a8dd-6a0a71a0e506_default.jpg # 기본 프로필 이미지 경로
+        default-image: ${DEFAULT_IMAGE_URL} # 기본 프로필 이미지 경로
       region:
         static: ${AWS_REGION:ap-northeast-2} # 기본값 서울
       credentials:

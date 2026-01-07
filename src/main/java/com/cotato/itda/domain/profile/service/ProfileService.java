@@ -115,8 +115,7 @@ public class ProfileService {
      * 프로필 이미지 변경 여부를 확인하여 검증 및 기존 이미지 삭제
      */
     private String handleProfileImageUpdate(String oldUrl, String newUrl) {
-        // 이미지가 바뀌지 않았다면 기존 URL 반환
-        if (newUrl.equals(oldUrl)) {
+        if (newUrl == null || newUrl.equals(oldUrl)) {
             return oldUrl;
         }
         // 기본 이미지가 아닌 새 이미지로 바뀐 경우 객체 검증
