@@ -4,6 +4,7 @@ import com.cotato.itda.domain.friendship.dto.req.FriendshipReqDTO;
 import com.cotato.itda.domain.friendship.dto.res.FriendshipResDTO;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.global.common.response.ApiResponse;
+import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -28,8 +29,7 @@ public interface FriendshipControllerDocs {
     })
     @PostMapping("/{friendId}")
     ApiResponse<FriendshipResDTO.CreateDTO> createFriendship(
-            @Parameter(description = "현재 로그인한 사용자 ID (JWT 도입 후 제거 예정)", required = true)
-            @RequestParam Long memberId,
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal,
 
             @Parameter(description = "친구로 추가할 사용자 ID", required = true)
             @PathVariable Long friendId
@@ -50,8 +50,7 @@ public interface FriendshipControllerDocs {
             @Parameter(description = "수정할 친구 관계 ID", required = true)
             @PathVariable Long friendshipId,
 
-            @Parameter(description = "현재 로그인한 사용자 ID (JWT 도입 후 제거 예정)", required = true)
-            @RequestParam Long memberId,
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal,
 
             @Valid @RequestBody FriendshipReqDTO.UpdateDTO dto
     );
@@ -66,8 +65,7 @@ public interface FriendshipControllerDocs {
     })
     @GetMapping
     ApiResponse<FriendshipResDTO.FriendshipListDTO> getFriendshipList(
-            @Parameter(description = "현재 로그인한 사용자 ID (JWT 도입 후 제거 예정)", required = true)
-            @RequestParam Long memberId,
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal,
 
             @Parameter(
                     description = "친구 설정 상태. 친구를 설정했다면 ACTIVE로, 설정하지 않았다면 PENDING으로 조회됩니다. 미입력 시 ACTIVE만 조회됩니다.",
@@ -97,8 +95,7 @@ public interface FriendshipControllerDocs {
             @Parameter(description = "삭제할 친구 관계 ID", required = true)
             @PathVariable Long friendshipId,
 
-            @Parameter(description = "현재 로그인한 사용자 ID (JWT 도입 후 제거 예정)", required = true)
-            @RequestParam Long memberId
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal
     );
 
     @Operation(
@@ -115,7 +112,6 @@ public interface FriendshipControllerDocs {
             @Parameter(description = "조회할 친구 관계 ID", required = true)
             @PathVariable Long friendshipId,
 
-            @Parameter(description = "현재 로그인한 사용자 ID (JWT 도입 후 제거 예정)", required = true)
-            @RequestParam Long memberId
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal
     );
 }

@@ -84,6 +84,16 @@ public class SwaggerConfig {
             .build();
     }
 
+    @Bean
+    public GroupedOpenApi FriendshipApi() {
+        return GroupedOpenApi.builder()
+                .group("Friendship")
+                .displayName("Friendship API")
+                .packagesToScan("com.cotato.itda.domain.friendship.controller")
+                .pathsToMatch("/api/friendships/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
