@@ -31,8 +31,8 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
         license = @License(name = "Apache 2.0", url = "http://www.apache.org/licenses/LICENSE-2.0")
     ),
     servers = {
-        @Server(url = "http://localhost:8080", description = "Local")
-        // @Server(url = "https://api.itda.com", description = "Production")
+        @Server(url = "http://localhost:8080", description = "Local"),
+        @Server(url = "https://43.202.184.232.nip.io", description = "Production")
     },
     // ✅ 전역 기본 보안(원하면 아래 줄 삭제)
     security = @SecurityRequirement(name = "AccessToken")
