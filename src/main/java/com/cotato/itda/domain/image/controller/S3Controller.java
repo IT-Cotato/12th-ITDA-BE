@@ -4,11 +4,14 @@ import com.cotato.itda.domain.image.dto.request.PresignedUrlRequest;
 import com.cotato.itda.domain.image.dto.response.PresignedUrlResponse;
 import com.cotato.itda.domain.image.service.S3Service;
 import com.cotato.itda.global.common.response.ApiResponse;
+import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,7 +40,9 @@ public class S3Controller {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "500", description = "S3 서버 통신 오류")
     })
     @PostMapping("presigned-url")
-    public ApiResponse<PresignedUrlResponse> getPresignedUrl(@Valid @RequestBody PresignedUrlRequest request) {
+    public ApiResponse<PresignedUrlResponse> getPresignedUrl(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Valid @RequestBody PresignedUrlRequest request) {
         PresignedUrlResponse response = s3Service.getPresignedUrl(request.folder(), request.fileName());
         return ApiResponse.success(response);
     }
