@@ -84,6 +84,26 @@ public class SwaggerConfig {
             .build();
     }
 
+    @Bean
+    public GroupedOpenApi ProfileApi() {
+        return GroupedOpenApi.builder()
+                .group("Profile")
+                .displayName("Profile API")
+                .packagesToScan("com.cotato.itda.domain.profile.controller")
+                .pathsToMatch("/api/profile/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi ImageApi() {
+        return GroupedOpenApi.builder()
+                .group("Image")
+                .displayName("Image API")
+                .packagesToScan("com.cotato.itda.domain.image.controller")
+                .pathsToMatch("/api/image/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
