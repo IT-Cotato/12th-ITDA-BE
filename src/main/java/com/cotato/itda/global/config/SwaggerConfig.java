@@ -85,6 +85,16 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi FriendshipApi() {
+        return GroupedOpenApi.builder()
+                .group("Friendship")
+                .displayName("Friendship API")
+                .packagesToScan("com.cotato.itda.domain.friendship.controller")
+                .pathsToMatch("/api/friendships/**")
+                .build();
+    }
+  
+    @Bean
     public GroupedOpenApi ProfileApi() {
         return GroupedOpenApi.builder()
                 .group("Profile")
@@ -94,6 +104,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi ChatTopicApi() {
+        return GroupedOpenApi.builder()
+                .group("ChatTopic")
+                .displayName("ChatTopic API")
+                .packagesToScan("com.cotato.itda.domain.chattopic.controller")
+                .pathsToMatch("/api/chat-topics/**")
+                .build();
+    }
+  
     @Bean
     public GroupedOpenApi ImageApi() {
         return GroupedOpenApi.builder()
