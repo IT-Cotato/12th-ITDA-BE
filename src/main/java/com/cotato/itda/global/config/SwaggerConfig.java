@@ -94,6 +94,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi ChatTopicApi() {
+        return GroupedOpenApi.builder()
+                .group("ChatTopic")
+                .displayName("ChatTopic API")
+                .packagesToScan("com.cotato.itda.domain.chattopic.controller")
+                .pathsToMatch("/api/chat-topics/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
