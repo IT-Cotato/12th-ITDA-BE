@@ -15,10 +15,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.Getter;
+import lombok.*;
 
-@Getter
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+@Getter
 @Table(
 	name = "members",
 	uniqueConstraints = {
@@ -56,6 +59,9 @@ public class Member extends BaseTimeEntity {
 
 	@Column(name = "profile_image_url", length = 500)
 	private String profileImageUrl;
+
+    @Column(name = "profile_name", length = 100)
+    private String profileName;
 
 	@Column(name = "invite_code", length = 50)
 	private String inviteCode;
@@ -105,4 +111,12 @@ public class Member extends BaseTimeEntity {
 	public void activate() {
 		this.status = MemberStatus.ACTIVE;
 	}
+    public void updateToDefaultProfileImage(String defaultProfileImageUrl) {
+        this.profileImageUrl = defaultProfileImageUrl;
+    }
+
+    public void updateProfile(String profileImageUrl, String profileName) {
+        this.profileImageUrl = profileImageUrl;
+        this.profileName = profileName;
+    }
 }

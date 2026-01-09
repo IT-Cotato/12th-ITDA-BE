@@ -19,13 +19,24 @@ spring:
     hibernate:
       ddl-auto: none
   cloud:
+    aws:
+      s3:
+        bucket: ${AWS_S3_BUCKET}
+        default-image: ${DEFAULT_IMAGE_URL} # 기본 프로필 이미지 경로
+      region:
+        static: ${AWS_REGION}
+      credentials:
+        access-key: ${AWS_ACCESS_KEY}
+        secret-key: ${AWS_SECRET_KEY}
+      stack:
+        auto: false
+
     openfeign:
       client:
         config:
           solapiClient:
             connectTimeout: 3000
             readTimeout: 5000
-
 
 solapi:
   base-uri: "https://api.solapi.com"
