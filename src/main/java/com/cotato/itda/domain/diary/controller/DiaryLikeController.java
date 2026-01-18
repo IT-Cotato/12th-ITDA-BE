@@ -31,7 +31,7 @@ public class DiaryLikeController {
     @SecurityRequirement(name = "AccessToken")
     @PostMapping("/{diaryId}/likes")
     public ApiResponse<DiaryLikeResponse> addLike(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "좋아요할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -47,7 +47,7 @@ public class DiaryLikeController {
     @SecurityRequirement(name = "AccessToken")
     @DeleteMapping("/{diaryId}/likes")
     public ApiResponse<DiaryLikeResponse> deleteLike(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "좋아요 취소할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();

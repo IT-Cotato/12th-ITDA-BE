@@ -3,7 +3,7 @@ package com.cotato.itda.domain.diary.service.query;
 import com.cotato.itda.domain.diary.converter.DiaryConverter;
 import com.cotato.itda.domain.diary.dto.response.DiaryDetailResponse;
 import com.cotato.itda.domain.diary.dto.response.DiaryListResponse;
-import com.cotato.itda.domain.diary.dto.response.DiaryWriterInfo;
+import com.cotato.itda.domain.diary.dto.response.WriterInfo;
 import com.cotato.itda.domain.diary.dto.response.MonthlyDiaryListResponse;
 import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.diary.repository.DiaryLikeRepository;
@@ -59,7 +59,7 @@ public class DiaryQueryService {
 
         boolean isLiked = diaryLikeRepository.existsByDiaryIdAndMemberId(diaryId, memberId);
 
-        DiaryWriterInfo diaryWriterInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
+        WriterInfo diaryWriterInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
         return DiaryConverter.toDetailResponse(diary, diaryWriterInfo, isLiked);
     }
 
@@ -94,7 +94,7 @@ public class DiaryQueryService {
 
                     boolean isLiked = likedDiaryIds.contains(diary.getId());
 
-                    DiaryWriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
+                    WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
                     return DiaryConverter.toListItem(diary, writerInfo, isLiked);
                 })
                 .toList();
@@ -130,7 +130,7 @@ public class DiaryQueryService {
 
         String nickname = determineNickname(member, friendship);
 
-        DiaryWriterInfo writerInfo = DiaryConverter.toWriterInfo(member, nickname, false);
+        WriterInfo writerInfo = DiaryConverter.toWriterInfo(member, nickname, false);
         List<MonthlyDiaryInfo> diaries = diaryRepository.findMonthlyDiaries(targetMemberId, start, end);
         return DiaryConverter.toMonthlyListResponse(writerInfo, year, month, diaries);
     }

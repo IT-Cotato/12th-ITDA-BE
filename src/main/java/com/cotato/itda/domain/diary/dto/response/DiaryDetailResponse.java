@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record DiaryDetailResponse(
-        DiaryWriterInfo writerInfo,
+        WriterInfo writerInfo,
 
         @Schema(description = "일기 ID", example = "1")
         Long diaryId,

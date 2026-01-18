@@ -34,8 +34,8 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static DiaryWriterInfo toWriterInfo(Member member, String nickname, boolean isMe) {
-        return DiaryWriterInfo.builder()
+    public static WriterInfo toWriterInfo(Member member, String nickname, boolean isMe) {
+        return WriterInfo.builder()
                 .writerId(member.getId())
                 .nickname(nickname)
                 .profileImageUrl(member.getProfileImageUrl())
@@ -43,7 +43,7 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static DiaryDetailResponse toDetailResponse(Diary diary, DiaryWriterInfo writerInfo, boolean isLiked) {
+    public static DiaryDetailResponse toDetailResponse(Diary diary, WriterInfo writerInfo, boolean isLiked) {
         return DiaryDetailResponse.builder()
                 .writerInfo(writerInfo)
                 .diaryId(diary.getId())
@@ -59,7 +59,7 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static DiaryListResponse.DiaryItem toListItem(Diary diary, DiaryWriterInfo writerInfo, boolean isLiked) {
+    public static DiaryListResponse.DiaryItem toListItem(Diary diary, WriterInfo writerInfo, boolean isLiked) {
         return DiaryListResponse.DiaryItem.builder()
                 .writerInfo(writerInfo)
                 .diaryId(diary.getId())
@@ -94,7 +94,7 @@ public class DiaryConverter {
     }
 
     public static MonthlyDiaryListResponse toMonthlyListResponse(
-            DiaryWriterInfo writerInfo,
+            WriterInfo writerInfo,
             Integer year,
             Integer month,
             List<MonthlyDiaryInfo> diaries

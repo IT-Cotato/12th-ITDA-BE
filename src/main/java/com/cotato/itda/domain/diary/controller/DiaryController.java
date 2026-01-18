@@ -36,7 +36,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @PostMapping
     public ApiResponse<DiaryResponse> createDiary(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Valid @RequestBody DiaryRequest request
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -56,7 +56,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @PutMapping("/{diaryId}")
     public ApiResponse<DiaryResponse> updateDiary(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "수정할 일기 ID", required = true) @PathVariable Long diaryId,
             @Valid @RequestBody DiaryRequest request
     ) {
@@ -75,8 +75,8 @@ public class DiaryController {
     })
     @SecurityRequirement(name = "AccessToken")
     @DeleteMapping("/{diaryId}")
-    public ApiResponse<DiaryResponse> deleteDiary(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+    public ApiResponse<Void> deleteDiary(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "삭제할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -95,7 +95,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @GetMapping("/{diaryId}")
     public ApiResponse<DiaryDetailResponse> getDiaryDetail(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "조회할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -118,7 +118,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @GetMapping
     public ApiResponse<DiaryListResponse> getDiaryList(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "마지막으로 조회한 일기 ID (첫 조회 시 생략)") @RequestParam(required = false) Long lastId,
             @Parameter(description = "조회할 일기 개수") @RequestParam(required = false, defaultValue = "5") int size
     ) {
@@ -137,7 +137,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @GetMapping("/monthly/me")
     public ApiResponse<MonthlyDiaryListResponse> getMonthlyDiaryList(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
             @Parameter(description = "조회 연도", example = "2026")
             @RequestParam(required = true) int year,
@@ -162,7 +162,7 @@ public class DiaryController {
     @SecurityRequirement(name = "AccessToken")
     @GetMapping("/monthly/{memberId}")
     public ApiResponse<MonthlyDiaryListResponse> getFriendMonthlyDiaryList(
-            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
             @Parameter(description = "조회할 친구 멤버 ID", required = true)
             @PathVariable("memberId") Long targetMemberId,

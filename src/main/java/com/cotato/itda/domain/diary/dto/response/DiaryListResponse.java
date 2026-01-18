@@ -28,7 +28,7 @@ public record DiaryListResponse(
     @Builder
     public record DiaryItem(
             @Schema(description = "작성자 정보 (ID, 닉네임, 프로필 사진 URL)")
-            DiaryWriterInfo writerInfo,
+            WriterInfo writerInfo,
 
             @Schema(description = "일기 ID", example = "1")
             Long diaryId,

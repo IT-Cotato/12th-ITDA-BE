@@ -10,7 +10,7 @@ import java.util.List;
 public record MonthlyDiaryListResponse(
 
         @Schema(description = "작성자 정보 (친구 일기 조회 시에만 포함)", nullable = true)
-        DiaryWriterInfo writerInfo,
+        WriterInfo writerInfo,
 
         @Schema(description = "조회 연도", example = "2026")
         int year,

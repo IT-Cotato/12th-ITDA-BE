@@ -84,4 +84,13 @@ public class Diary extends BaseEntity {
         }
     }
 
+    public void increaseComment() {
+        this.commentCount++;
+    }
+
+    public void decreaseComment() {
+        if (this.commentCount > 0) {
+            this.commentCount--;
+        }
+    }
 }
