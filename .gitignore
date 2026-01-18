@@ -4,6 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
+CLAUDE.md
 
 ### STS ###
 .apt_generated
@@ -41,3 +42,6 @@ out/
 .env.properties
 .env.local
 .env.prod
+
+### QueryDSL ###
+src/main/generated
