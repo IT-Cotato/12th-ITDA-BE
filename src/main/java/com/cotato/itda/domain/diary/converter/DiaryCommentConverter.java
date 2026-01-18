@@ -28,7 +28,7 @@ public class DiaryCommentConverter {
 
     public static WriterInfo toWriterInfo(Member member, String nickname, boolean isMe) {
         return WriterInfo.builder()
-                .writerId(member.getId())
+                .memberId(member.getId())
                 .nickname(nickname) // 댓글 등록 응답의 경우, 내 프로필 이름
                 .profileImageUrl(member.getProfileImageUrl())
                 .isMe(isMe)

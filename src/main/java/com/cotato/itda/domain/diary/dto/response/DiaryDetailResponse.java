@@ -39,7 +39,10 @@ public record DiaryDetailResponse(
         boolean isLiked,
 
         @Schema(description = "작성 시간", example = "2026-01-10T10:00:00")
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+
+        @Schema(description = "수정 시간", example = "2026-01-10T10:00:00")
+        LocalDateTime updatedAt
 ) {
 
 }

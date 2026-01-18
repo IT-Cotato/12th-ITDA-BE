@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Builder
@@ -52,6 +53,10 @@ public record DiaryListResponse(
             int commentCount,
 
             @Schema(description = "내가 좋아요 눌렀는지 여부", example = "false")
-            boolean isLiked
+            boolean isLiked,
+
+            @Schema(description = "작성 시간", example = "2026-01-10T10:00:00")
+            LocalDateTime createdAt
+
     ) {}
 }

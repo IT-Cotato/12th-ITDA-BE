@@ -36,7 +36,7 @@ public class DiaryConverter {
 
     public static WriterInfo toWriterInfo(Member member, String nickname, boolean isMe) {
         return WriterInfo.builder()
-                .writerId(member.getId())
+                .memberId(member.getId())
                 .nickname(nickname)
                 .profileImageUrl(member.getProfileImageUrl())
                 .isMe(isMe)
@@ -56,6 +56,7 @@ public class DiaryConverter {
                 .commentCount(diary.getCommentCount())
                 .isLiked(isLiked)
                 .createdAt(diary.getCreatedAt())
+                .updatedAt(diary.getUpdatedAt())
                 .build();
     }
 
@@ -70,6 +71,7 @@ public class DiaryConverter {
                 .likeCount(diary.getLikeCount())
                 .commentCount(diary.getCommentCount())
                 .isLiked(isLiked)
+                .createdAt(diary.getCreatedAt())
                 .build();
     }
 
@@ -85,8 +87,8 @@ public class DiaryConverter {
                 .build();
     }
 
-    public static MonthlyDiaryListResponse.DiaryItem toMonthlyListItem(MonthlyDiaryInfo diary) {
-        return MonthlyDiaryListResponse.DiaryItem.builder()
+    public static MonthlyDiaryListResponse.MonthlyDiaryItem toMonthlyListItem(MonthlyDiaryInfo diary) {
+        return MonthlyDiaryListResponse.MonthlyDiaryItem.builder()
                 .diaryId(diary.getId())
                 .date(diary.getDate())
                 .emojiCode(diary.getEmojiCode())
@@ -99,7 +101,7 @@ public class DiaryConverter {
             Integer month,
             List<MonthlyDiaryInfo> diaries
     ) {
-        List<MonthlyDiaryListResponse.DiaryItem> items = diaries.stream()
+        List<MonthlyDiaryListResponse.MonthlyDiaryItem> items = diaries.stream()
                 .map(DiaryConverter::toMonthlyListItem)
                 .toList();
 

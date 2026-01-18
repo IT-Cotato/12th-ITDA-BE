@@ -22,11 +22,11 @@ public record MonthlyDiaryListResponse(
         Integer diaryCount,
 
         @Schema(description = "일기 목록")
-        List<DiaryItem> diaries
+        List<MonthlyDiaryItem> diaries
 
 ) {
     @Builder
-    public record DiaryItem(
+    public record MonthlyDiaryItem(
 
         @Schema(description = "일기 ID", example = "1")
         Long diaryId,

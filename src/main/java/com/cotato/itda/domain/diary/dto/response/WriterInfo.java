@@ -6,7 +6,7 @@ import lombok.Builder;
 @Builder
 public record WriterInfo(
     @Schema(description = "작성자 ID", example = "3")
-    Long writerId,
+    Long memberId,
 
     @Schema(description = "작성자 별명", example = "길동이")
     String nickname,
