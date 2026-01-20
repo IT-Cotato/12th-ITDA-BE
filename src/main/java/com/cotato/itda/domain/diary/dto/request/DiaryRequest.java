@@ -12,7 +12,7 @@ import java.time.LocalDate;
 
 public record DiaryRequest(
 
-        @Schema(description = "일기 날짜 (필수)", example = "2026-01-10")
+        @Schema(description = "일기 날짜 (필수, yyyy-MM-dd 형식)", example = "2026-01-10", pattern = "yyyy-MM-dd")
         @NotNull(message = "날짜는 필수입니다.")
         @JsonFormat(pattern = "yyyy-MM-dd")
         @PastOrPresent(message = "미래 날짜의 일기는 작성할 수 없습니다.")

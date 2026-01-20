@@ -27,8 +27,6 @@ public class CustomDiaryRepositoryImpl implements CustomDiaryRepository{
 
         List<Diary> diaries = jpaQueryFactory
                 .selectFrom(diary)
-
-                // Member fetch join
                 .leftJoin(diary.member, member).fetchJoin()
 
                 // Friendship을 LEFT JOIN하여 일기 작성자가 친구인 일기만 조회
@@ -36,7 +34,6 @@ public class CustomDiaryRepositoryImpl implements CustomDiaryRepository{
                 .on(friendship.member.id.eq(memberId)
                         .and(friendship.friend.id.eq(diary.member.id))
                         .and(friendship.status.eq(FriendshipStatus.ACTIVE)))
-
                 .where(
                         diary.member.id.eq(memberId).or(friendship.id.isNotNull()),
                         cursorCondition(lastId)

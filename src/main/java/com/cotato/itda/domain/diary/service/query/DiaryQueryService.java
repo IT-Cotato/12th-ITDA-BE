@@ -40,39 +40,49 @@ public class DiaryQueryService {
     private final DiaryRepository diaryRepository;
     private final DiaryLikeRepository diaryLikeRepository;
 
+    /**
+     * 일기 상세 조회
+     */
     public DiaryDetailResponse getDiaryDetail(Long memberId, Long diaryId) {
 
+        // 일기 조회
         Diary diary = diaryRepository.findByIdWithMember(diaryId)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_NOT_FOUND));
 
         Member writer = diary.getMember();
         boolean isMe = writer.getId().equals(memberId);
-        Friendship friendship = null;
+        String nickname;
 
-        // 임시 구현: 권한 확인 후 표시할 이름 결정
-        if(!isMe) {
+        if (isMe) {
+            nickname = writer.getProfileName();
+        } else {
             // 작성자가 친구 관계인지 확인
-            friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
+            Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
                     .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
-        }
-        String nickname = determineNickname(writer, friendship);
 
+            nickname = determineNickname(writer, friendship.getNickname());
+        }
+
+        // 좋아요 여부 판별
         boolean isLiked = diaryLikeRepository.existsByDiaryIdAndMemberId(diaryId, memberId);
 
         WriterInfo diaryWriterInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
         return DiaryConverter.toDetailResponse(diary, diaryWriterInfo, isLiked);
     }
 
+    /**
+     * 일기 목록 조회
+     */
     public DiaryListResponse getDiaryList(Long memberId, Long lastId, int size) {
 
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<Diary> diarySlice = diaryRepository.findDiariesByMemberOrFriends(memberId, lastId, pageRequest);
         List<Diary> diaries = diarySlice.getContent();
 
-        // 작성자 중 현재 멤버의 friendship 정보 조회하여 Map으로 변환
-        Map<Long, Friendship> friendshipMap = getFriendshipMap(memberId, diaries);
+        // 작성자의 Friendship nickname 조회
+        Map<Long, String> friendshipNicknameMap = getFriendNicknameMap(memberId, diaries);
 
-        // DiaryLike 일괄 조회
+        // 일기 좋아요 일괄 조회
         List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
         Set<Long> likedDiaryIds;
         if (diaryIds.isEmpty()) {
@@ -85,13 +95,11 @@ public class DiaryQueryService {
         List<DiaryListResponse.DiaryItem> diaryItems = diaries.stream()
                 .map(diary -> {
                     Member writer = diary.getMember();
+
+                    // 작성자 nickname 결정
+                    String nickname = determineNickname(writer, friendshipNicknameMap.get(writer.getId()));
+
                     boolean isMe = writer.getId().equals(memberId);
-
-                    // friendship 확인
-                    Friendship friendship = isMe ? null : friendshipMap.get(writer.getId());
-                    // 닉네임 결정
-                    String nickname = determineNickname(writer, friendship);
-
                     boolean isLiked = likedDiaryIds.contains(diary.getId());
 
                     WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
@@ -105,40 +113,51 @@ public class DiaryQueryService {
         return DiaryConverter.toListResponse(diaryItems, newLastId, diarySlice.hasNext());
     }
 
-    // 내 월별 일기 목록 조회
+    /**
+     * 내 월별 일기 목록 조회
+     */
     public MonthlyDiaryListResponse getMonthlyDiaryList(Long memberId, int year, int month) {
 
+        // 해당 월의 시작일(1일)과 마지막 날(말일) 계산
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
+        // 해당 월에 작성된 일기 목록 조회
         List<MonthlyDiaryInfo> diaries = diaryRepository.findMonthlyDiaries(memberId, start, end);
 
         return DiaryConverter.toMonthlyListResponse(null, year, month, diaries);
     }
 
-    // 친구 월별 일기 목록 조회
+    /**
+     * 친구 월별 일기 목록 조회
+     */
     public MonthlyDiaryListResponse getFriendMonthlyDiaryList(Long memberId, Long targetMemberId, int year, int month) {
 
         LocalDate start = LocalDate.of(year, month, 1);
         LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
 
-        Member member = memberRepository.findById(targetMemberId)
+        Member writer = memberRepository.findById(targetMemberId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, Map.of("userId", targetMemberId)));
 
+        // 친구 관계 조회
         Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, targetMemberId, FriendshipStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
-        String nickname = determineNickname(member, friendship);
+        String nickname = determineNickname(writer, friendship.getNickname());
 
-        WriterInfo writerInfo = DiaryConverter.toWriterInfo(member, nickname, false);
+        // 작성자 정보 변환
+        WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, false);
+
+        // 해당 월의 일기 목록 조회
         List<MonthlyDiaryInfo> diaries = diaryRepository.findMonthlyDiaries(targetMemberId, start, end);
+
         return DiaryConverter.toMonthlyListResponse(writerInfo, year, month, diaries);
     }
 
-    // 작성자에 대한 friendship 조회 -> 수정 필요 (현재는 friendship 엔티티 전체 조회)
-    private Map<Long, Friendship> getFriendshipMap(Long memberId, List<Diary> diaries) {
+    // 작성자들의 nickname 일괄 조회
+    private Map<Long, String> getFriendNicknameMap(Long memberId, List<Diary> diaries) {
 
-        // diary의 memberId 리스트 추출
+        // 작성자 ID 리스트 추출
         List<Long> writerIds = diaries.stream()
                 .map(diary -> diary.getMember().getId())
                 .filter(writerId -> !writerId.equals(memberId)) // 본인 제외
@@ -149,23 +168,18 @@ public class DiaryQueryService {
             return Map.of();
         }
 
-        // friendship 조회
-        return friendshipRepository
-                .findAllByMemberIdAndFriendIdInAndStatus(memberId, writerIds, FriendshipStatus.ACTIVE)
+        // 친구 nickname 조회 후 Map으로 변환
+        return friendshipRepository.findFriendNicknames(memberId, writerIds)
                 .stream()
-                .collect(Collectors.toMap(f -> f.getFriend().getId(), f -> f));
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0], // friend.id
+                        row -> (String) row [1] // nickname
+                ));
     }
 
-    // 작성자 닉네임 결정
-    private String determineNickname(Member writer, Friendship friendship) {
+    private String determineNickname(Member writer, String friendshipNickname) {
 
-        // friendship이 존재하며, nickname이 null 아닌 경우 해당 nickname 사용
-        if (friendship != null && friendship.getNickname() != null) {
-            return friendship.getNickname();
-        }
-
-        // 그 외의 경우 작성자의 profileName 사용
-        return writer.getProfileName();
+        // friendship의 nickname이 존재하면 사용, 없으면 작성자 profileName 사용
+        return friendshipNickname != null ? friendshipNickname : writer.getProfileName();
     }
-
 }

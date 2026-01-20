@@ -8,8 +8,7 @@ import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.diary.entity.DiaryComment;
 import com.cotato.itda.domain.diary.repository.DiaryCommentRepository;
 import com.cotato.itda.domain.diary.repository.DiaryRepository;
-import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
-import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
+import com.cotato.itda.domain.diary.validator.DiaryAccessValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.DiaryErrorCode;
@@ -27,28 +26,21 @@ import java.util.Map;
 public class DiaryCommentCommandService {
 
     private final MemberRepository memberRepository;
-    private final FriendshipRepository friendshipRepository;
     private final DiaryRepository diaryRepository;
     private final DiaryCommentRepository diaryCommentRepository;
+    private final DiaryAccessValidator diaryAccessValidator;
 
     @Transactional
     public DiaryCommentResponse createComment(Long memberId, Long diaryId, DiaryCommentRequest request) {
 
-        // Member 조회
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, Map.of("userId", memberId)));
 
-        // Diary 조회
         Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_NOT_FOUND));
 
-        // 접근 권한 확인
-        boolean isMyDiary = memberId.equals(diary.getMember().getId());
-        boolean isFriend = friendshipRepository.existsByMemberIdAndFriendIdAndStatus(memberId, diary.getMember().getId(), FriendshipStatus.ACTIVE);
-
-        if (!isMyDiary && !isFriend) {
-            throw new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN);
-        }
+        // 일기 권한 검증
+        diaryAccessValidator.validateDiaryAccess(memberId, diary);
 
         // 댓글 생성
         DiaryComment comment = DiaryCommentConverter.toEntity(diary, member, request);

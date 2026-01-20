@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/diaries")
@@ -24,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class DiaryController {
 
     private final DiaryCommandService diaryCommandService;
-    private final DiaryQueryService diaryQueryservice;
+    private final DiaryQueryService diaryQueryService;
 
     @Operation(summary = "공유일기 등록",
             description = "새로운 일기를 등록합니다. 일기 날짜, 이모지, 내용, 사진을 설정합니다")
@@ -40,6 +42,7 @@ public class DiaryController {
             @Valid @RequestBody DiaryRequest request
     ) {
         Long memberId = jwtPrincipal.memberId();
+
         DiaryResponse response = diaryCommandService.createDiary(memberId, request);
         return ApiResponse.success(response);
     }
@@ -61,6 +64,7 @@ public class DiaryController {
             @Valid @RequestBody DiaryRequest request
     ) {
         Long memberId = jwtPrincipal.memberId();
+
         DiaryResponse response = diaryCommandService.updateDiary(memberId, diaryId, request);
         return ApiResponse.success(response);
     }
@@ -80,6 +84,7 @@ public class DiaryController {
             @Parameter(description = "삭제할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
+
         diaryCommandService.softDeleteDiary(memberId, diaryId);
         return ApiResponse.success(null);
     }
@@ -99,18 +104,18 @@ public class DiaryController {
             @Parameter(description = "조회할 일기 ID", required = true) @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
-        DiaryDetailResponse response = diaryQueryservice.getDiaryDetail(memberId, diaryId);
+
+        DiaryDetailResponse response = diaryQueryService.getDiaryDetail(memberId, diaryId);
         return ApiResponse.success(response);
     }
 
     @Operation(
             summary = "공유일기 목록 조회",
-            description = """
-                    나와 친구가 작성한 공유일기 전체 목록을 조회합니다.<br>  
-                    작성 시간 기준 최신순으로 반환됩니다.<br>
-                    일기 정보, 작성자 정보, 좋아요 여부, 페이징 정보가 반환됩니다.<br>
-                    첫 조회 시 lastId를 생략하고, 이후 응답받은 lastId를 파라미터로 전달하여 다음 데이터를 조회합니다.
-                    """)
+            description = "나와 친구가 작성한 공유일기 전체 목록을 조회합니다.<br>" +
+                    "작성 시간 기준 최신순으로 반환됩니다.<br>" +
+                    "일기 정보, 작성자 정보, 좋아요 여부, 페이징 정보가 반환됩니다.<br>" +
+                    "첫 조회 시 lastId는 null로 요청하고, 이후 응답받은 lastId를 파라미터로 전달하여 다음 데이터를 조회합니다. <br>" +
+                    "hasNext(다음 데이터 존재 여부)가 true인 경우에 다음 데이터를 요청하면 됩니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
@@ -119,17 +124,22 @@ public class DiaryController {
     @GetMapping
     public ApiResponse<DiaryListResponse> getDiaryList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "마지막으로 조회한 일기 ID (첫 조회 시 생략)") @RequestParam(required = false) Long lastId,
-            @Parameter(description = "조회할 일기 개수") @RequestParam(required = false, defaultValue = "5") int size
+            @Parameter(description = "직전 조회 결과의 마지막 일기 ID (다음 페이지 커서, 첫 조회 시 null)") @RequestParam(required = false) Long lastId,
+            @Parameter(description = "조회할 일기 개수 (기본값 5개)") @RequestParam(required = false, defaultValue = "5") int size
     ) {
         Long memberId = jwtPrincipal.memberId();
-        DiaryListResponse response = diaryQueryservice.getDiaryList(memberId, lastId, size);
+
+        DiaryListResponse response = diaryQueryService.getDiaryList(memberId, lastId, size);
         return ApiResponse.success(response);
     }
 
     @Operation(
             summary = "나의 월별 공유일기 목록 조회",
-            description = "내가 작성한 특정 월 일기 목록을 조회합니다.  일기 날짜는 오름차순으로 정렬되어 반환됩니다. 작성자(나) 정보는 null로 반환됩니다.")
+            description = "내가 작성한 특정 월 일기 목록을 조회합니다. <br>" +
+                    "일기 ID, 날짜, 이모지 코드를 반환합니다. <br>" +
+                    "연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다. <br>" +
+                    "일기 날짜는 오름차순으로 정렬되어 반환됩니다. <br>" +
+                    "작성자(나) 정보는 null로 반환됩니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
@@ -139,20 +149,32 @@ public class DiaryController {
     public ApiResponse<MonthlyDiaryListResponse> getMonthlyDiaryList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
-            @Parameter(description = "조회 연도", example = "2026")
-            @RequestParam(required = true) int year,
+            @Parameter(description = "조회 연도 (미입력 시 현재 연도)", example = "2026")
+            @RequestParam(required = false) Integer year,
 
-            @Parameter(description = "조회 월", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
-            @RequestParam(required = true) int month
+            @Parameter(description = "조회 월 (미입력 시 현재 월)", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
+            @RequestParam(required = false) Integer month
     ) {
         Long memberId = jwtPrincipal.memberId();
-        MonthlyDiaryListResponse response = diaryQueryservice.getMonthlyDiaryList(memberId, year, month);
+
+        if (year == null) {
+            year = LocalDate.now().getYear();
+        }
+        if (month == null) {
+            month = LocalDate.now().getMonthValue();
+        }
+
+        MonthlyDiaryListResponse response = diaryQueryService.getMonthlyDiaryList(memberId, year, month);
         return ApiResponse.success(response);
     }
 
     @Operation(
             summary = "친구 월별 공유일기 목록 조회",
-            description = "친구가 작성한 특정 월 일기 목록을 조회합니다. 일기 날짜 순서대로 반환됩니다. 작성자가 친구 관계인 경우에만 조회가 가능합니다.")
+            description = "친구가 작성한 특정 월 일기 목록을 조회합니다. <br>" +
+                    "일기 ID, 날짜, 이모지 코드를 반환합니다. <br>" +
+                    "연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다. <br>" +
+                    "일기 날짜는 오름차순으로 정렬되어 반환됩니다. <br>" +
+                    "작성자가 친구 관계인 경우에만 조회가 가능합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
@@ -167,14 +189,22 @@ public class DiaryController {
             @Parameter(description = "조회할 친구 멤버 ID", required = true)
             @PathVariable("memberId") Long targetMemberId,
 
-            @Parameter(description = "조회 연도", example = "2026")
-            @RequestParam(required = true) int year,
+            @Parameter(description = "조회 연도 (미입력 시 현재 연도)", example = "2026")
+            @RequestParam(required = false) Integer year,
 
-            @Parameter(description = "조회 월", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
-            @RequestParam(required = true) int month
+            @Parameter(description = "조회 월 (미입력 시 현재 월)", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
+            @RequestParam(required = false) Integer month
     ) {
         Long memberId = jwtPrincipal.memberId();
-        MonthlyDiaryListResponse response = diaryQueryservice.getFriendMonthlyDiaryList(memberId, targetMemberId, year, month);
+
+        if (year == null) {
+            year = LocalDate.now().getYear();
+        }
+        if (month == null) {
+            month = LocalDate.now().getMonthValue();
+        }
+
+        MonthlyDiaryListResponse response = diaryQueryService.getFriendMonthlyDiaryList(memberId, targetMemberId, year, month);
         return ApiResponse.success(response);
     }
 
