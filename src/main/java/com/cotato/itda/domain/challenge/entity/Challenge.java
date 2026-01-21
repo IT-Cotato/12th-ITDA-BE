@@ -29,9 +29,6 @@ public class Challenge extends BaseEntity {
     @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    @Column(name = "content")
-    private String content;
-
     @Builder.Default
     @Column(name = "like_count", nullable = false)
     private int likeCount = 0;

@@ -1,6 +1,9 @@
 package com.cotato.itda.domain.challenge.controller;
 
+import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
+import com.cotato.itda.domain.challenge.service.command.ChallengeCommandService;
 import com.cotato.itda.domain.challenge.service.query.ChallengeQueryService;
 import com.cotato.itda.global.common.response.ApiResponse;
 import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
@@ -9,11 +12,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Challenge API", description = "챌린지 및 미션 조회 API")
 public class ChallengeController {
 
+    private final ChallengeCommandService challengeCommandService;
     private final ChallengeQueryService challengeQueryService;
 
     @Operation(
@@ -43,6 +46,24 @@ public class ChallengeController {
     ) {
         Long memberId = jwtPrincipal.memberId();
         ChallengeDashboardResponse response = challengeQueryService.getChallengeDashboard(memberId);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(summary = "챌린지 등록 AP", description = "미션 ID, 사진 URL을 전달받아 챌린지를 등록합니다.")
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 미션 ID (오늘 미션 아님)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 미션 ID"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 해당 미션에 대한 챌린지 존재 (미션 참여 완료)")
+    })
+    @SecurityRequirement(name = "AccessToken")
+    @PostMapping
+    public ApiResponse<ChallengeResponse> createChallenge(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Valid @RequestBody ChallengeCreateRequest request
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        ChallengeResponse response = challengeCommandService.createChallenge(memberId, request);
         return ApiResponse.success(response);
     }
 

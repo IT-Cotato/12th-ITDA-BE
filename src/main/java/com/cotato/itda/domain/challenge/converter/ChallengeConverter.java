@@ -1,8 +1,11 @@
 package com.cotato.itda.domain.challenge.converter;
 
+import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.enums.ChallengeStatus;
+import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.mission.entity.Mission;
 
 import java.time.DayOfWeek;
@@ -85,4 +88,25 @@ public class ChallengeConverter {
         }
         return statusList;
     }
+
+    public static Challenge toEntity(ChallengeCreateRequest request, Member member, Mission mission) {
+        return Challenge.builder()
+                .member(member)
+                .mission(mission)
+                .imageUrl(request.imageUrl())
+                .build();
+    }
+
+    public static ChallengeResponse toChallengeResponse(Challenge challenge, Mission mission) {
+        return ChallengeResponse.builder()
+                .missionId(mission.getId())
+                .challengeId(challenge.getId())
+                .imageUrl(challenge.getImageUrl())
+                .likeCount(challenge.getLikeCount())
+                .commentCount(challenge.getCommentCount())
+                .createdAt(challenge.getCreatedAt())
+                .updatedAt(challenge.getUpdatedAt())
+                .build();
+    }
+
 }

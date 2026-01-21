@@ -28,4 +28,6 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
             @Param("endDate") LocalDate endDate
     );
 
+    boolean existsByMemberIdAndMission(Long memberId, Mission mission);
+
 }
