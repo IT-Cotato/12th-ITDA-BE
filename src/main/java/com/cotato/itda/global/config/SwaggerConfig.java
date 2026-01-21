@@ -124,6 +124,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi ChallengeApi() {
+        return GroupedOpenApi.builder()
+                .group("Challenge")
+                .displayName("Challenge API")
+                .packagesToScan("com.cotato.itda.domain.challenge.controller")
+                .pathsToMatch("/api/challenges/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
