@@ -30,4 +30,7 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
 
     boolean existsByMemberIdAndMission(Long memberId, Mission mission);
 
+    @Query("SELECT c FROM Challenge c JOIN FETCH c.member WHERE c.id = :challengeId")
+    Optional<Challenge> findByIdWithMember(@Param("challengeId") Long challengeId);
+
 }

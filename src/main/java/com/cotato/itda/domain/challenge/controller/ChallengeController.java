@@ -2,7 +2,9 @@ package com.cotato.itda.domain.challenge.controller;
 
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
+import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
 import com.cotato.itda.domain.challenge.service.command.ChallengeCommandService;
 import com.cotato.itda.domain.challenge.service.query.ChallengeQueryService;
 import com.cotato.itda.global.common.response.ApiResponse;
@@ -49,7 +51,7 @@ public class ChallengeController {
         return ApiResponse.success(response);
     }
 
-    @Operation(summary = "챌린지 등록 AP", description = "미션 ID, 사진 URL을 전달받아 챌린지를 등록합니다.")
+    @Operation(summary = "챌린지 등록 API", description = "미션 ID, 사진 URL을 전달받아 챌린지를 등록합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 미션 ID (오늘 미션 아님)"),
@@ -64,6 +66,46 @@ public class ChallengeController {
     ) {
         Long memberId = jwtPrincipal.memberId();
         ChallengeResponse response = challengeCommandService.createChallenge(memberId, request);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(
+            summary = "나의 오늘 미션 참여 여부 및 나의 챌린지 조회 API",
+            description = """
+                    나의 오늘 미션 참여 여부와 내가 업로드한 챌린지 정보를 조회합니다. (하루기록 탭 상단)
+                    - 친구의 챌린지 목록은 친구 챌린지 목록 조회 API(GET /api/challenges)에서 따로 조회합니다.
+                    - 오늘 미션에 참여한 경우, 챌린지 정보도 함께 반환하며 미참여 시 null로 반환됩니다.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 미션"),
+    })
+    @SecurityRequirement(name = "AccessToken")
+    @GetMapping("/me")
+    public ApiResponse<MyChallengeResponse> getMyChallengeStatus(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        MyChallengeResponse response = challengeQueryService.getMyChallenge(memberId);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(
+            summary = "챌린지 상세 조회 API",
+            description = "특정 챌린지를 상세 조회합니다. 작성자가 본인이거나, 친구 관계인 경우에만 조회가 가능합니다." )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "조회 권한 없음 (친구 관계 아님)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 챌린지 ID"),
+    })
+    @GetMapping("{challengeId}")
+    public ApiResponse<ChallengeDetailResponse> getChallengeDetail(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(description = "조회할 챌린지 ID", required = true) @PathVariable Long challengeId
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        ChallengeDetailResponse response = challengeQueryService.getChallengeDetail(memberId, challengeId);
         return ApiResponse.success(response);
     }
 

@@ -4,7 +4,9 @@ import com.cotato.itda.domain.challenge.converter.ChallengeConverter;
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
+import com.cotato.itda.domain.challenge.entity.ChallengeView;
 import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
+import com.cotato.itda.domain.challenge.repository.ChallengeViewRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.domain.mission.entity.Mission;
@@ -14,6 +16,7 @@ import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
@@ -27,6 +30,7 @@ public class ChallengeCommandService {
     private final MemberRepository memberRepository;
     private final MissionRepository missionRepository;
     private final ChallengeRepository challengeRepository;
+    private final ChallengeViewRepository challengeViewRepository;
 
     @Transactional
     public ChallengeResponse createChallenge(Long memberId, ChallengeCreateRequest request) {
@@ -53,6 +57,17 @@ public class ChallengeCommandService {
 
         //TODO: 영양제 점수 증가 로직 추가
 
-        return ChallengeConverter.toChallengeResponse(savedChallenge, mission);
+        return ChallengeConverter.toResponse(savedChallenge, mission);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void createChallengeView(Challenge challenge, Member member) {
+        if (!challengeViewRepository.existsByChallengeAndMember(challenge, member)) {
+                ChallengeView newView = ChallengeView.builder()
+                        .challenge(challenge)
+                        .member(member)
+                        .build();
+                challengeViewRepository.save(newView);
+        }
     }
 }

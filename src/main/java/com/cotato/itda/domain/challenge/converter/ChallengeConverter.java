@@ -2,7 +2,9 @@ package com.cotato.itda.domain.challenge.converter;
 
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
+import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.enums.ChallengeStatus;
 import com.cotato.itda.domain.member.entity.Member;
@@ -97,7 +99,7 @@ public class ChallengeConverter {
                 .build();
     }
 
-    public static ChallengeResponse toChallengeResponse(Challenge challenge, Mission mission) {
+    public static ChallengeResponse toResponse(Challenge challenge, Mission mission) {
         return ChallengeResponse.builder()
                 .missionId(mission.getId())
                 .challengeId(challenge.getId())
@@ -109,4 +111,40 @@ public class ChallengeConverter {
                 .build();
     }
 
+    public static MyChallengeResponse toMyChallengeResponse(Challenge challenge) {
+        if (challenge == null) {
+            return MyChallengeResponse.builder()
+                    .isCompleted(false)
+                    .challengeId(null)
+                    .imageUrl(null)
+                    .createdAt(null)
+                    .build();
+        }
+        return MyChallengeResponse.builder()
+                .isCompleted(true)
+                .challengeId(challenge.getId())
+                .imageUrl(challenge.getImageUrl())
+                .createdAt(challenge.getCreatedAt())
+                .build();
+    }
+
+    public static ChallengeDetailResponse toDetailResponse(Challenge challenge, ChallengeDetailResponse.MemberInfo memberInfo, boolean isLiked) {
+        return ChallengeDetailResponse.builder()
+                .memberInfo(memberInfo)
+                .challengeId(challenge.getId())
+                .imageUrl(challenge.getImageUrl())
+                .createdAt(challenge.getCreatedAt())
+                .isLiked(isLiked)
+                .likeCount(challenge.getLikeCount())
+                .commentCount(challenge.getCommentCount())
+                .build();
+    }
+
+    public static ChallengeDetailResponse.MemberInfo toMemberInfo(Member member, String nickname) {
+        return ChallengeDetailResponse.MemberInfo.builder()
+                .memberId(member.getId())
+                .nickname(nickname)
+                .build();
+
+    }
 }

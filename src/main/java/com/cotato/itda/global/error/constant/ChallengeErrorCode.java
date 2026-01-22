@@ -10,7 +10,11 @@ public enum ChallengeErrorCode implements ErrorCode{
 
     MISSION_NOT_FOUND(HttpStatus.NOT_FOUND, "미션이 존재하지 않습니다.", "CHALLENGE_ERROR_404_MISSION_NOT_FOUND"),
     MISSION_DATE_MISMATCH(HttpStatus.BAD_REQUEST, "오늘 날짜의 미션만 참여할 수 있습니다.", "CHALLENGE_ERROR_400_MISSION_DATE_MISMATCH"),
-    ALREADY_PARTICIPATED(HttpStatus.CONFLICT, "이미 해당 미션에 참여했습니다.", "CHALLENGE_ERROR_409_ALREADY_PARTICIPATED")
+    ALREADY_PARTICIPATED(HttpStatus.CONFLICT, "이미 해당 미션에 참여했습니다.", "CHALLENGE_ERROR_409_ALREADY_PARTICIPATED"),
+
+    CHALLENGE_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 챌린지가 존재하지 않습니다.", "CHALLENGE_ERROR_404_CHALLENGE_NOT_FOUND"),
+    CHALLENGE_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 챌린지에 대한 권한이 없습니다.", "CHALLENGE_ERROR_403_CHALLENGE_FORBIDDEN")
+
     ;
 
     private final HttpStatus httpStatus;
