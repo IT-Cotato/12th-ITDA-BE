@@ -69,6 +69,14 @@ public class Member extends BaseTimeEntity {
 	@Column(name = "password_hash", nullable = false, length = 200)
 	private String passwordHash;
 
+	@Column(name = "nutrient_count", nullable = false)
+	@Builder.Default
+	private int nutrientCount = 0;
+
+	@Column(name = "points", nullable = false)
+	@Builder.Default
+	private int points = 0;
+
 	public void changePassword(String passwordHash) {
 		this.passwordHash = passwordHash;
 	}
@@ -119,4 +127,14 @@ public class Member extends BaseTimeEntity {
         this.profileImageUrl = profileImageUrl;
         this.profileName = profileName;
     }
+
+	public void addPoints(int points) {
+		this.points += points;
+
+		if (this.points >= 10) {
+			int nutrientsToAdd = this.points / 10;
+			this.nutrientCount += nutrientsToAdd;
+			this.points = this.points % 10;
+		}
+	}
 }
