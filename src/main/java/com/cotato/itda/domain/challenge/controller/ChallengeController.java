@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/challenges")
-@Tag(name = "Challenge API", description = "챌린지 및 미션 조회 API")
+@Tag(name = "Challenge API", description = "챌린지 및 미션 API")
 public class ChallengeController {
 
     private final ChallengeCommandService challengeCommandService;

@@ -5,6 +5,7 @@ import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
 import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
+import com.cotato.itda.domain.challenge.repository.ChallengeLikeRepository;
 import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
 import com.cotato.itda.domain.challenge.service.command.ChallengeCommandService;
 import com.cotato.itda.domain.friendship.entity.Friendship;
@@ -36,6 +37,7 @@ public class ChallengeQueryService {
     private final MissionRepository missionRepository;
     private final ChallengeRepository challengeRepository;
     private final ChallengeCommandService challengeCommandService;
+    private final ChallengeLikeRepository challengeLikeRepository;
 
     public ChallengeDashboardResponse getChallengeDashboard(Long memberId) {
         LocalDate today = LocalDate.now();
@@ -85,7 +87,7 @@ public class ChallengeQueryService {
             nickname = writer.getProfileName();
         } else {
             // 작성자가 친구 관계인지 확인
-            Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
+            Friendship friendship = friendshipRepository.findByMemberAndFriendAndStatus(member, writer, FriendshipStatus.ACTIVE)
                     .orElseThrow(() -> new BusinessException(ChallengeErrorCode.CHALLENGE_FORBIDDEN));
 
             nickname = determineNickname(writer, friendship.getNickname());
@@ -94,8 +96,7 @@ public class ChallengeQueryService {
         // ChallengeView 데이터 생성
         challengeCommandService.createChallengeView(challenge, member);
 
-        //TODO: 좋아요 기능 구현 후 수정
-        boolean isLiked = false;
+        boolean isLiked = challengeLikeRepository.existsByChallengeAndMember(challenge, member);
 
         ChallengeDetailResponse.MemberInfo memberInfo = ChallengeConverter.toMemberInfo(writer, nickname);
         return ChallengeConverter.toDetailResponse(challenge, memberInfo, isLiked);

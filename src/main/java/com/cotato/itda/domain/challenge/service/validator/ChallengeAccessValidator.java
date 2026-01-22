@@ -17,10 +17,13 @@ public class ChallengeAccessValidator {
     // 챌린지 접근 권한 검증 (본인 또는 친구)
     public void validateChallengeAccess(Long memberId, Challenge challenge) {
 
-        boolean isMyChallenge = memberId.equals(challenge.getMember().getId());
-        boolean isFriend = friendshipRepository.existsByMemberIdAndFriendIdAndStatus(memberId, challenge.getMember().getId(), FriendshipStatus.ACTIVE);
+        Long writerId = challenge.getMember().getId();
+        if (memberId.equals(writerId)) {
+            return;
+        }
+        boolean isFriend = friendshipRepository.existsByMemberIdAndFriendIdAndStatus(memberId, writerId, FriendshipStatus.ACTIVE);
 
-        if (!isMyChallenge && !isFriend) {
+        if (!isFriend) {
             throw new BusinessException(ChallengeErrorCode.CHALLENGE_FORBIDDEN);
         }
     }
