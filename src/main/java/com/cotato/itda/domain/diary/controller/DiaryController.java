@@ -29,7 +29,12 @@ public class DiaryController {
     private final DiaryQueryService diaryQueryService;
 
     @Operation(summary = "공유일기 등록",
-            description = "새로운 일기를 등록합니다. 일기 날짜, 이모지, 내용, 사진을 설정합니다")
+            description = """
+                        새로운 일기를 등록합니다. 
+                        - 일기 날짜(YYYY-MM-dd), 이모지 코드값, 내용, 사진 URL을 request body로 전달받아 새 일기를 생성합니다.
+                        - 해당 날짜에 이미 작성된 일기가 존재하는 경우, 등록이 불가능합니다.
+                        """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력값 또는 존재하지 않는 이모지 코드"),
@@ -49,7 +54,12 @@ public class DiaryController {
 
     @Operation(
             summary = "공유일기 수정",
-            description = "기존에 작성된 일기를 수정합니다. 작성자 본인만 수정 가능합니다. 변경되지 않은 필드도 기존 값을 포함해 모든 필드를 보내야 합니다")
+            description = """
+                        기존에 작성된 일기를 수정합니다. 
+                        - 변경되지 않은 필드도 기존 값을 포함하여 모든 필드를 보내야 합니다.
+                        - 작성자 본인만 수정 가능합니다. 
+                        """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 입력값 또는 존재하지 않는 이모지 코드"),
@@ -71,7 +81,12 @@ public class DiaryController {
 
     @Operation(
             summary = "공유일기 삭제",
-            description = "특정 일기를 삭제합니다. 작성자 본인만 삭제 가능합니다. DB에서 완전히 삭제되지 않고, 삭제 상태로 변경되어 조회되지 않습니다.")
+            description = """
+                        특정 일기를 삭제합니다. 
+                        - 작성자 본인만 삭제 가능합니다. 
+                        - DB에서 완전히 삭제되지 않고, 삭제 상태로 변경되어 조회되지 않습니다.
+                        """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음 (작성자만 삭제 가능)"),
@@ -91,7 +106,12 @@ public class DiaryController {
 
     @Operation(
             summary = "공유일기 상세조회",
-            description = "특정 일기의 상세 정보를 조회합니다. 일기 정보, 작성자 정보, 좋아요 여부가 반환됩니다. 작성자가 본인이거나, 친구 관계인 경우에만 조회가 가능합니다.")
+            description = """ 
+                        특정 일기의 상세 정보를 조회합니다. 
+                        - 일기 정보, 작성자 정보, 좋아요 여부가 반환됩니다. 
+                        - 작성자가 본인이거나, 친구 관계인 경우에만 조회가 가능합니다.
+                        """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "조회 권한 없음 (친구 관계 아님)"),
@@ -111,11 +131,14 @@ public class DiaryController {
 
     @Operation(
             summary = "공유일기 목록 조회",
-            description = "나와 친구가 작성한 공유일기 전체 목록을 조회합니다.<br>" +
-                    "작성 시간 기준 최신순으로 반환됩니다.<br>" +
-                    "일기 정보, 작성자 정보, 좋아요 여부, 페이징 정보가 반환됩니다.<br>" +
-                    "첫 조회 시 lastId는 null로 요청하고, 이후 응답받은 lastId를 파라미터로 전달하여 다음 데이터를 조회합니다. <br>" +
-                    "hasNext(다음 데이터 존재 여부)가 true인 경우에 다음 데이터를 요청하면 됩니다.")
+            description = """ 
+                    나와 친구가 작성한 공유일기 전체 목록을 무한스크롤로 조회합니다.
+                    - 일기 목록은 최신순으로 반환됩니다.
+                    - 일기 정보, 작성자 정보, 좋아요 여부, 페이징 정보(lastId, hasNext)가 반환됩니다.
+                    - 첫 조회: lastId는 null로 요청합니다.
+                    - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                    """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
@@ -135,11 +158,14 @@ public class DiaryController {
 
     @Operation(
             summary = "나의 월별 공유일기 목록 조회",
-            description = "내가 작성한 특정 월 일기 목록을 조회합니다. <br>" +
-                    "일기 ID, 날짜, 이모지 코드를 반환합니다. <br>" +
-                    "연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다. <br>" +
-                    "일기 날짜는 오름차순으로 정렬되어 반환됩니다. <br>" +
-                    "작성자(나) 정보는 null로 반환됩니다.")
+            description = """
+                    내가 작성한 특정 월의 일기 목록을 조회합니다.
+                    - 일기 ID, 날짜, 이모지 코드를 반환합니다.
+                    - 연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다.
+                    - 일기 날짜는 오름차순으로 정렬되어 반환됩니다.
+                    - 작성자(나) 정보는 null로 반환됩니다.
+                    """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
@@ -170,11 +196,14 @@ public class DiaryController {
 
     @Operation(
             summary = "친구 월별 공유일기 목록 조회",
-            description = "친구가 작성한 특정 월 일기 목록을 조회합니다. <br>" +
-                    "일기 ID, 날짜, 이모지 코드를 반환합니다. <br>" +
-                    "연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다. <br>" +
-                    "일기 날짜는 오름차순으로 정렬되어 반환됩니다. <br>" +
-                    "작성자가 친구 관계인 경우에만 조회가 가능합니다.")
+            description = """
+                    pathVariable로 전달받은 사용자의 월 일기 목록을 조회합니다.
+                    - 작성자 정보, 일기 ID, 날짜, 이모지 코드를 반환합니다.
+                    - 연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다.
+                    - 일기 날짜는 오름차순(날짜순)으로 정렬되어 반환됩니다.
+                    - 작성자가 친구 관계인 경우에만 조회가 가능합니다.
+                    """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
