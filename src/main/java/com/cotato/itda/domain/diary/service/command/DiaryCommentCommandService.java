@@ -44,13 +44,13 @@ public class DiaryCommentCommandService {
 
         // 댓글 생성
         DiaryComment comment = DiaryCommentConverter.toEntity(diary, member, request);
-        diaryCommentRepository.save(comment);
+        DiaryComment savedComment = diaryCommentRepository.save(comment);
 
         diary.increaseComment();
 
         // 작성자 정보 생성
         WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(member, member.getName(), true);
-        return DiaryCommentConverter.toResponse(comment, writerInfo);
+        return DiaryCommentConverter.toResponse(savedComment, writerInfo);
     }
 
     @Transactional

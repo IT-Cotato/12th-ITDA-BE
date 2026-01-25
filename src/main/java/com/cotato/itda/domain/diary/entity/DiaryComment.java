@@ -17,10 +17,6 @@ import java.time.LocalDateTime;
 @SQLRestriction("is_deleted = false")
 public class DiaryComment extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "diary_id", nullable = false)
     private Diary diary;

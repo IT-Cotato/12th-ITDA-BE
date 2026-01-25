@@ -36,11 +36,11 @@ public class DiaryCommandService {
         }
 
         Diary diary = DiaryConverter.toEntity(request, member);
-        diaryRepository.save(diary);
+        Diary savedDiary = diaryRepository.save(diary);
 
         member.addPoints(1);
 
-        return DiaryConverter.toResponse(diary);
+        return DiaryConverter.toResponse(savedDiary);
     }
 
     @Transactional

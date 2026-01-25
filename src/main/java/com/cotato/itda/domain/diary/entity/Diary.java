@@ -24,10 +24,6 @@ import java.time.LocalDateTime;
 @SQLRestriction("is_deleted = false") // 삭제되지 않은 엔티티만 조회
 public class Diary extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
@@ -35,6 +31,7 @@ public class Diary extends BaseEntity {
     @Column(name = "diary_date", nullable = false)
     private LocalDate date;
 
+    @Enumerated(value = EnumType.STRING)
     @Column(name = "emoji_code", nullable = false)
     private EmojiCode emojiCode;
 
