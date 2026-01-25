@@ -1,7 +1,5 @@
 package com.cotato.itda.global.common.constant;
 
-import com.cotato.itda.global.error.constant.ImageErrorCode;
-import com.cotato.itda.global.error.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
@@ -11,7 +9,16 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum S3Folder {
 
     // 회원 프로필 이미지 저장 (profile/)
-    PROFILE("profile");
+    PROFILE("profile"),
+
+    // 공유일기 이미지 저장 (diary/)
+    DIARY("diary"),
+
+    // 챌린지 이미지 저장 (challenge/)
+    CHALLENGE("challenge"),
+
+    // 채팅 이미지 저장 (chat/)
+    CHAT("chat");
 
     private final String value;
 
@@ -19,17 +26,8 @@ public enum S3Folder {
         this.value = value;
     }
 
-    @JsonValue
     public String getValue() {
         return value;
     }
 
-    public static S3Folder from(String folderName) {
-        for (S3Folder folder : S3Folder.values()) {
-            if (folder.value.equalsIgnoreCase(folderName)) {
-                return folder;
-            }
-        }
-        throw new BusinessException(ImageErrorCode.INVALID_S3_FOLDER);
-    }
 }

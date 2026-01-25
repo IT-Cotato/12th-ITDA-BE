@@ -31,8 +31,12 @@ public class S3Controller {
      */
     @Operation(
             summary = "S3 업로드용 Presigned URL 생성",
-            description = "클라이언트가 S3에 직접 업로드할 수 있는 Presigned URL을 발급합니다. "
-            + "업로드 시 PUT 메서드로 요청해야 하며, 요청 헤더에 응답으로 반환된 Content-Type을 포함해야 합니다."
+            description = """
+                    클라이언트가 이미지를 S3에 직접 업로드하기 위한 Presigned URL을 발급합니다. 
+                    - **요청 방식**: 이 API에서 응답받은 presignedUrl로 **PUT** 요청을 보내야 합니다.
+                    - **필수 헤더**: 이미지 업로드 요청 시 Content-Type 헤더에 이 API에서 응답받은 contentType을 포함해야 합니다.
+                    - **저장용 경로 (imageUrl)**: S3 업로드 후, imageUrl 값을 사용해 서버에 다른 저장(프로필 이미지 등록 등) 요청을 보냅니다.
+                    """
     )
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
@@ -43,6 +47,7 @@ public class S3Controller {
     public ApiResponse<PresignedUrlResponse> getPresignedUrl(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Valid @RequestBody PresignedUrlRequest request) {
+
         PresignedUrlResponse response = s3Service.getPresignedUrl(request.folder(), request.fileName());
         return ApiResponse.success(response);
     }
