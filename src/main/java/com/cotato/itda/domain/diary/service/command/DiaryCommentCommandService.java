@@ -49,7 +49,7 @@ public class DiaryCommentCommandService {
         diary.increaseComment();
 
         // 작성자 정보 생성
-        WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(member, member.getProfileName(), true);
+        WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(member, member.getName(), true);
         return DiaryCommentConverter.toResponse(comment, writerInfo);
     }
 

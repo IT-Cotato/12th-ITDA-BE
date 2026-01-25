@@ -90,6 +90,6 @@ public class DiaryCommentQueryService {
     }
 
     private String determineNickname(Member writer, String friendshipNickname) {
-        return friendshipNickname != null ? friendshipNickname : writer.getProfileName();
+        return friendshipNickname != null ? friendshipNickname : writer.getName();
     }
 }

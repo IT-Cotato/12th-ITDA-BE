@@ -38,6 +38,8 @@ public class DiaryCommandService {
         Diary diary = DiaryConverter.toEntity(request, member);
         diaryRepository.save(diary);
 
+        member.addPoints(1);
+
         return DiaryConverter.toResponse(diary);
     }
 

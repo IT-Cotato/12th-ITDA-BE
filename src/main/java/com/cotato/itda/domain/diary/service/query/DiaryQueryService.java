@@ -54,7 +54,7 @@ public class DiaryQueryService {
         String nickname;
 
         if (isMe) {
-            nickname = writer.getProfileName();
+            nickname = writer.getName();
         } else {
             // 작성자가 친구 관계인지 확인
             Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
@@ -179,7 +179,7 @@ public class DiaryQueryService {
 
     private String determineNickname(Member writer, String friendshipNickname) {
 
-        // friendship의 nickname이 존재하면 사용, 없으면 작성자 profileName 사용
-        return friendshipNickname != null ? friendshipNickname : writer.getProfileName();
+        // friendship의 nickname이 존재하면 사용, 없으면 작성자 name 사용
+        return friendshipNickname != null ? friendshipNickname : writer.getName();
     }
 }
