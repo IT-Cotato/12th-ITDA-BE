@@ -33,11 +33,10 @@ public class S3Service {
     /**
      * Presigned URL 생성
      */
-    public PresignedUrlResponse getPresignedUrl(String folderName, String fileName) {
+    public PresignedUrlResponse getPresignedUrl(S3Folder folderName, String fileName) {
 
-        S3Folder folder = S3Folder.from(folderName);
         String contentType = getContentType(fileName);
-        String key = createS3Key(folder, fileName);
+        String key = createS3Key(folderName, fileName);
 
         // 전체 URL 생성
         String imageUrl = String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key);
