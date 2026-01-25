@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @RestController
 @RequiredArgsConstructor
@@ -161,7 +162,7 @@ public class DiaryController {
             description = """
                     내가 작성한 특정 월의 일기 목록을 조회합니다.
                     - 일기 ID, 날짜, 이모지 코드를 반환합니다.
-                    - 연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다.
+                    - 연도 및 월이 null일 경우 현재 연도 및 월로 조회됩니다.
                     - 일기 날짜는 오름차순으로 정렬되어 반환됩니다.
                     - 작성자(나) 정보는 null로 반환됩니다.
                     """
@@ -175,19 +176,19 @@ public class DiaryController {
     public ApiResponse<MonthlyDiaryListResponse> getMonthlyDiaryList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
-            @Parameter(description = "조회 연도 (미입력 시 현재 연도)", example = "2026")
+            @Parameter(description = "조회 연도", example = "2026")
             @RequestParam(required = false) Integer year,
 
-            @Parameter(description = "조회 월 (미입력 시 현재 월)", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
+            @Parameter(description = "조회 월", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
             @RequestParam(required = false) Integer month
     ) {
         Long memberId = jwtPrincipal.memberId();
 
         if (year == null) {
-            year = LocalDate.now().getYear();
+            year = LocalDate.now(ZoneId.of("Asia/Seoul")).getYear();
         }
         if (month == null) {
-            month = LocalDate.now().getMonthValue();
+            month = LocalDate.now(ZoneId.of("Asia/Seoul")).getMonthValue();
         }
 
         MonthlyDiaryListResponse response = diaryQueryService.getMonthlyDiaryList(memberId, year, month);
@@ -199,7 +200,7 @@ public class DiaryController {
             description = """
                     pathVariable로 전달받은 사용자의 월 일기 목록을 조회합니다.
                     - 작성자 정보, 일기 ID, 날짜, 이모지 코드를 반환합니다.
-                    - 연도 및 월 미입력 시 현재 연도 및 월로 조회됩니다.
+                    - 연도 및 월이 null일 경우 현재 연도 및 월로 조회됩니다.
                     - 일기 날짜는 오름차순(날짜순)으로 정렬되어 반환됩니다.
                     - 작성자가 친구 관계인 경우에만 조회가 가능합니다.
                     """
@@ -218,19 +219,19 @@ public class DiaryController {
             @Parameter(description = "조회할 친구 멤버 ID", required = true)
             @PathVariable("memberId") Long targetMemberId,
 
-            @Parameter(description = "조회 연도 (미입력 시 현재 연도)", example = "2026")
+            @Parameter(description = "조회 연도", example = "2026")
             @RequestParam(required = false) Integer year,
 
-            @Parameter(description = "조회 월 (미입력 시 현재 월)", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
+            @Parameter(description = "조회 월", example = "1", schema = @Schema(minimum = "1", maximum = "12"))
             @RequestParam(required = false) Integer month
     ) {
         Long memberId = jwtPrincipal.memberId();
 
         if (year == null) {
-            year = LocalDate.now().getYear();
+            year = LocalDate.now(ZoneId.of("Asia/Seoul")).getYear();
         }
         if (month == null) {
-            month = LocalDate.now().getMonthValue();
+            month = LocalDate.now(ZoneId.of("Asia/Seoul")).getMonthValue();
         }
 
         MonthlyDiaryListResponse response = diaryQueryService.getFriendMonthlyDiaryList(memberId, targetMemberId, year, month);
