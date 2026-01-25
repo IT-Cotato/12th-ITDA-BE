@@ -9,11 +9,6 @@ public record ProfileUpdateRequest(
                 description = "S3 업로드 후 반환된 프로필 이미지의 URL",
                 example = "https://...amazonaws.com/profile/uuid_filename.png"
         )
-        String profileImageUrl,
-
-        @Schema(description = "프로필 이름", example = "영자")
-        @NotBlank(message = "프로필 이름은 필수입니다")
-        @Size(max = 20, message = "프로필 이름은 20자 이하여야 합니다.")
-        String profileName
+        String profileImageUrl
 ) {
 }

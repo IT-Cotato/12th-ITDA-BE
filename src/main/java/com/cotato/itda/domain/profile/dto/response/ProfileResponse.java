@@ -9,9 +9,6 @@ public record ProfileResponse(
         @Schema(description = "프로필 이미지 URL", example = "https://...amazonaws.com/profile/uuid_filename.png")
         String profileImageUrl,
 
-        @Schema(description = "프로필 이름", example = "영자")
-        String profileName,
-
         @Schema(description = "회원 이름", example = "김영자")
         String name,
 
@@ -24,7 +21,6 @@ public record ProfileResponse(
     public static ProfileResponse from(Member member) {
         return new ProfileResponse(
                 member.getProfileImageUrl(),
-                member.getProfileName(),
                 member.getName(),
                 member.getPhoneNumber(),
                 member.getBirthDate()
