@@ -60,4 +60,8 @@ public class Friendship extends BaseEntity {
         if (chatGoal != null) this.chatGoal = chatGoal;
         if (status != null) this.status = status;
     }
+
+    public String getDisplayName() {
+        return nickname != null ? nickname : friend.getName();
+    }
 }
