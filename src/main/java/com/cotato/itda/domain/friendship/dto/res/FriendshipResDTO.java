@@ -50,10 +50,10 @@ public class FriendshipResDTO {
     public record FriendshipItemDTO(
             @Schema(description = "친구 관계 ID", example = "1")
             Long friendshipId,
-            @Schema(description = "친구 본명", example = "홍길동")
-            String name,
-            @Schema(description = "친구 별명", example = "길동이")
-            String nickname,
+            @Schema(description = "친구 ID", example = "1")
+            Long friendId,
+            @Schema(description = "표시 이름 (별명이 있으면 별명, 없으면 본명)", example = "길동이")
+            String showName,
             @Schema(description = "친구 프로필 이미지 URL", example = "https://example.com/profile.jpg")
             String profileImageUrl,
             @Schema(description = "친구 관계 상태", example = "ACTIVE")

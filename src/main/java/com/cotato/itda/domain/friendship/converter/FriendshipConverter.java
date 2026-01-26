@@ -1,6 +1,5 @@
 package com.cotato.itda.domain.friendship.converter;
 
-import com.cotato.itda.domain.friendship.dto.req.FriendshipReqDTO;
 import com.cotato.itda.domain.friendship.dto.res.FriendshipResDTO;
 import com.cotato.itda.domain.friendship.entity.Friendship;
 import com.cotato.itda.domain.member.entity.Member;
@@ -44,8 +43,8 @@ public class FriendshipConverter {
     public static FriendshipResDTO.FriendshipItemDTO toFriendshipItemDTO(Friendship friendship) {
         return FriendshipResDTO.FriendshipItemDTO.builder()
                 .friendshipId(friendship.getId())
-                .name(friendship.getFriend().getName())
-                .nickname(friendship.getNickname())
+                .friendId(friendship.getFriend().getId())
+                .showName(friendship.getDisplayName())
                 .profileImageUrl(friendship.getFriend().getProfileImageUrl())
                 .status(friendship.getStatus())
                 .lastInteractedAt(friendship.getLastInteractedAt())
