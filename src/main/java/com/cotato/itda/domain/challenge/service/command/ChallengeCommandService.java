@@ -55,13 +55,14 @@ public class ChallengeCommandService {
         Challenge challenge = ChallengeConverter.toEntity(request, member, mission);
         Challenge savedChallenge = challengeRepository.save(challenge);
 
-        //TODO: 영양제 점수 증가 로직 추가
+        member.addPoints(1);
 
         return ChallengeConverter.toResponse(savedChallenge, mission);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createChallengeView(Challenge challenge, Member member) {
+
         if (!challengeViewRepository.existsByChallengeAndMember(challenge, member)) {
                 ChallengeView newView = ChallengeView.builder()
                         .challenge(challenge)
