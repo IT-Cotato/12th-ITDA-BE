@@ -17,6 +17,9 @@ public enum ChallengeErrorCode implements ErrorCode{
 
     LIKE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 좋아요 누른 일기입니다.", "CHALLENGE_ERROR_409_LIKE_ALREADY_EXISTS"),
     LIKE_NOT_FOUND(HttpStatus.NOT_FOUND, "취소할 좋아요가 없습니다.", "CHALLENGE_ERROR_404_LIKE_NOT_FOUND"),
+
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다.", "CHALLENGE_ERROR_404_COMMENT_NOT_FOUND"),
+    COMMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 댓글에 대한 권한이 없습니다.", "CHALLENGE_ERROR_403_COMMENT_FORBIDDEN"),
     ;
 
     private final HttpStatus httpStatus;
