@@ -1,8 +1,6 @@
 package com.cotato.itda.domain.signup.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,7 +17,6 @@ import com.cotato.itda.domain.signup.dto.request.SubmitPasswordRequest;
 import com.cotato.itda.domain.signup.dto.response.SubmitPasswordResponse;
 import com.cotato.itda.domain.signup.entity.MemberTermsConsentEntity;
 import com.cotato.itda.domain.signup.entity.TermsItemEntity;
-import com.cotato.itda.domain.signup.model.SignupDraft;
 import com.cotato.itda.domain.signup.model.SignupStep;
 import com.cotato.itda.domain.signup.repository.SignupDraftRedisRepository;
 import com.cotato.itda.domain.signup.repository.TermsItemJpaRepository;

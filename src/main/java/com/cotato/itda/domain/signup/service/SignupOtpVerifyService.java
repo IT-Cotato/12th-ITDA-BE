@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.cotato.itda.domain.signup.dto.NextAction;
+import com.cotato.itda.global.model.otp.NextAction;
 import com.cotato.itda.domain.signup.dto.SignupDraftRedisValue;
 import com.cotato.itda.domain.signup.dto.request.VerifyOtpRequest;
 import com.cotato.itda.domain.signup.dto.response.VerifyOtpResponse;

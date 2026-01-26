@@ -44,7 +44,10 @@ signup:
     length: 4
     ttl-seconds: 180
     resend-windows-seconds: 60
-  draft-ttl-minutes: 60
+  draft-ttl-minutes: 10
+
+password-reset:
+  draft-ttl-minutes: 10
 
 jwt:
   access:
@@ -56,3 +59,4 @@ jwt:
     algorithm: HS256
     secret-key: ${JWT_REFRESH_SECRET_BASE64}
     validity-in-seconds: 1209600 #14일
+

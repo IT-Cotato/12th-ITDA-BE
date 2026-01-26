@@ -3,7 +3,7 @@ package com.cotato.itda.domain.signup.dto.response;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import com.cotato.itda.domain.signup.dto.NextAction;
+import com.cotato.itda.global.model.otp.NextAction;
 
 /**
 	 * STEP4 응답 DTO

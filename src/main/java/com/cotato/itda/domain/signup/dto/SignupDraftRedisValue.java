@@ -4,10 +4,11 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-import com.cotato.itda.domain.signup.model.SignupDraft;
 import com.cotato.itda.domain.signup.model.SignupStep;
 import com.cotato.itda.global.error.constant.SignupErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
+import com.cotato.itda.global.model.draft.DraftMeta;
+import com.cotato.itda.global.model.otp.OtpState;
 
 import lombok.Builder;
 
@@ -60,7 +61,7 @@ public record SignupDraftRedisValue(
 	String draftKey,
 	SignupStep step,
 	Policy policy,
-	Meta meta,
+	DraftMeta meta,
 
 	TermsState terms,    // Step2에서 채워짐
 	OtpState otp,        // Step3~4에서 채워짐
@@ -78,17 +79,6 @@ public record SignupDraftRedisValue(
 	) {
 	}
 
-	/**
-	 * createdAt/updatedAt 등의 메타 정보
-	 */
-	public record Meta(
-		OffsetDateTime createdAt,
-		OffsetDateTime updatedAt
-	) {
-		public Meta withUpdatedAt() {
-			return new Meta(this.createdAt, OffsetDateTime.now());
-		}
-	}
 
 	//----------------------------
 	// STEP 2) TermsState
@@ -122,24 +112,7 @@ public record SignupDraftRedisValue(
 	 * STE3(SMS 전송)에서 resendAvailableAt, otpExpiresAt/smsSendCount 등이 갱생된다
 	 * STEP4(OTP 검증)에서 verifiedAt/ maskedPhoneNumber 등이 세팅된다
 	 */
-	@Builder
-	public record OtpState(
-		String phone,                  // 사용자가 입력한 원본(표준화된 형태 권장: 01012345678)
-
-		boolean canSendSms,            // Step2 직후 true, Step3 직후 false
-		int smsSendCount,              // Step3 호출 횟수
-		int remainingOtpAttempts,      // “현재 발급된 OTP”에 대한 남은 시도 횟수 (예: 3)
-
-		int remainingResendCount,     // 남은 재전송 횟수 (예: 3)
-		//레디스에 저장할때는 OffsetDateTime 형태로 저장
-		OffsetDateTime resendAvailableAt, // 재전송 가능 시각
-		OffsetDateTime otpExpiresAt,       // OTP 만료 시각
-		String otpCodeHash,			// OTP 코드 해시값 (STEP3에서 채워짐 -> STEP4에서 검증)
-
-		boolean phoneVerified,         // Step4 성공 시 true
-		OffsetDateTime verifiedAt    // Step4 성공 시각
-	) {
-	}
+	// 공용 OtpState 클래스
 
 	//----------------------------
 	// STEP 5) ProfileState
@@ -161,7 +134,7 @@ public record SignupDraftRedisValue(
 			.draftKey(draftKey)
 			.step(SignupStep.TERMS_REQUIRED)
 			.policy(policy)
-			.meta(new Meta(now, now))
+			.meta(new DraftMeta(now, now))
 			.terms(null)   // terms 아직 없음
 			.otp(null)     // otp 아직 없음
 			.profile(null) // profile 아직 없음
@@ -227,7 +200,7 @@ public record SignupDraftRedisValue(
 			throw new BusinessException(SignupErrorCode.INVALID_SIGNUP_STEP);
 		}
 		// 검증 : 남아있는 재전송 횟수 있어야 함
-		if (this.otp.remainingResendCount <= 0) {
+		if (this.otp.remainingResendCount() <= 0) {
 			throw new BusinessException(SignupErrorCode.INVALID_SIGNUP_STEP);
 		}
 		// 다음 OTP 상태 생성
@@ -313,7 +286,6 @@ public record SignupDraftRedisValue(
 	 * - otp.phoneVerified = true
 	 * - otp.verifiedAt 세팅
 	 * - step = PROFILE_REQUIRED
-	 * - maskedPhoneNumber 세팅
 	 */
 	public SignupDraftRedisValue onOtpVerified() {
 		if (this.step != SignupStep.OTP_REQUIRED) {
@@ -406,7 +378,7 @@ public record SignupDraftRedisValue(
 		if (resendAt == null || !now.isBefore(resendAt)) {
 			// OtpState만 살짝 갱신한 새 Draft를 만들어준다.
 			// (record라서 불변이므로 builder로 재구성)
-			SignupDraftRedisValue.OtpState nextOtp = SignupDraftRedisValue.OtpState.builder()
+			OtpState nextOtp = OtpState.builder()
 				.phone(draft.otp().phone())
 				.canSendSms(true)
 				.smsSendCount(draft.otp().smsSendCount())

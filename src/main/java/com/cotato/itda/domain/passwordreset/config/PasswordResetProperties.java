@@ -1,4 +1,4 @@
-package com.cotato.itda.domain.signup.service;
+package com.cotato.itda.domain.passwordreset.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -9,10 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "signup")
-public class SignupProperties {
-	/**
-	 * signup.draft-ttl-minutes 로 주입
-	 */
+@ConfigurationProperties(prefix="password-reset")
+public class PasswordResetProperties {
 	private long draftTtlMinutes;
 }
