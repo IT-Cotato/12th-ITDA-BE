@@ -60,7 +60,7 @@ public class DiaryQueryService {
             Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
                     .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
-            nickname = determineNickname(writer, friendship.getNickname());
+            nickname = friendship.getDisplayName();
         }
 
         // 좋아요 여부 판별
@@ -95,11 +95,11 @@ public class DiaryQueryService {
         List<DiaryListResponse.DiaryItem> diaryItems = diaries.stream()
                 .map(diary -> {
                     Member writer = diary.getMember();
+                    boolean isMe = writer.getId().equals(memberId);
 
                     // 작성자 nickname 결정
-                    String nickname = determineNickname(writer, friendshipNicknameMap.get(writer.getId()));
+                    String nickname = isMe ? writer.getName() : friendshipNicknameMap.get(writer.getId());
 
-                    boolean isMe = writer.getId().equals(memberId);
                     boolean isLiked = likedDiaryIds.contains(diary.getId());
 
                     WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
@@ -143,7 +143,7 @@ public class DiaryQueryService {
         Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, targetMemberId, FriendshipStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
-        String nickname = determineNickname(writer, friendship.getNickname());
+        String nickname = friendship.getDisplayName();
 
         // 작성자 정보 변환
         WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, false);
@@ -154,7 +154,9 @@ public class DiaryQueryService {
         return DiaryConverter.toMonthlyListResponse(writerInfo, year, month, diaries);
     }
 
-    // 작성자들의 nickname 일괄 조회
+    /**
+     *  작성자들의 nickname 일괄 조회
+      */
     private Map<Long, String> getFriendNicknameMap(Long memberId, List<Diary> diaries) {
 
         // 작성자 ID 리스트 추출
@@ -168,18 +170,13 @@ public class DiaryQueryService {
             return Map.of();
         }
 
-        // 친구 nickname 조회 후 Map으로 변환
-        return friendshipRepository.findFriendNicknames(memberId, writerIds)
+        // Friendship 조회 후 map 변환
+        return friendshipRepository.findActiveFriendships(memberId, writerIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0], // friend.id
-                        row -> (String) row [1] // nickname
+                        f -> f.getFriend().getId(),
+                        Friendship::getDisplayName
                 ));
     }
 
-    private String determineNickname(Member writer, String friendshipNickname) {
-
-        // friendship의 nickname이 존재하면 사용, 없으면 작성자 name 사용
-        return friendshipNickname != null ? friendshipNickname : writer.getName();
-    }
 }

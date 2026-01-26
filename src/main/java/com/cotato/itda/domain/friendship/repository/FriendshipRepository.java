@@ -21,11 +21,11 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     List<Friendship> findAllByMemberIdAndFriendIdInAndStatus(Long memberId, List<Long> friendIds, FriendshipStatus friendshipStatus);
 
-    // 멤버 id들 중 현재 멤버와 ACTIVE 친구 관계인 멤버의 [id, nickname] 리스트를 반환
-    @Query("SELECT f.friend.id, f.nickname FROM Friendship f " +
+    @Query("SELECT f FROM Friendship f " +
+            "JOIN FETCH f.friend " +
             "WHERE f.member.id = :memberId " +
             "AND f.friend.id IN :friendIds " +
             "AND f.status = 'ACTIVE'")
-    List<Object[]> findFriendNicknames(@Param("memberId") Long memberId,
-                                       @Param("friendIds") List<Long> friendIds);
+    List<Friendship> findActiveFriendships(@Param("memberId") Long memberId,
+                                           @Param("friendIds") List<Long> friendIds);
 }

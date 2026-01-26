@@ -8,6 +8,7 @@ import com.cotato.itda.domain.diary.entity.DiaryComment;
 import com.cotato.itda.domain.diary.repository.DiaryCommentRepository;
 import com.cotato.itda.domain.diary.repository.DiaryRepository;
 import com.cotato.itda.domain.diary.validator.DiaryAccessValidator;
+import com.cotato.itda.domain.friendship.entity.Friendship;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.global.error.constant.DiaryErrorCode;
@@ -46,14 +47,16 @@ public class DiaryCommentQueryService {
         List<DiaryComment> comments = commentSlice.getContent();
 
         // 작성자의 friendship nickname Map 조회
-        Map<Long, String> friendNicknameMap = getFriendNicknameMap(memberId, comments);
+        Map<Long, String> friendshipNicknameMap = getFriendNicknameMap(memberId, comments);
 
         List<DiaryCommentListResponse.CommentItem> commentItems = comments.stream()
                 .map(comment -> {
                     Member writer = comment.getMember();
-
-                    String nickname = determineNickname(writer, friendNicknameMap.get(writer.getId()));
                     boolean isMe = writer.getId().equals(memberId);
+
+                    String nickname = isMe
+                            ? writer.getName()
+                            : friendshipNicknameMap.getOrDefault(writer.getId(), writer.getName());
 
                     WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(writer, nickname, isMe);
                     return DiaryCommentConverter.toListItem(comment, writerInfo);
@@ -66,7 +69,6 @@ public class DiaryCommentQueryService {
         return DiaryCommentConverter.toListResponse(commentItems, newLastId, commentSlice.hasNext());
     }
 
-    // 작성자들의 friendship nickname 일괄 조회
     private Map<Long, String> getFriendNicknameMap(Long memberId, List<DiaryComment> comments) {
 
         // 작성자 ID 리스트 추출
@@ -80,16 +82,12 @@ public class DiaryCommentQueryService {
             return Map.of();
         }
 
-        // nickname 조회 후 Map으로 변환
-        return friendshipRepository.findFriendNicknames(memberId, writerIds)
+        return friendshipRepository.findActiveFriendships(memberId, writerIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0], // friend.id
-                        row -> (String) row [1] // nickname
+                        f -> f.getFriend().getId(),
+                        Friendship::getDisplayName
                 ));
     }
 
-    private String determineNickname(Member writer, String friendshipNickname) {
-        return friendshipNickname != null ? friendshipNickname : writer.getName();
-    }
 }
