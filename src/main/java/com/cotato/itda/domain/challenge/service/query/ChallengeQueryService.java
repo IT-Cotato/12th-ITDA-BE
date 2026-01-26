@@ -100,7 +100,7 @@ public class ChallengeQueryService {
             Friendship friendship = friendshipRepository.findByMemberAndFriendAndStatus(member, writer, FriendshipStatus.ACTIVE)
                     .orElseThrow(() -> new BusinessException(ChallengeErrorCode.CHALLENGE_FORBIDDEN));
 
-            nickname = determineNickname(writer, friendship.getNickname());
+            nickname = friendship.getDisplayName();
         }
 
         // ChallengeView 데이터 생성
@@ -140,6 +140,7 @@ public class ChallengeQueryService {
         List<ChallengeListResponse.ChallengeItem> challengeItems = challenges.stream()
                 .map(challenge -> {
                     Member member = challenge.getMember();
+
                     String nickname = friendshipNicknameMap.get(member.getId());
 
                     return ChallengeConverter.toListItem(
@@ -150,11 +151,13 @@ public class ChallengeQueryService {
                 })
                 .toList();
 
+        // 커서 ID 계산
         Long newLastId = challengeItems.isEmpty() ? null : challengeItems.get(challengeItems.size() - 1).challengeId();
 
         return ChallengeConverter.toListResponse(challengeItems, newLastId, challengeSlice.hasNext());
     }
 
+    // 작성자들의 nickname 일괄 조회
     private Map<Long, String> getFriendNicknameMap(Long memberId, List<Challenge> challenges) {
 
         // 작성자 ID 리스트 추출
@@ -167,21 +170,13 @@ public class ChallengeQueryService {
             return Map.of();
         }
 
-        // 친구 nickname 조회 후 Map으로 변환
-        return friendshipRepository.findFriendNicknames(memberId, writerIds)
+        // Friendship 조회 후 map 변환
+        return friendshipRepository.findActiveFriendships(memberId, writerIds)
                 .stream()
                 .collect(Collectors.toMap(
-                        row -> (Long) row[0], // friend.id
-                        row -> {
-                            String nickname = (String) row[1];
-                            String name = (String) row[2];
-                            return nickname != null ? nickname : name;
-                        }
+                        f -> f.getFriend().getId(),
+                        Friendship::getDisplayName
                 ));
-    }
-
-    private String determineNickname(Member writer, String friendshipNickname) {
-        return friendshipNickname != null ? friendshipNickname : writer.getName();
     }
 
 }
