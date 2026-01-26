@@ -1,10 +1,7 @@
 package com.cotato.itda.domain.challenge.controller;
 
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
-import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
+import com.cotato.itda.domain.challenge.dto.response.*;
 import com.cotato.itda.domain.challenge.service.command.ChallengeCommandService;
 import com.cotato.itda.domain.challenge.service.query.ChallengeQueryService;
 import com.cotato.itda.global.common.response.ApiResponse;
@@ -15,6 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -99,6 +98,7 @@ public class ChallengeController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "조회 권한 없음 (친구 관계 아님)"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 챌린지 ID"),
     })
+    @SecurityRequirement(name = "AccessToken")
     @GetMapping("{challengeId}")
     public ApiResponse<ChallengeDetailResponse> getChallengeDetail(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
@@ -106,6 +106,36 @@ public class ChallengeController {
     ) {
         Long memberId = jwtPrincipal.memberId();
         ChallengeDetailResponse response = challengeQueryService.getChallengeDetail(memberId, challengeId);
+        return ApiResponse.success(response);
+    }
+
+    @Operation(
+            summary = "친구 챌린지 목록 조회 API",
+            description = """
+                     친구의 오늘 챌린지 전체 목록을 무한스크롤로 조회합니다.
+                    - 챌린지 목록은 최신순으로 반환됩니다.
+                    - 챌린지 정보, 멤버 정보, 읽음 여부, 페이징 정보(lastId, hasNext)가 반환됩니다.
+                    - 첫 조회: lastId는 null로 요청합니다.
+                    - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                    """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 파라미터"),
+    })
+    @SecurityRequirement(name = "AccessToken")
+    @GetMapping
+    public ApiResponse<ChallengeListResponse> getChallengeList(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+
+            @Parameter(description = "직전 조회 결과의 마지막 챌린지 ID (다음 페이지 커서, 첫 조회 시 null)")
+            @RequestParam(required = false) Long lastId,
+
+            @Parameter(description = "조회할 챌린지 개수 (기본값 10개)")
+            @RequestParam(required = false, defaultValue = "10") @Min(1) @Max(100) int size
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        ChallengeListResponse response = challengeQueryService.getChallengeList(memberId, lastId, size);
         return ApiResponse.success(response);
     }
 

@@ -1,10 +1,7 @@
 package com.cotato.itda.domain.challenge.converter;
 
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
-import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
+import com.cotato.itda.domain.challenge.dto.response.*;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.enums.ChallengeStatus;
 import com.cotato.itda.domain.member.entity.Member;
@@ -146,5 +143,40 @@ public class ChallengeConverter {
                 .nickname(nickname)
                 .build();
 
+    }
+
+    public static ChallengeListResponse toListResponse(
+            List<ChallengeListResponse.ChallengeItem> items,
+            Long lastId,
+            boolean hasNext
+    ) {
+        return ChallengeListResponse.builder()
+                .challenges(items)
+                .lastId(lastId)
+                .hasNext(hasNext)
+                .build();
+
+    }
+
+    public static ChallengeListResponse.ChallengeItem toListItem(
+            ChallengeListResponse.MemberInfo memberInfo,
+            Challenge challenge,
+            boolean isViewed
+    ){
+        return ChallengeListResponse.ChallengeItem.builder()
+                .memberInfo(memberInfo)
+                .challengeId(challenge.getId())
+                .imageUrl(challenge.getImageUrl())
+                .createdAt(challenge.getCreatedAt())
+                .isViewed(isViewed)
+                .build();
+
+    }
+
+    public static ChallengeListResponse.MemberInfo toListMemberInfo(Member member, String nickname) {
+        return ChallengeListResponse.MemberInfo.builder()
+                .memberId(member.getId())
+                .nickname(nickname)
+                .build();
     }
 }

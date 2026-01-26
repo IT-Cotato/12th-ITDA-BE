@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
+public interface ChallengeRepository extends JpaRepository<Challenge, Long>, CustomChallengeRepository {
 
     @Query("SELECT c FROM Challenge c WHERE c.member.id = :memberId AND c.mission = :mission")
     Optional<Challenge> findByMemberIdAndMission(Long memberId, Mission mission);

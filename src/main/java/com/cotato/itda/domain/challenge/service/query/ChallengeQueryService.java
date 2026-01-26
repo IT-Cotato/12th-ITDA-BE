@@ -3,10 +3,12 @@ package com.cotato.itda.domain.challenge.service.query;
 import com.cotato.itda.domain.challenge.converter.ChallengeConverter;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDashboardResponse;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeDetailResponse;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeListResponse;
 import com.cotato.itda.domain.challenge.dto.response.MyChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.repository.ChallengeLikeRepository;
 import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
+import com.cotato.itda.domain.challenge.repository.ChallengeViewRepository;
 import com.cotato.itda.domain.challenge.service.command.ChallengeCommandService;
 import com.cotato.itda.domain.friendship.entity.Friendship;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
@@ -19,13 +21,20 @@ import com.cotato.itda.global.error.constant.ChallengeErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +47,7 @@ public class ChallengeQueryService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeCommandService challengeCommandService;
     private final ChallengeLikeRepository challengeLikeRepository;
+    private final ChallengeViewRepository challengeViewRepository;
 
     public ChallengeDashboardResponse getChallengeDashboard(Long memberId) {
         LocalDate today = LocalDate.now();
@@ -84,7 +94,7 @@ public class ChallengeQueryService {
         String nickname;
 
         if (isMe) {
-            nickname = writer.getProfileName();
+            nickname = writer.getName();
         } else {
             // 작성자가 친구 관계인지 확인
             Friendship friendship = friendshipRepository.findByMemberAndFriendAndStatus(member, writer, FriendshipStatus.ACTIVE)
@@ -102,8 +112,76 @@ public class ChallengeQueryService {
         return ChallengeConverter.toDetailResponse(challenge, memberInfo, isLiked);
     }
 
+    public ChallengeListResponse getChallengeList(Long memberId, Long lastId, int size) {
+
+        // 1. 날짜 범위 계산
+        LocalDateTime startOfToday = LocalDate.now(ZoneId.of("Asia/Seoul")).atStartOfDay();
+        LocalDateTime startOfNextDay = LocalDate.now(ZoneId.of("Asia/Seoul")).plusDays(1).atStartOfDay();
+
+        // 2. challenge 리스트 조회
+        PageRequest pageRequest = PageRequest.of(0, size);
+        Slice<Challenge> challengeSlice = challengeRepository.findFriendChallenges(
+                memberId, lastId, startOfToday, startOfNextDay, pageRequest);
+
+        List<Challenge> challenges = challengeSlice.getContent();
+
+        // 3. 작성자의 friendship nickname 조회
+        Map<Long, String> friendshipNicknameMap = getFriendNicknameMap(memberId, challenges);
+
+        // 4. 읽음 여부 일괄 조회
+        List<Long> challengeIds = challenges.stream().map(Challenge::getId).toList();
+        Set<Long> viewedIds;
+        if (challengeIds.isEmpty()) {
+            viewedIds = Set.of();
+        } else {
+            viewedIds = new HashSet<>(challengeViewRepository.findViewedChallengeIds(challengeIds, memberId));
+        }
+
+        List<ChallengeListResponse.ChallengeItem> challengeItems = challenges.stream()
+                .map(challenge -> {
+                    Member member = challenge.getMember();
+                    String nickname = friendshipNicknameMap.get(member.getId());
+
+                    return ChallengeConverter.toListItem(
+                            ChallengeConverter.toListMemberInfo(member, nickname),
+                            challenge,
+                            viewedIds.contains(challenge.getId())
+                    );
+                })
+                .toList();
+
+        Long newLastId = challengeItems.isEmpty() ? null : challengeItems.get(challengeItems.size() - 1).challengeId();
+
+        return ChallengeConverter.toListResponse(challengeItems, newLastId, challengeSlice.hasNext());
+    }
+
+    private Map<Long, String> getFriendNicknameMap(Long memberId, List<Challenge> challenges) {
+
+        // 작성자 ID 리스트 추출
+        List<Long> writerIds = challenges.stream()
+                .map(challenge -> challenge.getMember().getId())
+                .distinct()
+                .toList();
+
+        if (writerIds.isEmpty()) {
+            return Map.of();
+        }
+
+        // 친구 nickname 조회 후 Map으로 변환
+        return friendshipRepository.findFriendNicknames(memberId, writerIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0], // friend.id
+                        row -> {
+                            String nickname = (String) row[1];
+                            String name = (String) row[2];
+                            return nickname != null ? nickname : name;
+                        }
+                ));
+    }
+
     private String determineNickname(Member writer, String friendshipNickname) {
-        return friendshipNickname != null ? friendshipNickname : writer.getProfileName();
+        return friendshipNickname != null ? friendshipNickname : writer.getName();
     }
 
 }
