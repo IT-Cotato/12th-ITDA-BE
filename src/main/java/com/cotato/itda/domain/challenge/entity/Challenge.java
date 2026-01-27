@@ -44,6 +44,11 @@ public class Challenge extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    public void delete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
     public void increaseLike() {
         this.likeCount++;
     }

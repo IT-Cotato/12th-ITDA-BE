@@ -86,7 +86,7 @@ public class ChallengeCommentController {
     }
 
     @Operation(
-            summary = "챌린지 댓글 목록 조회",
+            summary = "챌린지 댓글 목록 조회 API",
             description = """
                         특정 챌린지의 댓글 목록을 무한스크롤로 조회합니다.
                         - 댓글은 작성순(과거순)으로 반환됩니다.

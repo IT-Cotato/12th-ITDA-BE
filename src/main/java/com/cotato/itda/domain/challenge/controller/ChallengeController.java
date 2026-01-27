@@ -139,4 +139,30 @@ public class ChallengeController {
         return ApiResponse.success(response);
     }
 
+    @Operation(
+            summary = "챌린지 삭제 API",
+            description = """
+                        특정 챌린지를 삭제합니다. 
+                        - 작성자 본인만 삭제 가능합니다. 
+                        - DB에서 완전히 삭제되지 않고, 삭제 상태로 변경되어 조회되지 않습니다.
+                        """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음 (작성자만 삭제 가능)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 챌린지 ID")
+    })
+    @SecurityRequirement(name = "AccessToken")
+    @DeleteMapping("/{challengeId}")
+    public ApiResponse<Void> deleteChallenge(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+
+            @Parameter(description = "삭제할 챌린지 ID", required = true)
+            @PathVariable Long challengeId
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        challengeCommandService.softDeleteChallenge(memberId, challengeId);
+        return ApiResponse.success(null);
+    }
+
 }

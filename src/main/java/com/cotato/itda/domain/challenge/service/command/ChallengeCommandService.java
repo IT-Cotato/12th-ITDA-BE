@@ -60,6 +60,19 @@ public class ChallengeCommandService {
         return ChallengeConverter.toResponse(savedChallenge, mission);
     }
 
+    @Transactional
+    public void softDeleteChallenge(Long memberId, Long challengeId) {
+
+        Challenge challenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new BusinessException(ChallengeErrorCode.CHALLENGE_NOT_FOUND));
+
+        if(!challenge.getMember().getId().equals(memberId)) {
+            throw new BusinessException(ChallengeErrorCode.CHALLENGE_FORBIDDEN);
+        }
+
+        challenge.delete();
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void createChallengeView(Challenge challenge, Member member) {
 
