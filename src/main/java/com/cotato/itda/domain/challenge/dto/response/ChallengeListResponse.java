@@ -34,7 +34,7 @@ public record ChallengeListResponse(
             @Schema(description = "챌린지 ID", example = "1")
             Long challengeId,
 
-            @Schema(description = "챌린지 사진 전체 URL", example = "https://example-bucket.s3.ap-northeast-2.amazonaws.com/diary/uuid_example.jpg")
+            @Schema(description = "챌린지 사진 전체 URL", example = "https://example-bucket.s3.ap-northeast-2.amazonaws.com/challenge/uuid_example.jpg")
             String imageUrl,
 
             @Schema(description = "업로드 시간", example = "2026-01-10T10:00:00")

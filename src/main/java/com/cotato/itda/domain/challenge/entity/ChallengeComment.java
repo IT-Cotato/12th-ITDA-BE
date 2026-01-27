@@ -38,11 +38,11 @@ public class ChallengeComment extends BaseEntity {
     // 추후 대댓글 기능 도입 시 사용
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "parent_id")
-//    private DiaryComment parentComment;
+//    private ChallengeComment parentComment;
 //
 //    @OneToMany(mappedBy = "parentComment")
 //    @Builder.Default
-//    private List<DiaryComment> childComments = new ArrayList<>();
+//    private List<ChallengeComment> childComments = new ArrayList<>();
 
     public void delete() {
         this.isDeleted = true;

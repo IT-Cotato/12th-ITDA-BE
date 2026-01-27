@@ -1,8 +1,10 @@
 package com.cotato.itda.domain.challenge.controller;
 
 import com.cotato.itda.domain.challenge.dto.request.ChallengeCommentRequest;
+import com.cotato.itda.domain.challenge.dto.response.ChallengeCommentListResponse;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeCommentResponse;
 import com.cotato.itda.domain.challenge.service.command.ChallengeCommentCommandService;
+import com.cotato.itda.domain.challenge.service.query.ChallengeCommentQueryService;
 import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class ChallengeCommentController {
 
     private final ChallengeCommentCommandService challengeCommentCommandService;
+    private final ChallengeCommentQueryService challengeCommentQueryService;
 
     @Operation(
             summary = "챌린지 댓글 등록 API",
@@ -67,18 +70,53 @@ public class ChallengeCommentController {
     })
     @SecurityRequirement(name = "AccessToken")
     @DeleteMapping("/{challengeId}/comments/{commentId}")
-    public ApiResponse<Void> deleteDiaryComment(
+    public ApiResponse<Void> deleteChallengeComment(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
             @Parameter(description = "챌린지 ID", required = true)
-            @PathVariable("challengeId") Long diaryId,
+            @PathVariable("challengeId") Long challengeId,
 
             @Parameter(description = "삭제할 댓글 ID", required = true)
             @PathVariable("commentId") Long commentId
     ) {
         Long memberId = jwtPrincipal.memberId();
 
-        challengeCommentCommandService.softDeleteComment(memberId, diaryId, commentId);
+        challengeCommentCommandService.softDeleteComment(memberId, challengeId, commentId);
         return ApiResponse.success(null);
+    }
+
+    @Operation(
+            summary = "챌린지 댓글 목록 조회",
+            description = """
+                        특정 챌린지의 댓글 목록을 무한스크롤로 조회합니다.
+                        - 댓글은 작성순(과거순)으로 반환됩니다.
+                        - 댓글 정보, 작성자 정보, 페이징 정보(lastId, hasNext)가 반환됩니다.
+                        - 첫 조회: lastId는 null로 요청합니다.
+                        - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                        """
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "챌린지 접근 권한 없음 "),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 챌린지 ID"),
+    })
+    @SecurityRequirement(name = "AccessToken")
+    @GetMapping("/{challengeId}/comments")
+    public ApiResponse<ChallengeCommentListResponse> getChallengeCommentList(
+            @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+
+            @Parameter(description = "챌린지 ID", required = true)
+            @PathVariable("challengeId") Long challengeId,
+
+            @Parameter(description = "직전 조회 결과의 마지막 댓글 ID (다음 페이지 커서, 첫 조회 시 null)")
+            @RequestParam(required = false) Long lastId,
+
+            @Parameter(description = "조회할 댓글 개수 (기본값 10개)")
+            @RequestParam(required = false, defaultValue = "10") int size
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+
+        ChallengeCommentListResponse response = challengeCommentQueryService.getCommentList(memberId, challengeId, lastId, size);
+        return ApiResponse.success(response);
     }
 }
