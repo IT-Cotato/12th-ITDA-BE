@@ -84,12 +84,10 @@ public class DiaryQueryService {
 
         // 일기 좋아요 일괄 조회
         List<Long> diaryIds = diaries.stream().map(Diary::getId).toList();
-        Set<Long> likedDiaryIds;
-        if (diaryIds.isEmpty()) {
-            likedDiaryIds = Set.of();
-        } else {
-            likedDiaryIds = new HashSet<>(diaryLikeRepository.findLikedDiaryIdsByDiaryIdsAndMemberId(diaryIds, memberId));
-        }
+
+        Set<Long> likedDiaryIds = diaryIds.isEmpty()
+                ? Set.of()
+                : new HashSet<>(diaryLikeRepository.findLikedDiaryIdsByDiaryIdsAndMemberId(diaryIds, memberId));
 
         // Entity -> DTO 변환
         List<DiaryListResponse.DiaryItem> diaryItems = diaries.stream()
@@ -143,10 +141,8 @@ public class DiaryQueryService {
         Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, targetMemberId, FriendshipStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
-        String nickname = friendship.getDisplayName();
-
         // 작성자 정보 변환
-        WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, nickname, false);
+        WriterInfo writerInfo = DiaryConverter.toWriterInfo(writer, friendship.getDisplayName(), false);
 
         // 해당 월의 일기 목록 조회
         List<MonthlyDiaryInfo> diaries = diaryRepository.findMonthlyDiaries(targetMemberId, start, end);
