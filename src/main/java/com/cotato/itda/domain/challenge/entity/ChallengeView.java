@@ -10,7 +10,12 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
 @Getter
-@Table(name = "challenge_view")
+@Table(
+        name = "challenge_view",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_challenge_member", columnNames = {"challenge_id", "member_id"})
+        }
+)
 public class ChallengeView extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)

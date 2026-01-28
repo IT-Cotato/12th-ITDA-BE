@@ -103,8 +103,10 @@ public class ChallengeQueryService {
             nickname = friendship.getDisplayName();
         }
 
-        // ChallengeView 데이터 생성
-        challengeCommandService.createChallengeView(challenge, member);
+        // 작성자가 본인이 아닌 경우 ChallengeView 데이터 생성
+        if (!isMe) {
+            challengeCommandService.createChallengeView(challenge, member);
+        }
 
         boolean isLiked = challengeLikeRepository.existsByChallengeAndMember(challenge, member);
 
