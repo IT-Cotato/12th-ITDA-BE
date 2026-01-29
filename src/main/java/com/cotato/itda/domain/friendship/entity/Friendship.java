@@ -56,12 +56,19 @@ public class Friendship extends BaseEntity {
 
     public void update(String nickname, SpeechStyle speechStyle, String chatGoal, FriendshipStatus status) {
         this.nickname = nickname;
-        if (speechStyle != null) this.speechStyle = speechStyle;
-        if (chatGoal != null) this.chatGoal = chatGoal;
-        if (status != null) this.status = status;
+        if (speechStyle != null)
+            this.speechStyle = speechStyle;
+        if (chatGoal != null)
+            this.chatGoal = chatGoal;
+        if (status != null)
+            this.status = status;
     }
 
     public String getDisplayName() {
         return nickname != null ? nickname : friend.getName();
+    }
+
+    public Long getFriendId() {
+        return friend.getId();
     }
 }

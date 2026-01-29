@@ -37,6 +37,7 @@ public class SharedPlant extends BaseEntity {
     private int growthValue = 0;
 
     @Column(name = "growth_stage", nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private PlantStage growthStage = PlantStage.SEED;
 
@@ -58,6 +59,7 @@ public class SharedPlant extends BaseEntity {
     private Long soloPowerMemberId;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     private SharedPlantStatus status = SharedPlantStatus.GROWING;
 }

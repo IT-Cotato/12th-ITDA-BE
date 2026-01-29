@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-@Table(name = "plants", uniqueConstraints = @UniqueConstraint(columnNames = {"name"}))
+@Table(name = "plants", uniqueConstraints = @UniqueConstraint(columnNames = { "name" }))
 public class Plant extends BaseEntity {
 
     @Column(name = "name", nullable = false, length = 20)

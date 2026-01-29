@@ -47,15 +47,14 @@ public class SignupPasswordService {
 
 	@Transactional
 	public SubmitPasswordResponse submit(
-		String draftKey,
-		SubmitPasswordRequest request
-	) {
+			String draftKey,
+			SubmitPasswordRequest request) {
 		// 1. Draft 조회
 		SignupDraftRedisValue draft = signupDraftRedisRepository.findByDraftKey(draftKey)
-			.orElseThrow(() -> new BusinessException(SignupErrorCode.SIGNUP_DRAFT_NOT_FOUND));
+				.orElseThrow(() -> new BusinessException(SignupErrorCode.SIGNUP_DRAFT_NOT_FOUND));
 		log.info("레디스 에서 조회된 Signup Draft: {}", draft);
 
-		//2. step 검증 + 멱등 처리
+		// 2. step 검증 + 멱등 처리
 		// - 이미 COMPLETED인데 Step6이 재호출 될 수 있다(타임아웃/재시도)
 		// - 이 경우, 회원 재생성 하면 안 됨
 		// - 대신 기존 회원을 찾아 토큰만 새로 발급해서 내려준다.
@@ -64,11 +63,11 @@ public class SignupPasswordService {
 
 			String phone = requireOtpPhone(draft);
 
-			Long memberId = memberRepository.findByPhoneNumber(phone)
-				.orElseThrow(() -> new BusinessException(SignupErrorCode.MEMBER_NOT_FOUND))
-				.getId();
+			Member member = memberRepository.findByPhoneNumber(phone)
+					.orElseThrow(() -> new BusinessException(SignupErrorCode.MEMBER_NOT_FOUND));
+			Long memberId = member.getId();
 
-			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(memberId, "ROLE_USER");
+			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(memberId, member.getRole().name());
 			if (issuedAccessToken == null) {
 				throw new BusinessException(SignupErrorCode.TOKEN_ISSUANCE_FAILED);
 			}
@@ -120,20 +119,18 @@ public class SignupPasswordService {
 		try {
 			// 7. 회원 생성 및 저장
 			Member saved = memberRepository.save(
-				Member.createLocalMember(
-					phone,
-					name,
-					birthDate,
-					MemberRole.USER,
-					null,
-					passwordHash
-				)
-			);
+					Member.createLocalMember(
+							phone,
+							name,
+							birthDate,
+							MemberRole.USER,
+							null,
+							passwordHash));
 			log.info("신규 회원 생성 및 저장 완료: {}", saved);
 
 			// 번들 기준으로 약관 아이템 전체를 조회
 			List<TermsItemEntity> items = termsItemJpaRepository
-				.findActiveByBundle(draft.policy().bundleType(), draft.policy().bundleVersion());
+					.findActiveByBundle(draft.policy().bundleType(), draft.policy().bundleVersion());
 			if (items.isEmpty()) {
 				throw new BusinessException(SignupErrorCode.INVALID_TERMS_BUNDLE_PARAMETERS);
 			}
@@ -141,23 +138,22 @@ public class SignupPasswordService {
 
 			// 8. 약관 동의 기록 저장
 			List<MemberTermsConsentEntity> consentEntities = draft.terms().consents().stream()
-				.map(consent -> MemberTermsConsentEntity.create(
-					saved.getId(),
-					consent.id(),
-					consent.agreed()
-				))
-				.toList();
+					.map(consent -> MemberTermsConsentEntity.create(
+							saved.getId(),
+							consent.id(),
+							consent.agreed()))
+					.toList();
 			memberTermsConsentRepository.saveAll(consentEntities);
 			log.info("약관 동의 기록 저장 완료: {}개", consentEntities.size());
 
 			// 9. 액세스 토큰/리프레시 토큰 발급
-			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(saved.getId(), "ROLE_USER");
+			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(saved.getId(), saved.getRole().name());
 			IssuedToken issuedRefreshToken = jwtTokenProvider.createRefreshToken(saved.getId());
 			log.info("액세스 토큰 및 리프레시 토큰 발급 완료");
-			log.info("Access Token: {}", ((IssuedAccessToken)issuedAccessToken).token());
-			log.info("Refresh Token: {}", ((IssuedRefreshToken)issuedRefreshToken).token());
+			log.info("Access Token: {}", ((IssuedAccessToken) issuedAccessToken).token());
+			log.info("Refresh Token: {}", ((IssuedRefreshToken) issuedRefreshToken).token());
 
-			// 10.  Draft COMPLETED로 전이(비밀번호는 저장하지 않음)
+			// 10. Draft COMPLETED로 전이(비밀번호는 저장하지 않음)
 			SignupDraftRedisValue completed = draft.onSignupCompleted();
 			log.info("Signup Draft 상태 COMPLETED로 전이 완료");
 			signupDraftRedisRepository.updatePreserveTtl(completed);
@@ -172,20 +168,17 @@ public class SignupPasswordService {
 	}
 
 	private SubmitPasswordResponse toResponse(Long memberId, IssuedToken issuedAccessToken,
-		IssuedToken issuedRefreshToken) {
+			IssuedToken issuedRefreshToken) {
 		return new SubmitPasswordResponse(
-			SignupStep.COMPLETED.name(),
-			memberId,
-			new Tokens(
-				new Tokens.AccessTokenOnly(
-					issuedAccessToken.token(),
-					issuedAccessToken.expiresAt()
-				),
-				new Tokens.RefreshTokenOnly(
-					issuedRefreshToken.token(),
-					issuedRefreshToken.expiresAt()
-				)
-			)
+				SignupStep.COMPLETED.name(),
+				memberId,
+				new Tokens(
+						new Tokens.AccessTokenOnly(
+								issuedAccessToken.token(),
+								issuedAccessToken.expiresAt()),
+						new Tokens.RefreshTokenOnly(
+								issuedRefreshToken.token(),
+								issuedRefreshToken.expiresAt()))
 
 		);
 	}
@@ -233,7 +226,7 @@ public class SignupPasswordService {
 		// 3) 공백 포함 여부 체크
 		// =========================
 		// - 공백이 들어가면 사용자가 "보이는 문자열"과 "실제 입력"이 달라질 수 있어
-		//   로그인 실패/혼란을 유발하기 쉽다.
+		// 로그인 실패/혼란을 유발하기 쉽다.
 		// - 그래서 애초에 공백을 금지하는 정책
 		if (password.contains(" ")) {
 			throw new BusinessException(SignupErrorCode.INVALID_PASSWORD_POLICY);
@@ -245,9 +238,7 @@ public class SignupPasswordService {
 
 		// 4-1) 영문(ASCII) 포함 여부
 		// - ASCII 영문자(A~Z, a~z)만 true로 인정하도록 범위를 체크한다.
-		boolean hasLetter = password.chars().anyMatch(ch ->
-			(ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')
-		);
+		boolean hasLetter = password.chars().anyMatch(ch -> (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z'));
 
 		// 4-2) ASCII 숫자만 포함 여부
 		// - 여기서는 '0'~'9' 사이 문자가 하나라도 있는지 확인한다.
@@ -255,8 +246,7 @@ public class SignupPasswordService {
 
 		// 4-3) 특수문자 포함 여부
 		boolean hasSpecial = password.chars().anyMatch(
-			ch -> "!@#$%^&*()_+-=[]{};':\",.<>/?\\|`~".indexOf(ch) >= 0
-		);
+				ch -> "!@#$%^&*()_+-=[]{};':\",.<>/?\\|`~".indexOf(ch) >= 0);
 
 		// =========================
 		// 5) "종류" 카운트 후 최소 2종 이상 요구

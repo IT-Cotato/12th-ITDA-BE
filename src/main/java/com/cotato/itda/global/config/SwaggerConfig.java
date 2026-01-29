@@ -124,6 +124,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi GardenApi() {
+        return GroupedOpenApi.builder()
+                .group("Garden")
+                .displayName("Garden API")
+                .packagesToScan("com.cotato.itda.domain.garden.controller")
+                .pathsToMatch("/api/plants/**", "/api/plant-invites/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
