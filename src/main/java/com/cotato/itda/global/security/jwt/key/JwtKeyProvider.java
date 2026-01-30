@@ -76,7 +76,6 @@ public class JwtKeyProvider {
 	 * @param purpose : 어떤 목적의 키를 만드는지
 	 */
 	private SecretKey build(String base64, JwtPurpose purpose) {
-		System.out.println(base64);
 		// secret이 설정 파일/환경변수에 제대로 존재하는지 1차 검증
 		if (base64 == null || base64.isBlank()) {
 			throw new IllegalArgumentException(purpose + " JWT 비밀키가 설정 파일에 존재하지 않습니다.");

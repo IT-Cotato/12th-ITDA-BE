@@ -60,6 +60,8 @@ public class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				//인증 없이 누구나 접근 가능한 URL 패턴
 				.requestMatchers(
+					"/ws/**",
+					"/ws",
 					"/api/signup/**",
 					"/api/auth/login",
 					"/api/auth/refresh",
