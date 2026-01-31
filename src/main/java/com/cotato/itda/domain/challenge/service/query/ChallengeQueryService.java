@@ -50,7 +50,7 @@ public class ChallengeQueryService {
     private final ChallengeViewRepository challengeViewRepository;
 
     public ChallengeDashboardResponse getChallengeDashboard(Long memberId) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         // 1. 오늘 미션 조회
         Mission mission = missionRepository.findByMissionDate(today)
@@ -70,7 +70,7 @@ public class ChallengeQueryService {
 
     public MyChallengeResponse getMyChallenge(Long memberId) {
 
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
 
         Mission mission = missionRepository.findByMissionDate(today)
                 .orElseThrow(() -> new BusinessException(ChallengeErrorCode.MISSION_NOT_FOUND));
