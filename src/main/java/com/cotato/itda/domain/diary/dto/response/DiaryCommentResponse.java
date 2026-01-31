@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Builder
 public record DiaryCommentResponse(
 
-        @Schema(description = "댓글 ID")
+        @Schema(description = "댓글 ID", example = "1")
         Long commentId,
 
         @Schema(description = "작성자 정보")

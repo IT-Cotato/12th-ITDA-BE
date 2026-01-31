@@ -43,7 +43,7 @@ public class DiaryCommentController {
     @PostMapping("/{diaryId}/comments")
     public ApiResponse<DiaryCommentResponse> createDiaryComment(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "일기 ID", required = true) @PathVariable("diaryId") Long diaryId,
+            @Parameter(description = "일기 ID", required = true, example = "1") @PathVariable("diaryId") Long diaryId,
             @Valid @RequestBody DiaryCommentRequest request
             ) {
         Long memberId = jwtPrincipal.memberId();
@@ -69,8 +69,8 @@ public class DiaryCommentController {
     @DeleteMapping("/{diaryId}/comments/{commentId}")
     public ApiResponse<Void> deleteDiaryComment(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "일기 ID", required = true) @PathVariable("diaryId") Long diaryId,
-            @Parameter(description = "삭제할 댓글 ID", required = true) @PathVariable("commentId") Long commentId
+            @Parameter(description = "일기 ID", required = true, example = "1") @PathVariable("diaryId") Long diaryId,
+            @Parameter(description = "삭제할 댓글 ID", required = true, example = "1") @PathVariable("commentId") Long commentId
     ) {
         Long memberId = jwtPrincipal.memberId();
 
@@ -85,7 +85,7 @@ public class DiaryCommentController {
                         - 댓글은 작성순(과거순)으로 반환됩니다.
                         - 댓글 정보, 작성자 정보, 페이징 정보(lastId, hasNext)가 반환됩니다.
                         - 첫 조회: lastId는 null로 요청합니다.
-                        - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                        - 추가 조회: 응답의 hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
                         """
     )
     @ApiResponses({
@@ -97,9 +97,9 @@ public class DiaryCommentController {
     @GetMapping("/{diaryId}/comments")
     public ApiResponse<DiaryCommentListResponse> getDiaryCommentList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "일기 ID", required = true) @PathVariable("diaryId") Long diaryId,
-            @Parameter(description = "직전 조회 결과의 마지막 댓글 ID (다음 페이지 커서, 첫 조회 시 null)") @RequestParam(required = false) Long lastId,
-            @Parameter(description = "조회할 댓글 개수") @RequestParam(required = false, defaultValue = "10") int size
+            @Parameter(description = "일기 ID", required = true, example = "1") @PathVariable("diaryId") Long diaryId,
+            @Parameter(description = "직전 조회 응답의 lastId 값 (첫 조회 요청 시 null)") @RequestParam(required = false) Long lastId,
+            @Parameter(description = "조회할 댓글 개수 (기본값 10개)") @RequestParam(required = false, defaultValue = "10") int size
     ) {
         Long memberId = jwtPrincipal.memberId();
 

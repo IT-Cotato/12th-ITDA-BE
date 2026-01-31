@@ -46,13 +46,13 @@ public record DiaryListResponse(
             @Schema(description = "일기 사진 전체 URL", example = "https://example-bucket.s3.ap-northeast-2.amazonaws.com/diary/uuid_example.jpg")
             String imageUrl,
 
-            @Schema(description = "좋아요 수", example = "10")
+            @Schema(description = "좋아요 수", example = "1")
             int likeCount,
 
-            @Schema(description = "댓글 수", example = "5")
+            @Schema(description = "댓글 수", example = "1")
             int commentCount,
 
-            @Schema(description = "내가 좋아요 눌렀는지 여부", example = "false")
+            @Schema(description = "내가 좋아요 눌렀는지 여부", example = "true")
             boolean isLiked,
 
             @Schema(description = "작성 시간", example = "2026-01-10T10:00:00")

@@ -32,7 +32,7 @@ public class DiaryLikeController {
     @PostMapping("/{diaryId}/likes")
     public ApiResponse<DiaryLikeResponse> addLike(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "좋아요할 일기 ID", required = true) @PathVariable Long diaryId
+            @Parameter(description = "좋아요할 일기 ID", required = true, example = "1") @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
         DiaryLikeResponse response = diaryLikeCommandService.addLike(memberId, diaryId);
@@ -48,7 +48,7 @@ public class DiaryLikeController {
     @DeleteMapping("/{diaryId}/likes")
     public ApiResponse<DiaryLikeResponse> deleteLike(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "좋아요 취소할 일기 ID", required = true) @PathVariable Long diaryId
+            @Parameter(description = "좋아요 취소할 일기 ID", required = true, example = "1") @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
         DiaryLikeResponse response = diaryLikeCommandService.deleteLike(memberId, diaryId);

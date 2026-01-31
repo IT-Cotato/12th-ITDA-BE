@@ -71,7 +71,7 @@ public class DiaryController {
     @PutMapping("/{diaryId}")
     public ApiResponse<DiaryResponse> updateDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "수정할 일기 ID", required = true) @PathVariable Long diaryId,
+            @Parameter(description = "수정할 일기 ID", required = true, example = "1") @PathVariable Long diaryId,
             @Valid @RequestBody DiaryRequest request
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -97,7 +97,7 @@ public class DiaryController {
     @DeleteMapping("/{diaryId}")
     public ApiResponse<Void> deleteDiary(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "삭제할 일기 ID", required = true) @PathVariable Long diaryId
+            @Parameter(description = "삭제할 일기 ID", required = true, example = "1") @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
 
@@ -122,7 +122,7 @@ public class DiaryController {
     @GetMapping("/{diaryId}")
     public ApiResponse<DiaryDetailResponse> getDiaryDetail(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "조회할 일기 ID", required = true) @PathVariable Long diaryId
+            @Parameter(description = "조회할 일기 ID", required = true, example = "1") @PathVariable Long diaryId
     ) {
         Long memberId = jwtPrincipal.memberId();
 
@@ -137,7 +137,7 @@ public class DiaryController {
                     - 일기 목록은 최신순으로 반환됩니다.
                     - 일기 정보, 작성자 정보, 좋아요 여부, 페이징 정보(lastId, hasNext)가 반환됩니다.
                     - 첫 조회: lastId는 null로 요청합니다.
-                    - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                    - 추가 조회: 응답의 hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
                     """
     )
     @ApiResponses({
@@ -148,7 +148,7 @@ public class DiaryController {
     @GetMapping
     public ApiResponse<DiaryListResponse> getDiaryList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @Parameter(description = "직전 조회 결과의 마지막 일기 ID (다음 페이지 커서, 첫 조회 시 null)") @RequestParam(required = false) Long lastId,
+            @Parameter(description = "직전 조회 응답의 lastId 값 (첫 조회 요청 시 null)") @RequestParam(required = false) Long lastId,
             @Parameter(description = "조회할 일기 개수 (기본값 5개)") @RequestParam(required = false, defaultValue = "5") int size
     ) {
         Long memberId = jwtPrincipal.memberId();
@@ -216,7 +216,7 @@ public class DiaryController {
     public ApiResponse<MonthlyDiaryListResponse> getFriendMonthlyDiaryList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
-            @Parameter(description = "조회할 친구 멤버 ID", required = true)
+            @Parameter(description = "조회할 친구 멤버 ID", required = true, example = "1")
             @PathVariable("memberId") Long targetMemberId,
 
             @Parameter(description = "조회 연도", example = "2026")

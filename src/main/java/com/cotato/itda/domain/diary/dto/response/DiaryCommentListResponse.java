@@ -28,7 +28,7 @@ public record DiaryCommentListResponse(
     @Builder
     public record CommentItem(
 
-            @Schema(description = "댓글 ID")
+            @Schema(description = "댓글 ID", example = "1")
             Long commentId,
 
             @Schema(description = "댓글 작성자 정보")
