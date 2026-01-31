@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public record ChallengeListResponse(
 
-        @Schema(description = "챌린지 목록")
+        @Schema(description = "친구 챌린지 목록")
         List<ChallengeItem> challenges,
 
         @Schema(
@@ -37,7 +37,7 @@ public record ChallengeListResponse(
             @Schema(description = "챌린지 사진 전체 URL", example = "https://example-bucket.s3.ap-northeast-2.amazonaws.com/challenge/uuid_example.jpg")
             String imageUrl,
 
-            @Schema(description = "업로드 시간", example = "2026-01-10T10:00:00")
+            @Schema(description = "생성 시간", example = "2026-01-10T10:00:00")
             LocalDateTime createdAt,
 
             @Schema(description = "읽음 여부", example = "true")
@@ -47,10 +47,10 @@ public record ChallengeListResponse(
     }
     @Builder
     public record MemberInfo(
-            @Schema(description = "멤버 ID")
+            @Schema(description = "멤버 ID",  example = "1")
             Long memberId,
 
-            @Schema(description = "멤버 닉네임 (친구 별명, 별명이 null인 경우 친구 본명")
+            @Schema(description = "멤버 표시 이름 (별명 또는 본명)", example = "길동이")
             String nickname
     ) {
     }

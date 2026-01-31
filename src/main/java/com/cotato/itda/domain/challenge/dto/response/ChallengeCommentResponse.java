@@ -24,7 +24,7 @@ public record ChallengeCommentResponse(
     @Builder
     public record WriterInfo(
 
-            @Schema(description = "작성자 ID", example = "3")
+            @Schema(description = "작성자 ID", example = "1")
             Long memberId,
 
             @Schema(description = "작성자 이름", example = "홍길동")

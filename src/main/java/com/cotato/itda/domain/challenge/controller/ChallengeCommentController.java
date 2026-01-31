@@ -29,7 +29,7 @@ public class ChallengeCommentController {
     @Operation(
             summary = "챌린지 댓글 등록 API",
             description = """
-                    pathVariable로 전달받은 특정 챌린지 댓글을 등록합니다. 
+                    pathVariable로 전달받은 특정 챌린지에 댓글을 등록합니다. 
                     - 등록 후 댓글 정보와 작성자 정보가 반환됩니다.
                     - 본인 또는 친구의 챌린지에만 댓글을 등록할 수 있습니다.
                     """
@@ -58,7 +58,7 @@ public class ChallengeCommentController {
     @Operation(
             summary = "챌린지 댓글 삭제 API",
             description = """
-                    pathVariable로 전달받은 특정 댓글을 삭제합니다. 
+                    특정 댓글을 삭제합니다. 
                     - 작성자 본인만 삭제 가능합니다. 
                     - DB에서 완전히 삭제되지 않고, 삭제 상태로 변경되어 조회되지 않습니다.
                     """
@@ -92,7 +92,7 @@ public class ChallengeCommentController {
                         - 댓글은 작성순(과거순)으로 반환됩니다.
                         - 댓글 정보, 작성자 정보, 페이징 정보(lastId, hasNext)가 반환됩니다.
                         - 첫 조회: lastId는 null로 요청합니다.
-                        - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                        - 추가 조회: 응답의 hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
                         """
     )
     @ApiResponses({
@@ -108,7 +108,7 @@ public class ChallengeCommentController {
             @Parameter(description = "챌린지 ID", required = true)
             @PathVariable("challengeId") Long challengeId,
 
-            @Parameter(description = "직전 조회 결과의 마지막 댓글 ID (다음 페이지 커서, 첫 조회 시 null)")
+            @Parameter(description = "직전 조회 응답의 lastId 값 (첫 조회 요청 시 null)")
             @RequestParam(required = false) Long lastId,
 
             @Parameter(description = "조회할 댓글 개수 (기본값 10개)")

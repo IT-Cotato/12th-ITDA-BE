@@ -30,9 +30,11 @@ public class ChallengeController {
     @Operation(
             summary = "오늘 미션 조회 및 주간 참여 현황 조회 API ",
             description = """
-                오늘의 미션 정보를 조회하고, 나의 주간 미션 참여 현황을 조회합니다.
+                오늘의 미션 정보와 이번주(월~일)의 나의 미션 참여 현황을 조회합니다.
+                - 서버 시간(KST) 기준 오늘의 미션이 조회됩니다. 자정이 지나면 새로운 미션으로 변경됩니다.
+                - 미션 정보, 나의 오늘 챌린지 정보, 주간 현황이 반환됩니다.
                 - 미션 카테고리는 FOOD, PLANT, COLOR, MOMENT, TV 중 하나로 반환됩니다.
-                - 오늘 미션 참여 완료 시, 나의 챌린지 정보를 반환하며 미참여 시 null을 반환합니다.
+                - 오늘 미션에 참여한 경우 내 챌린지 정보(myChallenge)를 반환하고 미참여시 null이 반환됩니다.
                 - 이번주 날짜별 참여 상태(월~일)는 챌린지 여부에 따라 DONE(참여완료), MISSED(미참여), WAITING(오늘이며 미참여), FUTURE(미래)로 반환됩니다.
                 """
     )
@@ -50,10 +52,18 @@ public class ChallengeController {
         return ApiResponse.success(response);
     }
 
-    @Operation(summary = "챌린지 등록 API", description = "미션 ID, 사진 URL을 전달받아 챌린지를 등록합니다.")
+    @Operation(
+            summary = "챌린지 등록 API",
+            description = """
+                    오늘 미션 ID, 챌린지 사진 URL을 Request Body로 전달받아 챌린지를 등록합니다.
+                    - missionId: GET /api/challenges/dashboard의 응답값에서 받은 missionId
+                    - imageUrl: POST /api/image/presigned-url를 호출하여 S3에 업로드한 사진 URL
+                    - 오늘 미션에만 챌린지를 등록할 수 있으며, 중복 등록할 수 없습니다.
+                    """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 미션 ID (오늘 미션 아님)"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "유효하지 않은 요청 (오늘 미션 ID 아님)"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 미션 ID"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409", description = "이미 해당 미션에 대한 챌린지 존재 (미션 참여 완료)")
     })
@@ -92,7 +102,13 @@ public class ChallengeController {
 
     @Operation(
             summary = "챌린지 상세 조회 API",
-            description = "특정 챌린지를 상세 조회합니다. 작성자가 본인이거나, 친구 관계인 경우에만 조회가 가능합니다." )
+            description = """
+                    특정 챌린지를 상세 조회합니다. 
+                    - 멤버 정보, 챌린지 정보, 좋아요 여부, 좋아요/댓글 수가 반환됩니다.
+                    - 작성자가 본인이거나, 친구 관계인 경우에만 조회가 가능합니다.
+                    - 이 API 호출 시 챌린지 조회 데이터가 생성되어 읽음 처리됩니다. 이후 친구 챌린지 목록 조회(GET /api/challenges) 시 isViewed 값이 true로 반환됩니다. 
+                    """
+    )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "조회 권한 없음 (친구 관계 아님)"),
@@ -112,11 +128,11 @@ public class ChallengeController {
     @Operation(
             summary = "친구 챌린지 목록 조회 API",
             description = """
-                     친구의 오늘 챌린지 전체 목록을 무한스크롤로 조회합니다.
+                     친구들의 오늘 챌린지 전체 목록을 무한스크롤로 조회합니다.
                     - 챌린지 목록은 최신순으로 반환됩니다.
                     - 챌린지 정보, 멤버 정보, 읽음 여부, 페이징 정보(lastId, hasNext)가 반환됩니다.
                     - 첫 조회: lastId는 null로 요청합니다.
-                    - 추가 조회: hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
+                    - 추가 조회: 응답의 hasNext가 true인 경우, 응답받은 lastId를 요청 파라미터로 포함해 다음 데이터를 요청합니다.
                     """
     )
     @ApiResponses({
@@ -128,7 +144,7 @@ public class ChallengeController {
     public ApiResponse<ChallengeListResponse> getChallengeList(
             @Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
 
-            @Parameter(description = "직전 조회 결과의 마지막 챌린지 ID (다음 페이지 커서, 첫 조회 시 null)")
+            @Parameter(description = "직전 조회 응답의 lastId 값 (첫 조회 요청 시 null)")
             @RequestParam(required = false) Long lastId,
 
             @Parameter(description = "조회할 챌린지 개수 (기본값 10개)")

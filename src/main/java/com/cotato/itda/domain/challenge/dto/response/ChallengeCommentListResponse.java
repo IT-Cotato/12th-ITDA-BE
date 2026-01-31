@@ -26,7 +26,7 @@ public record ChallengeCommentListResponse(
 ) {
     @Builder
     public record CommentItem(
-            @Schema(description = "댓글 ID")
+            @Schema(description = "댓글 ID", example = "1")
             Long commentId,
 
             @Schema(description = "댓글 작성자 정보")
@@ -42,7 +42,7 @@ public record ChallengeCommentListResponse(
 
     @Builder
     public record WriterInfo(
-            @Schema(description = "작성자 ID", example = "3")
+            @Schema(description = "작성자 ID", example = "1")
             Long memberId,
 
             @Schema(description = "작성자 표시 이름 (별명 또는 본명)", example = "길동이")

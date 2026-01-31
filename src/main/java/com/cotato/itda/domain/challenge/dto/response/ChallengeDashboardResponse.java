@@ -22,17 +22,17 @@ public record ChallengeDashboardResponse(
         @Schema(description = "나의 오늘 챌린지 정보(참여 안 한 경우 null)")
         MyChallengeInfo myChallenge,
 
-        @Schema(description = "이번 주 요일별 참여 현황(월~일)")
+        @Schema(description = "나의 이번 주 요일별 미션 참여 현황(월~일)")
         List<WeeklyStatus> weeklyStatus
 
 ) {
     @Builder
     public record TodayMissionInfo(
 
-            @Schema(description = "미션 ID")
+            @Schema(description = "미션 ID", example = "1")
             Long missionId,
 
-            @Schema(description = "미션 날짜", example = "2026-01-10")
+            @Schema(description = "미션 날짜(오늘)", example = "2026-01-10")
             LocalDate missionDate,
 
             @Schema(description = "미션 카테고리", example = "FOOD")
@@ -49,7 +49,7 @@ public record ChallengeDashboardResponse(
     @Builder
     public record MyChallengeInfo(
 
-            @Schema(description = "챌린지 ID")
+            @Schema(description = "나의 오늘 챌린지 ID", example = "1")
             Long challengeId,
 
             @Schema(description = "챌린지 사진 전체 URL", example = "https://example-bucket.s3.ap-northeast-2.amazonaws.com/challenge/uuid_example.jpg")
