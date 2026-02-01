@@ -28,7 +28,8 @@ public class SharedPlantLog {
     private Long wateredBy;
 
     @Column(name = "watered_at", nullable = false)
-    private LocalDateTime wateredAt;
+    @Builder.Default
+    private LocalDateTime wateredAt = LocalDateTime.now();
 
     @Column(name = "affected_growth", nullable = false)
     private boolean affectedGrowth;

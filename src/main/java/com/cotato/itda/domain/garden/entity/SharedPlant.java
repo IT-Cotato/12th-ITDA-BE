@@ -62,4 +62,24 @@ public class SharedPlant extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private SharedPlantStatus status = SharedPlantStatus.GROWING;
+
+    public void water(int growthValue, Member member, boolean isFirst) {
+        this.growthValue += growthValue;
+        this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
+        if (isFirst) this.dailyGrowthCount = 1;
+        else this.dailyGrowthCount++;
+        this.lastWateredBy = member.getId();
+        this.growthDate = LocalDate.now();
+    }
+
+    public void nutrient(int growthValue, Member member) {
+        this.growthValue += growthValue;
+        this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
+        member.decreaseNutrient();
+    }
+
+    public void exitSoloMode() {
+        this.isSoloMode = false;
+        this.soloPowerMemberId = null;
+    }
 }

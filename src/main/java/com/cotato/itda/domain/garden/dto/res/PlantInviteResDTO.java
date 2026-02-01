@@ -49,19 +49,6 @@ public class PlantInviteResDTO {
         public record UpdateSharedPlantInviteResDTO(
                         @Schema(description = "초대 ID", example = "1") Long inviteId,
                         @Schema(description = "초대 상태", example = "ACCEPTED") String status,
-                        @Schema(description = "공유 식물 상세 정보 (수락 시에만 포함)") SharedPlantInfoDTO sharedPlant) {
-        }
-
-        @Builder
-        public record SharedPlantInfoDTO(
-                        @Schema(description = "공유 식물 ID", example = "1") Long sharedPlantId,
-                        @Schema(description = "멤버 A ID (초대자)", example = "1") Long memberAId,
-                        @Schema(description = "멤버 B ID (초대받은 자)", example = "2") Long memberBId,
-                        @Schema(description = "식물 ID", example = "1") Long plantId,
-                        @Schema(description = "식물 닉네임", example = "두쫀쿠") String nickname,
-                        @Schema(description = "성장 정도", example = "0") int growthValue,
-                        @Schema(description = "성장 단계", example = "SEED") String growthStage,
-                        @Schema(description = "상태", example = "GROWING") String status,
-                        @Schema(description = "생성 일시", example = "2025-12-28 12:34") String createdAt) {
+                        @Schema(description = "공유 식물 상세 정보 (수락 시에만 포함)") SharedPlantResDTO.SharedPlantInfoDTO sharedPlant) {
         }
 }
