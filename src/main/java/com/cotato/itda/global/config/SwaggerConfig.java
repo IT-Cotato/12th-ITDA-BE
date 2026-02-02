@@ -125,6 +125,16 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi ChallengeApi() {
+        return GroupedOpenApi.builder()
+                .group("Challenge")
+                .displayName("Challenge API")
+                .packagesToScan("com.cotato.itda.domain.challenge.controller")
+                .pathsToMatch("/api/challenges/**")
+                .build();
+    }
+          
+    @Bean    
     public GroupedOpenApi DiaryApi() {
         return GroupedOpenApi.builder()
                 .group("Diary")

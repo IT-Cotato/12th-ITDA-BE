@@ -2,6 +2,7 @@ package com.cotato.itda.domain.friendship.repository;
 
 import com.cotato.itda.domain.friendship.entity.Friendship;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
+import com.cotato.itda.domain.member.entity.Member;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     boolean existsByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
+    Optional<Friendship> findByMemberAndFriendAndStatus(Member member, Member friend, FriendshipStatus friendshipStatus);
     Optional<Friendship> findByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
     @Query("SELECT f FROM Friendship f " +
