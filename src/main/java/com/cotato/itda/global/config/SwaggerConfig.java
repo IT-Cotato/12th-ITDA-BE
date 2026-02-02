@@ -132,6 +132,15 @@ public class SwaggerConfig {
                 .packagesToScan("com.cotato.itda.domain.challenge.controller")
                 .pathsToMatch("/api/challenges/**")
                 .build();
+          
+    @Bean    
+    public GroupedOpenApi DiaryApi() {
+        return GroupedOpenApi.builder()
+                .group("Diary")
+                .displayName("Diary API")
+                .packagesToScan("com.cotato.itda.domain.diary.controller")
+                .pathsToMatch("/api/diaries/**")
+                .build();
     }
 
     // === 공통 에러 응답 자동 추가 (선택) ===

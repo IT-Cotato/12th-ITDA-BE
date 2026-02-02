@@ -19,6 +19,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     boolean existsByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
     Optional<Friendship> findByMemberAndFriendAndStatus(Member member, Member friend, FriendshipStatus friendshipStatus);
+    Optional<Friendship> findByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
     @Query("SELECT f FROM Friendship f " +
             "JOIN FETCH f.friend " +
