@@ -17,7 +17,7 @@ spring:
   jpa:
     # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
     hibernate:
-      ddl-auto: none
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:none}
   cloud:
     aws:
       s3:
