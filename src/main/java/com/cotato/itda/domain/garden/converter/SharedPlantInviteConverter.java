@@ -78,7 +78,7 @@ public class SharedPlantInviteConverter {
         return UpdateSharedPlantInviteResDTO.builder()
                 .inviteId(invite.getId())
                 .status(invite.getStatus().name())
-                .sharedPlant(sharedPlant != null ? SharedPlantConverter.toSharedPlantInfoDTO(sharedPlant) : null)
+                .sharedPlant(sharedPlant != null ? SharedPlantConverter.toAcceptedSharedPlantDTO(sharedPlant) : null)
                 .build();
     }
 }

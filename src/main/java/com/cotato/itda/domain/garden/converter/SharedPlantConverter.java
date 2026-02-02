@@ -1,11 +1,14 @@
 package com.cotato.itda.domain.garden.converter;
 
+import com.cotato.itda.domain.friendship.entity.Friendship;
+import com.cotato.itda.domain.garden.dto.SharedPlantWithFriendship;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
 import com.cotato.itda.domain.garden.entity.SharedPlantInvite;
 import com.cotato.itda.domain.member.entity.Member;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class SharedPlantConverter {
 
@@ -26,17 +29,43 @@ public class SharedPlantConverter {
                 .build();
     }
 
-    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(SharedPlant sharedPlant) {
+    public static SharedPlantResDTO.AcceptedSharedPlantDTO toAcceptedSharedPlantDTO(SharedPlant sharedPlant) {
+        return SharedPlantResDTO.AcceptedSharedPlantDTO.builder()
+                .sharedPlantId(sharedPlant.getId())
+                .plantId(sharedPlant.getPlant().getId())
+                .nickname(sharedPlant.getNickname())
+                .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
+                .build();
+    }
+
+    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(SharedPlant sharedPlant, Friendship friendship) {
         return SharedPlantResDTO.SharedPlantInfoDTO.builder()
                 .sharedPlantId(sharedPlant.getId())
-                .memberAId(sharedPlant.getMemberA().getId())
-                .memberBId(sharedPlant.getMemberB().getId())
+                .friendId(friendship.getFriendId())
+                .friendNickname(friendship.getDisplayName())
                 .plantId(sharedPlant.getPlant().getId())
                 .nickname(sharedPlant.getNickname())
                 .growthValue(sharedPlant.getGrowthValue())
                 .growthStage(sharedPlant.getGrowthStage())
                 .status(sharedPlant.getStatus())
+                .isSoloMode(sharedPlant.getIsSoloMode())
                 .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
+                .build();
+    }
+
+    public static SharedPlantResDTO.SharedPlantInfoListDTO toSharedPlantInfoListDTO(
+            List<SharedPlantWithFriendship> sharedPlantsWithFriendships,
+            int nutrientCount
+    ) {
+        List<SharedPlantResDTO.SharedPlantInfoDTO> sharedPlantInfoDTOs = sharedPlantsWithFriendships.stream()
+                .filter(pair -> pair.friendship() != null)
+                .map(pair -> toSharedPlantInfoDTO(pair.sharedPlant(), pair.friendship()))
+                .toList();
+
+        return SharedPlantResDTO.SharedPlantInfoListDTO.builder()
+                .totalCount(sharedPlantInfoDTOs.size())
+                .nutrientCount(nutrientCount)
+                .sharedPlants(sharedPlantInfoDTOs)
                 .build();
     }
 

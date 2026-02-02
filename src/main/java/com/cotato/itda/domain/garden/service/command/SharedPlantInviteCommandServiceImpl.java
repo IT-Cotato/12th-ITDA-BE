@@ -91,8 +91,10 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
     }
 
     @Override
-    public PlantInviteResDTO.UpdateSharedPlantInviteResDTO updateInviteStatus(Long inviteeId, Long inviteId,
-            PlantInviteReqDTO.UpdateSharedPlantInviteReqDTO dto) {
+    public PlantInviteResDTO.UpdateSharedPlantInviteResDTO updateInviteStatus(
+            Long inviteeId, Long inviteId,
+            PlantInviteReqDTO.UpdateSharedPlantInviteReqDTO dto
+    ) {
 
         // 1. 식물 초대 존재 여부 확인
         SharedPlantInvite invite = sharedPlantInviteRepository.findById(inviteId)
@@ -115,7 +117,7 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
 
         SharedPlant sharedPlant = null;
 
-        // 4. status가 ACCEPTED라면 현재 키우고 있는 식물이 있는지 확인 후 새 식물을 만들기
+        // 5. status가 ACCEPTED라면 현재 키우고 있는 식물이 있는지 확인 후 새 식물을 만들기
         if (dto.status() == InviteStatus.ACCEPTED) {
             // memberAId < memberBId
             Long memberAId = Math.min(invite.getInviter().getId(), invite.getInvitee().getId());

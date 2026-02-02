@@ -6,6 +6,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.util.List;
+
 public class SharedPlantResDTO {
 
     @Builder
@@ -39,14 +41,27 @@ public class SharedPlantResDTO {
     ) {}
 
     @Builder
+    @Schema(description = "초대 수락 시 생성된 공유 식물 정보 응답 DTO")
+    public record AcceptedSharedPlantDTO(
+            @Schema(description = "공유 식물 ID", example = "1")
+            Long sharedPlantId,
+            @Schema(description = "식물 ID", example = "1")
+            Long plantId,
+            @Schema(description = "식물 닉네임", example = "두쫀쿠")
+            String nickname,
+            @Schema(description = "생성 일시", example = "2025-12-28 12:34")
+            String createdAt
+    ) {}
+
+    @Builder
     @Schema(description = "공유 식물 상세 정보 응답 DTO")
     public record SharedPlantInfoDTO(
             @Schema(description = "공유 식물 ID", example = "1")
             Long sharedPlantId,
-            @Schema(description = "멤버 A ID (초대자)", example = "1")
-            Long memberAId,
-            @Schema(description = "멤버 B ID (초대받은 자)", example = "2")
-            Long memberBId,
+            @Schema(description = "친구 ID", example = "2")
+            Long friendId,
+            @Schema(description = "친구 닉네임", example = "콩순이")
+            String friendNickname,
             @Schema(description = "식물 ID", example = "1")
             Long plantId,
             @Schema(description = "식물 닉네임", example = "두쫀쿠")
@@ -54,10 +69,24 @@ public class SharedPlantResDTO {
             @Schema(description = "성장 정도", example = "0")
             int growthValue,
             @Schema(description = "성장 단계", example = "SEED")
-            PlantStage growthStage, // String -> PlantStage Enum으로 변경
+            PlantStage growthStage,
             @Schema(description = "상태", example = "GROWING")
-            SharedPlantStatus status, // String -> SharedPlantStatus Enum으로 변경
-            @Schema(description = "생성 일시", example = "2025-12-28 12:34:56")
+            SharedPlantStatus status,
+            @JsonProperty("isSoloMode")
+            @Schema(description = "혼자 돌봄 모드 여부", example = "false")
+            boolean isSoloMode,
+            @Schema(description = "생성 일시", example = "2025-12-28 12:34")
             String createdAt
+    ) {}
+
+    @Builder
+    @Schema(description = "공유 식물 상세 정보 응답 리스트 DTO")
+    public record SharedPlantInfoListDTO(
+            @Schema(description = "공유 식물 총 개수", example = "3")
+            int totalCount,
+            @Schema(description = "개인 영양제 보유량", example = "2")
+            int nutrientCount,
+            @Schema(description = "공유 식물 상세 정보")
+            List<SharedPlantInfoDTO> sharedPlants
     ) {}
 }

@@ -49,6 +49,6 @@ public class PlantInviteResDTO {
         public record UpdateSharedPlantInviteResDTO(
                         @Schema(description = "초대 ID", example = "1") Long inviteId,
                         @Schema(description = "초대 상태", example = "ACCEPTED") String status,
-                        @Schema(description = "공유 식물 상세 정보 (수락 시에만 포함)") SharedPlantResDTO.SharedPlantInfoDTO sharedPlant) {
+                        @Schema(description = "공유 식물 정보 (수락 시에만 포함)") SharedPlantResDTO.AcceptedSharedPlantDTO sharedPlant) {
         }
 }
