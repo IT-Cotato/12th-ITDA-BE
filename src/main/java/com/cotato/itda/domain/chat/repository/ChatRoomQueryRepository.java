@@ -103,6 +103,10 @@ public class ChatRoomQueryRepository {
 		Long myMemberId,
 		List<Long> roomIds
 	) {
+		if(roomIds == null || roomIds.isEmpty()){
+			return List.of();
+		}
+
 		QChatRoomMember chatRoomMember = QChatRoomMember.chatRoomMember;
 		QMember member = QMember.member;
 
@@ -115,6 +119,7 @@ public class ChatRoomQueryRepository {
 				chatRoomMember.member.profileImageUrl
 			))
 			.from(chatRoomMember)
+			.join(chatRoomMember.member,member)
 			.where(
 				chatRoomMember.room.id.in(roomIds)
 					// ne: not equal -> 같지 않은 값

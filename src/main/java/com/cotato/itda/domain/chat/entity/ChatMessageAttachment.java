@@ -47,7 +47,7 @@ public class ChatMessageAttachment extends BaseTimeEntity {
 	// S3에 저장된 파일의 키 값
 	// 예: "attachments/2023/10/15/unique-file-name.jpg"
 	// 이 값을 사용하여 S3에서 파일을 조회하거나 삭제할 수 있다
-	@Column(name = "object_key")
+	@Column(name = "object_key", nullable=false,length=1024)
 	private String objectKey;
 
 	// MIME 타입
@@ -58,7 +58,7 @@ public class ChatMessageAttachment extends BaseTimeEntity {
 	// 파일 크기
 	// ex: 204800 (bytes)
 	@Column(name = "size_bytes")
-	private Integer sizeBytes;
+	private Long sizeBytes;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false, length = 20)
