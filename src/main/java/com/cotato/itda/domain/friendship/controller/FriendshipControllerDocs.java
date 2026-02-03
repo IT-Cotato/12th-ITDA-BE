@@ -7,10 +7,12 @@ import com.cotato.itda.global.common.response.ApiResponse;
 import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.Explode;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,14 +71,15 @@ public interface FriendshipControllerDocs {
 
             @Parameter(
                     description = "친구 설정 상태. 친구를 설정했다면 ACTIVE로, 설정하지 않았다면 PENDING으로 조회됩니다. 미입력 시 ACTIVE만 조회됩니다.",
-                    example = "ACTIVE",
+                    explode = Explode.TRUE,
                     array = @ArraySchema(schema = @Schema(implementation = FriendshipStatus.class))
             )
-            @RequestParam(required = false) List<FriendshipStatus> status,
+            @RequestParam(required = false, defaultValue = "ACTIVE") List<FriendshipStatus> status,
 
+            @ParameterObject
             @Parameter(
-                    description = "정렬 기준. 예: lastInteractedAt,desc 또는 createdAt,asc",
-                    example = "lastInteractedAt,desc"
+                    name = "sort",
+                    description = "정렬 기준. 예: lastInteractedAt,desc 또는 createdAt,asc"
             )
             Sort sort
     );
