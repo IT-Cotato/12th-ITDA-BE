@@ -75,7 +75,7 @@ public class ChatMessageAttachment extends BaseTimeEntity {
 		AttachmentType attachmentType,
 		String objectKey,
 		String mimeType,
-		Integer sizeBytes,
+		Long sizeBytes,
 		AttachmentStatus status,
 		Integer durationMs
 	) {
