@@ -132,7 +132,9 @@ public class SwaggerConfig {
             .packagesToScan("com.cotato.itda.domain.chat.controller")
             .pathsToMatch("/api/chat/**")
             .build();
+    }
 
+    @Bean
     public GroupedOpenApi ChallengeApi() {
         return GroupedOpenApi.builder()
                 .group("Challenge")
