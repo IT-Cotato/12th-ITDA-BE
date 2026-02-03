@@ -124,6 +124,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi ChatApi() {
+        return GroupedOpenApi.builder()
+            .group("Chat")
+            .displayName("Chat API")
+            .packagesToScan("com.cotato.itda.domain.chat.controller")
+            .pathsToMatch("/api/chat/**")
+            .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
