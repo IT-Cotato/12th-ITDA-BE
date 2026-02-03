@@ -38,7 +38,15 @@ public class SharedPlantConverter {
                 .build();
     }
 
-    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(SharedPlant sharedPlant, Friendship friendship) {
+    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(SharedPlant sharedPlant, Friendship friendship, Long currentMemberId) {
+        SharedPlantResDTO.LastWateredByDTO lastWateredBy = null;
+        if (sharedPlant.getLastWateredBy() != null) {
+            lastWateredBy = SharedPlantResDTO.LastWateredByDTO.builder()
+                    .memberId(sharedPlant.getLastWateredBy())
+                    .isMe(sharedPlant.getLastWateredBy().equals(currentMemberId))
+                    .build();
+        }
+
         return SharedPlantResDTO.SharedPlantInfoDTO.builder()
                 .sharedPlantId(sharedPlant.getId())
                 .friendId(friendship.getFriendId())
@@ -49,17 +57,19 @@ public class SharedPlantConverter {
                 .growthStage(sharedPlant.getGrowthStage())
                 .status(sharedPlant.getStatus())
                 .isSoloMode(sharedPlant.getIsSoloMode())
+                .lastWateredBy(lastWateredBy)
                 .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
                 .build();
     }
 
     public static SharedPlantResDTO.SharedPlantInfoListDTO toSharedPlantInfoListDTO(
             List<SharedPlantWithFriendship> sharedPlantsWithFriendships,
-            int nutrientCount
+            int nutrientCount,
+            Long currentMemberId
     ) {
         List<SharedPlantResDTO.SharedPlantInfoDTO> sharedPlantInfoDTOs = sharedPlantsWithFriendships.stream()
                 .filter(pair -> pair.friendship() != null)
-                .map(pair -> toSharedPlantInfoDTO(pair.sharedPlant(), pair.friendship()))
+                .map(pair -> toSharedPlantInfoDTO(pair.sharedPlant(), pair.friendship(), currentMemberId))
                 .toList();
 
         return SharedPlantResDTO.SharedPlantInfoListDTO.builder()

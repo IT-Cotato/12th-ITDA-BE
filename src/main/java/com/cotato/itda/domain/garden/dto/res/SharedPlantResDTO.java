@@ -75,6 +75,8 @@ public class SharedPlantResDTO {
             @JsonProperty("isSoloMode")
             @Schema(description = "혼자 돌봄 모드 여부", example = "false")
             boolean isSoloMode,
+            @Schema(description = "마지막으로 물 준 회원 정보")
+            LastWateredByDTO lastWateredBy,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
             String createdAt
     ) {}

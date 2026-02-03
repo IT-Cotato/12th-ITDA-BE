@@ -70,6 +70,6 @@ public class SharedPlantQueryServiceImpl implements SharedPlantQueryService {
                 })
                 .toList();
 
-        return SharedPlantConverter.toSharedPlantInfoListDTO(pairs, member.getNutrientCount());
+        return SharedPlantConverter.toSharedPlantInfoListDTO(pairs, member.getNutrientCount(), memberId);
     }
 }

@@ -130,7 +130,7 @@ public class SwaggerConfig {
                 .group("Garden")
                 .displayName("Garden API")
                 .packagesToScan("com.cotato.itda.domain.garden.controller")
-                .pathsToMatch("/api/plants/**", "/api/plant-invites/**")
+                .pathsToMatch("/api/plants/**", "/api/plant-invites/**", "/api/shared-plants/**")
                 .build();
     }
 
