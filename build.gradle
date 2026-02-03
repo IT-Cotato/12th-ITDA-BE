@@ -42,6 +42,7 @@ tasks.withType(JavaCompile).configureEach {
 	options.generatedSourceOutputDirectory.set(file(querydslDir))
 }
 
+
 dependencyManagement {
 	imports {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
