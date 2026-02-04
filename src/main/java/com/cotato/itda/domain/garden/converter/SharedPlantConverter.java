@@ -7,8 +7,10 @@ import com.cotato.itda.domain.garden.entity.SharedPlant;
 import com.cotato.itda.domain.garden.entity.SharedPlantInvite;
 import com.cotato.itda.domain.member.entity.Member;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 public class SharedPlantConverter {
 
@@ -38,7 +40,12 @@ public class SharedPlantConverter {
                 .build();
     }
 
-    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(SharedPlant sharedPlant, Friendship friendship, Long currentMemberId) {
+    public static SharedPlantResDTO.SharedPlantInfoDTO toSharedPlantInfoDTO(
+            SharedPlant sharedPlant,
+            Friendship friendship,
+            Long currentMemberId,
+            LocalDateTime myLastWateredAt
+    ) {
         SharedPlantResDTO.LastWateredByDTO lastWateredBy = null;
         if (sharedPlant.getLastWateredBy() != null) {
             lastWateredBy = SharedPlantResDTO.LastWateredByDTO.builder()
@@ -58,6 +65,7 @@ public class SharedPlantConverter {
                 .status(sharedPlant.getStatus())
                 .isSoloMode(sharedPlant.getIsSoloMode())
                 .lastWateredBy(lastWateredBy)
+                .myLastWateredAt(myLastWateredAt != null ? myLastWateredAt.format(FORMATTER) : null)
                 .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
                 .build();
     }
@@ -65,11 +73,17 @@ public class SharedPlantConverter {
     public static SharedPlantResDTO.SharedPlantInfoListDTO toSharedPlantInfoListDTO(
             List<SharedPlantWithFriendship> sharedPlantsWithFriendships,
             int nutrientCount,
-            Long currentMemberId
+            Long currentMemberId,
+            Map<Long, LocalDateTime> myLastWateredAtMap
     ) {
         List<SharedPlantResDTO.SharedPlantInfoDTO> sharedPlantInfoDTOs = sharedPlantsWithFriendships.stream()
                 .filter(pair -> pair.friendship() != null)
-                .map(pair -> toSharedPlantInfoDTO(pair.sharedPlant(), pair.friendship(), currentMemberId))
+                .map(pair -> toSharedPlantInfoDTO(
+                        pair.sharedPlant(),
+                        pair.friendship(),
+                        currentMemberId,
+                        myLastWateredAtMap.get(pair.sharedPlant().getId())
+                ))
                 .toList();
 
         return SharedPlantResDTO.SharedPlantInfoListDTO.builder()

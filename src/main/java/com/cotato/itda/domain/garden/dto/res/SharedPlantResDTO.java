@@ -77,6 +77,8 @@ public class SharedPlantResDTO {
             boolean isSoloMode,
             @Schema(description = "마지막으로 물 준 회원 정보")
             LastWateredByDTO lastWateredBy,
+            @Schema(description = "내가 마지막으로 물 준 시간 (물을 준 적 없으면 null)", example = "2025-01-15 14:30")
+            String myLastWateredAt,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
             String createdAt
     ) {}
