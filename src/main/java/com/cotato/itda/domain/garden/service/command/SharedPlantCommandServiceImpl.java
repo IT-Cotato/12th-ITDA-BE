@@ -53,6 +53,11 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
             throw new SharedPlantException(SharedPlantErrorCode.CANNOT_WATER_COMPLETED_PLANT);
         }
 
+        boolean wasWithered = sharedPlant.getStatus() == SharedPlantStatus.WITHERED;
+        if (wasWithered && dto.supplyType() != SupplyType.NUTRIENT) {
+            throw new SharedPlantException(SharedPlantErrorCode.WITHERED_REQUIRES_NUTRIENT);
+        }
+
         if (sharedPlant.getIsSoloMode() && !sharedPlant.getSoloPowerMemberId().equals(currentMemberId)) {
             sharedPlant.exitSoloMode();
         }
@@ -65,6 +70,15 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
                 .orElseThrow(() -> new SharedPlantException(SharedPlantErrorCode.NOT_FOUND_STRATEGY));
 
         strategy.water(sharedPlant, currentMember, wateringStrategies);
+
+        if (wasWithered) {
+            sharedPlant.revive();
+        }
+
+        // 최대 성장 도달 시 COMPLETED 처리
+        if (sharedPlant.hasReachedMaxGrowth()) {
+            sharedPlant.complete();
+        }
 
         int growthAfter = sharedPlant.getGrowthValue();
         int growthIncrement = growthAfter - growthBefore;

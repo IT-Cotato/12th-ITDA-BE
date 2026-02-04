@@ -58,7 +58,7 @@ public class SharedPlantQueryServiceImpl implements SharedPlantQueryService {
                 .toList();
 
         // 3. Friendship 조회 후 Map으로 변환
-        List<Friendship> friendships = friendshipRepository.findAllByMemberIdAndFriendIdInAndStatus(
+        List<Friendship> friendships = friendshipRepository.findAllByMember_IdAndFriend_IdInAndStatus(
                 memberId, friendIds, FriendshipStatus.ACTIVE);
 
         Map<Long, Friendship> friendshipMap = friendships.stream()

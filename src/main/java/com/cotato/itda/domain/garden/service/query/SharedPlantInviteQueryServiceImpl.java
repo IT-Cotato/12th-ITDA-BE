@@ -78,7 +78,7 @@ public class SharedPlantInviteQueryServiceImpl implements SharedPlantInviteQuery
                                 .distinct()
                                 .toList();
 
-                List<Friendship> friendships = friendshipRepository.findAllByMemberIdAndFriendIdInAndStatus(
+                List<Friendship> friendships = friendshipRepository.findAllByMember_IdAndFriend_IdInAndStatus(
                                 memberId, inviterIds, FriendshipStatus.ACTIVE);
 
                 return SharedPlantInviteConverter.toMyPlantInviteListResDTO(invitations, friendships);

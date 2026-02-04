@@ -79,6 +79,12 @@ public enum SharedPlantErrorCode implements ErrorCode {
             "키우기가 완료된 식물에는 물을 줄 수 없습니다."
     ),
 
+    WITHERED_REQUIRES_NUTRIENT(
+            HttpStatus.BAD_REQUEST,
+            "SHARED_PLANT_400_WITHERED_REQUIRES_NUTRIENT",
+            "시든 식물에는 영양제가 필요합니다."
+    ),
+
     ;
 
     private final HttpStatus httpStatus;

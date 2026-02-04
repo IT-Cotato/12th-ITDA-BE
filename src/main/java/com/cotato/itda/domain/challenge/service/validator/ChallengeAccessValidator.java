@@ -21,7 +21,7 @@ public class ChallengeAccessValidator {
         if (memberId.equals(writerId)) {
             return;
         }
-        boolean isFriend = friendshipRepository.existsByMemberIdAndFriendIdAndStatus(memberId, writerId, FriendshipStatus.ACTIVE);
+        boolean isFriend = friendshipRepository.existsByMember_IdAndFriend_IdAndStatus(memberId, writerId, FriendshipStatus.ACTIVE);
 
         if (!isFriend) {
             throw new BusinessException(ChallengeErrorCode.CHALLENGE_FORBIDDEN);
