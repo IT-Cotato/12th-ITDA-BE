@@ -28,7 +28,6 @@ public class FriendshipController implements FriendshipControllerDocs {
     private final FriendshipCommandService friendshipCommandService;
     private final FriendshipQueryService friendshipQueryService;
 
-    // TODO: JWT 사용 시 memberId 추출 로직으로 변경
     @SecurityRequirement(name = "AccessToken")
     @PostMapping("/{friendId}")
     @Override
@@ -40,7 +39,6 @@ public class FriendshipController implements FriendshipControllerDocs {
         return ApiResponse.success(friendshipCommandService.createFriendship(friendId, memberId));
     }
 
-    // TODO: JWT 사용 시 memberId 추출 로직으로 변경
     @SecurityRequirement(name = "AccessToken")
     @PatchMapping("/{friendshipId}")
     @Override
@@ -53,7 +51,6 @@ public class FriendshipController implements FriendshipControllerDocs {
         return ApiResponse.success(friendshipCommandService.updateFriendship(dto, friendshipId, memberId));
     }
 
-    // TODO: JWT 사용 시 memberId 추출 로직으로 변경
     @SecurityRequirement(name = "AccessToken")
     @GetMapping
     @Override
@@ -66,7 +63,6 @@ public class FriendshipController implements FriendshipControllerDocs {
         return ApiResponse.success(friendshipQueryService.getFriendshipList(memberId, status, sort));
     }
 
-    // TODO: JWT 사용 시 memberId 추출 로직으로 변경
     @SecurityRequirement(name = "AccessToken")
     @DeleteMapping("/{friendshipId}")
     @Override
@@ -79,7 +75,6 @@ public class FriendshipController implements FriendshipControllerDocs {
         return ApiResponse.success(null);
     }
 
-    // TODO: JWT 사용 시 memberId 추출 로직으로 변경
     @SecurityRequirement(name = "AccessToken")
     @GetMapping("/settings/{friendshipId}")
     @Override

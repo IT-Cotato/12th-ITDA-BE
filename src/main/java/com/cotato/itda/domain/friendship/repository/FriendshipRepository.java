@@ -14,12 +14,12 @@ import java.util.Optional;
 public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     List<Friendship> findAllByMemberIdAndStatusIn(Long memberId, List<FriendshipStatus> statuses, Sort sort);
 
-    boolean existsByMemberIdAndFriendId(Long memberId, Long friendId);
+    boolean existsByMember_IdAndFriend_Id(Long memberId, Long friendId);
 
-    boolean existsByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
+    boolean existsByMember_IdAndFriend_IdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
     Optional<Friendship> findByMemberAndFriendAndStatus(Member member, Member friend, FriendshipStatus friendshipStatus);
-    Optional<Friendship> findByMemberIdAndFriendIdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
+    Optional<Friendship> findByMember_IdAndFriend_IdAndStatus(Long memberId, Long friendId, FriendshipStatus status);
 
     @Query("SELECT f FROM Friendship f " +
             "JOIN FETCH f.friend " +
@@ -28,4 +28,9 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             "AND f.status = 'ACTIVE'")
     List<Friendship> findActiveFriendships(@Param("memberId") Long memberId,
                                            @Param("friendIds") List<Long> friendIds);
+
+    List<Friendship> findAllByMemberIdAndStatus(Long memberId, FriendshipStatus status, Sort sort);
+
+    List<Friendship> findAllByMember_IdAndFriend_IdInAndStatus(Long memberId, List<Long> friendIds,
+            FriendshipStatus status);
 }

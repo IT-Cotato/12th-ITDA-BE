@@ -143,14 +143,24 @@ public class SwaggerConfig {
                 .pathsToMatch("/api/challenges/**")
                 .build();
     }
-          
-    @Bean    
+
+    @Bean
     public GroupedOpenApi DiaryApi() {
         return GroupedOpenApi.builder()
                 .group("Diary")
                 .displayName("Diary API")
                 .packagesToScan("com.cotato.itda.domain.diary.controller")
                 .pathsToMatch("/api/diaries/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi GardenApi() {
+        return GroupedOpenApi.builder()
+                .group("Garden")
+                .displayName("Garden API")
+                .packagesToScan("com.cotato.itda.domain.garden.controller")
+                .pathsToMatch("/api/plants/**", "/api/plant-invites/**", "/api/shared-plants/**")
                 .build();
     }
 

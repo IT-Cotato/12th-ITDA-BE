@@ -57,7 +57,7 @@ public class DiaryQueryService {
             nickname = writer.getName();
         } else {
             // 작성자가 친구 관계인지 확인
-            Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
+            Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
                     .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
             nickname = friendship.getDisplayName();
@@ -138,7 +138,7 @@ public class DiaryQueryService {
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, Map.of("userId", targetMemberId)));
 
         // 친구 관계 조회
-        Friendship friendship = friendshipRepository.findByMemberIdAndFriendIdAndStatus(memberId, targetMemberId, FriendshipStatus.ACTIVE)
+        Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, targetMemberId, FriendshipStatus.ACTIVE)
                 .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
 
         // 작성자 정보 변환

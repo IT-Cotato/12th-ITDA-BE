@@ -18,7 +18,7 @@ public class DiaryAccessValidator {
     public void validateDiaryAccess(Long memberId, Diary diary) {
 
         boolean isMyDiary = memberId.equals(diary.getMember().getId());
-        boolean isFriend = friendshipRepository.existsByMemberIdAndFriendIdAndStatus(memberId, diary.getMember().getId(), FriendshipStatus.ACTIVE);
+        boolean isFriend = friendshipRepository.existsByMember_IdAndFriend_IdAndStatus(memberId, diary.getMember().getId(), FriendshipStatus.ACTIVE);
 
         if (!isMyDiary && !isFriend) {
             throw new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN);

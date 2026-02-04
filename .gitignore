@@ -45,3 +45,5 @@ out/
 
 ### QueryDSL ###
 src/main/generated
+
+/GEMINI.md

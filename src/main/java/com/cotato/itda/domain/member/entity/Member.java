@@ -130,4 +130,8 @@ public class Member extends BaseTimeEntity {
 			this.points = this.points % 10;
 		}
 	}
+
+	public void decreaseNutrient() {
+		this.nutrientCount--;
+	}
 }
