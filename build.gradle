@@ -34,15 +34,39 @@ dependencyManagement {
 	}
 }
 
+/**
+ * Querydsl Q 클래스 생성 위치 (빌드 디렉토리)
+ * - 생성물은 빌드 결과물이므로 Git에 커밋하지 않는 게 정석
+ */
+def querydslDir = "$buildDir/generated/querydsl"
+
+sourceSets {
+	main {
+		java {
+			srcDirs += querydslDir
+		}
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.generatedSourceOutputDirectory.set(file(querydslDir))
+}
+
+tasks.named("clean") {
+	doFirst {
+		delete file(querydslDir)
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    // swagger
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+	// swagger
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
-	// Redis 사용
+	// Redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// security
@@ -50,25 +74,35 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-	//JJWT
+	// websocket + STOMP
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// JJWT
 	implementation "io.jsonwebtoken:jjwt-api:0.13.0"
 	runtimeOnly  "io.jsonwebtoken:jjwt-impl:0.13.0"
 	runtimeOnly  "io.jsonwebtoken:jjwt-jackson:0.13.0"
 
+	// Querydsl (딱 한 번만)
+	implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+	annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
 	// feign
 	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
-    // MySQL Driver
-    runtimeOnly 'com.mysql:mysql-connector-j'
+	// MySQL Driver
+	runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // AWS S3
-    implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2'
+	// AWS S3
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.4.2'
 
-    compileOnly 'org.projectlombok:lombok'
+	// lombok
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

@@ -17,7 +17,7 @@ spring:
   jpa:
     # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
     hibernate:
-      ddl-auto: none
+      ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:none}
   cloud:
     aws:
       s3:
@@ -61,3 +61,10 @@ jwt:
     algorithm: HS256
     secret-key: ${JWT_REFRESH_SECRET_BASE64}
     validity-in-seconds: 1209600 #14일
+
+security:
+  jwt:
+    secret: ${SPRING_SECURITY_JWT_SECRET}
+app:
+  websocket:
+    allowed-origins: http://localhost:5173,http://localhost:8080, ${FRONTEND_URL}

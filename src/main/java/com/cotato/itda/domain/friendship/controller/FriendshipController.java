@@ -56,7 +56,7 @@ public class FriendshipController implements FriendshipControllerDocs {
     @Override
     public ApiResponse<FriendshipResDTO.FriendshipListDTO> getFriendshipList(
             @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @RequestParam(required = false) List<FriendshipStatus> status,
+            @RequestParam(required = false, defaultValue = "ACTIVE") List<FriendshipStatus> status,
             @SortDefault(sort = "lastInteractedAt", direction = Sort.Direction.DESC) Sort sort
     ) {
         Long memberId = jwtPrincipal.memberId();

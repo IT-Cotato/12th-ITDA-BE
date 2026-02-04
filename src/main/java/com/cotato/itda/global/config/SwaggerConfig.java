@@ -125,6 +125,36 @@ public class SwaggerConfig {
     }
 
     @Bean
+    public GroupedOpenApi ChatApi() {
+        return GroupedOpenApi.builder()
+            .group("Chat")
+            .displayName("Chat API")
+            .packagesToScan("com.cotato.itda.domain.chat.controller")
+            .pathsToMatch("/api/chat/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi ChallengeApi() {
+        return GroupedOpenApi.builder()
+                .group("Challenge")
+                .displayName("Challenge API")
+                .packagesToScan("com.cotato.itda.domain.challenge.controller")
+                .pathsToMatch("/api/challenges/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi DiaryApi() {
+        return GroupedOpenApi.builder()
+                .group("Diary")
+                .displayName("Diary API")
+                .packagesToScan("com.cotato.itda.domain.diary.controller")
+                .pathsToMatch("/api/diaries/**")
+                .build();
+    }
+
+    @Bean
     public GroupedOpenApi GardenApi() {
         return GroupedOpenApi.builder()
                 .group("Garden")
