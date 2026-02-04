@@ -58,7 +58,7 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
                 .orElseThrow(() -> new PlantException(PlantErrorCode.NOT_FOUND));
 
         // 2. 두 유저가 활성 친구(ACTIVE) 상태인지 확인
-        if (!friendshipRepository.existsByMember_IdAndFriend_Id(inviterId, dto.inviteeId())) {
+        if (!friendshipRepository.existsByMemberIdAndFriendId(inviterId, dto.inviteeId())) {
             throw new FriendshipException(FriendshipErrorCode.NOT_ACTIVE);
         }
 

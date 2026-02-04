@@ -34,7 +34,7 @@ public class SharedPlantInviteQueryServiceImpl implements SharedPlantInviteQuery
         public PlantInviteResDTO.PlantInviteCandidatesResDto getInviteCandidates(Long memberId) {
 
                 // 1. friendship 도메인에서 ACTIVE 상태인 친구 목록 및 ID 가져오기
-                List<Friendship> totalFriends = friendshipRepository.findAllByMember_IdAndStatus(
+                List<Friendship> totalFriends = friendshipRepository.findAllByMemberIdAndStatus(
                                 memberId, FriendshipStatus.ACTIVE,
                                 Sort.by(Sort.Direction.DESC, "lastInteractedAt"));
 
@@ -78,7 +78,7 @@ public class SharedPlantInviteQueryServiceImpl implements SharedPlantInviteQuery
                                 .distinct()
                                 .toList();
 
-                List<Friendship> friendships = friendshipRepository.findAllByMember_IdAndFriend_IdInAndStatus(
+                List<Friendship> friendships = friendshipRepository.findAllByMemberIdAndFriendIdInAndStatus(
                                 memberId, inviterIds, FriendshipStatus.ACTIVE);
 
                 return SharedPlantInviteConverter.toMyPlantInviteListResDTO(invitations, friendships);
