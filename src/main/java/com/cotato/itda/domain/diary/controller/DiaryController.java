@@ -33,6 +33,7 @@ public class DiaryController {
             description = """
                         새로운 일기를 등록합니다. 
                         - 일기 날짜(YYYY-MM-dd), 이모지 코드값, 내용, 사진 URL을 request body로 전달받아 새 일기를 생성합니다.
+                        - request body에 일기 날짜를 포함하지 않는 경우 서버 기준 현재 날짜로 등록됩니다.
                         - 해당 날짜에 이미 작성된 일기가 존재하는 경우, 등록이 불가능합니다.
                         """
     )
@@ -49,7 +50,9 @@ public class DiaryController {
     ) {
         Long memberId = jwtPrincipal.memberId();
 
-        DiaryResponse response = diaryCommandService.createDiary(memberId, request);
+        LocalDate date = (request.date() != null) ? request.date() : LocalDate.now(ZoneId.of("Asia/Seoul"));
+
+        DiaryResponse response = diaryCommandService.createDiary(memberId, request, date);
         return ApiResponse.success(response);
     }
 
