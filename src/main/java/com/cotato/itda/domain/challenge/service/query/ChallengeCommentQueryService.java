@@ -2,8 +2,6 @@ package com.cotato.itda.domain.challenge.service.query;
 
 import com.cotato.itda.domain.challenge.converter.ChallengeCommentConverter;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeCommentListResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeCommentResponse;
-import com.cotato.itda.domain.challenge.dto.response.ChallengeListResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.entity.ChallengeComment;
 import com.cotato.itda.domain.challenge.repository.ChallengeCommentRepository;
@@ -12,7 +10,7 @@ import com.cotato.itda.domain.challenge.service.validator.ChallengeAccessValidat
 import com.cotato.itda.domain.friendship.entity.Friendship;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
 import com.cotato.itda.domain.member.entity.Member;
-import com.cotato.itda.global.error.constant.ChallengeErrorCode;
+import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

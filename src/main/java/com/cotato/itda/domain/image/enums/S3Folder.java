@@ -1,6 +1,4 @@
-package com.cotato.itda.global.common.constant;
-
-import com.fasterxml.jackson.annotation.JsonValue;
+package com.cotato.itda.domain.image.enums;
 
 /**
  * S3 버킷 내 prefix 구조 정의

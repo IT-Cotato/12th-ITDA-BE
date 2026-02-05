@@ -3,7 +3,7 @@ package com.cotato.itda.domain.challenge.service.validator;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
-import com.cotato.itda.global.error.constant.ChallengeErrorCode;
+import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

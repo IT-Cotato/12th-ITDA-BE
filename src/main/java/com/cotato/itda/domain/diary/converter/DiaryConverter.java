@@ -6,14 +6,15 @@ import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.diary.repository.projection.MonthlyDiaryInfo;
 import com.cotato.itda.domain.member.entity.Member;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class DiaryConverter {
 
-    public static Diary toEntity(DiaryRequest request, Member member) {
+    public static Diary toEntity(DiaryRequest request, LocalDate date, Member member) {
         return Diary.builder()
                 .member(member)
-                .date(request.date())
+                .date(date)
                 .emojiCode(request.emojiCode())
                 .content(request.content())
                 .imageUrl(request.imageUrl())

@@ -7,13 +7,14 @@ import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.diary.repository.DiaryRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
-import com.cotato.itda.global.error.constant.DiaryErrorCode;
+import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @Service
@@ -25,17 +26,17 @@ public class DiaryCommandService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public DiaryResponse createDiary(Long memberId, DiaryRequest request) {
+    public DiaryResponse createDiary(Long memberId, DiaryRequest request, LocalDate date) {
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, Map.of("userId", memberId)));
 
         // 해당 날짜 일기 중복 작성 방지
-        if (diaryRepository.existsByMemberIdAndDate(memberId, request.date())) {
+        if (diaryRepository.existsByMemberIdAndDate(memberId, date)) {
             throw new BusinessException(DiaryErrorCode.DIARY_ALREADY_EXISTS);
         }
 
-        Diary diary = DiaryConverter.toEntity(request, member);
+        Diary diary = DiaryConverter.toEntity(request, date, member);
         Diary savedDiary = diaryRepository.save(diary);
 
         member.addPoints(1);

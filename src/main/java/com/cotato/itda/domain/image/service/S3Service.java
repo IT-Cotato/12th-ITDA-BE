@@ -1,8 +1,8 @@
 package com.cotato.itda.domain.image.service;
 
 import com.cotato.itda.domain.image.dto.response.PresignedUrlResponse;
-import com.cotato.itda.global.common.constant.S3Folder;
-import com.cotato.itda.global.error.constant.ImageErrorCode;
+import com.cotato.itda.domain.image.enums.S3Folder;
+import com.cotato.itda.domain.image.exception.code.ImageErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

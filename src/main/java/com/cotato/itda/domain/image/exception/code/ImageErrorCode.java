@@ -1,5 +1,6 @@
-package com.cotato.itda.global.error.constant;
+package com.cotato.itda.domain.image.exception.code;
 
+import com.cotato.itda.global.error.constant.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

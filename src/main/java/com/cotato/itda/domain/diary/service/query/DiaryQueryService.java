@@ -14,7 +14,7 @@ import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
-import com.cotato.itda.global.error.constant.DiaryErrorCode;
+import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;

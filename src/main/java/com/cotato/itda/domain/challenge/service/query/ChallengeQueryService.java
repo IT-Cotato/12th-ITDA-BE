@@ -17,7 +17,7 @@ import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.domain.mission.entity.Mission;
 import com.cotato.itda.domain.mission.repository.MissionRepository;
-import com.cotato.itda.global.error.constant.ChallengeErrorCode;
+import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;

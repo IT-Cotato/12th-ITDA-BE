@@ -1,6 +1,6 @@
 package com.cotato.itda.domain.diary.enums;
 
-import com.cotato.itda.global.error.constant.DiaryErrorCode;
+import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;

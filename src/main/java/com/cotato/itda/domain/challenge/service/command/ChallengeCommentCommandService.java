@@ -10,7 +10,7 @@ import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
 import com.cotato.itda.domain.challenge.service.validator.ChallengeAccessValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
-import com.cotato.itda.global.error.constant.ChallengeErrorCode;
+import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
