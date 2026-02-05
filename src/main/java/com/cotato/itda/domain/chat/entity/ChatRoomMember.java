@@ -121,6 +121,7 @@ public class ChatRoomMember extends BaseTimeEntity {
 	}
 
 	// 읽음 처리
+	// 내가 메시지를 읽었거나/ 내가 보낸 메시지는 자동 읽음 처리해야 함
 	// readSeq: 읽은 메시지의 시퀀스 번호
 	// readMessageId: 읽은 메시지의 ID
 	public void markRead(long readSeq, Long readMesssageId) {
