@@ -2,12 +2,17 @@ package com.cotato.itda.domain.chat.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
+import com.cotato.itda.domain.chat.entity.QChatMessage;
+import com.cotato.itda.domain.chat.entity.QChatMessageAttachment;
 import com.cotato.itda.domain.chat.entity.QChatRoom;
 import com.cotato.itda.domain.chat.entity.QChatRoomMember;
 import com.cotato.itda.domain.chat.enums.MemberRoomStatus;
+import com.cotato.itda.domain.chat.enums.RoomType;
+import com.cotato.itda.domain.chat.repository.dto.MessageRow;
 import com.cotato.itda.domain.chat.repository.dto.MyRoomRow;
 import com.cotato.itda.domain.chat.repository.dto.OpponentRow;
 import com.cotato.itda.domain.member.entity.QMember;
@@ -126,6 +131,93 @@ public class ChatRoomQueryRepository {
 					.and(chatRoomMember.member.id.ne(myMemberId))
 					.and(chatRoomMember.status.eq(MemberRoomStatus.ACTIVE))
 			)
+			.fetch();
+	}
+
+	/**
+	 * DIRECT 방 resolve
+	 * - ACTIVE 상태인 멤버십이 둘 다 있어야 함
+	 * - 없으면 Optional.empty()
+	 * 빠르게 활성화된 멤버 둘 다 있는지 확인 후 방 ID 리턴
+	 */
+	public Optional<Long> resolveDirectRoomId(Long myMemberId, Long opponentMemberId) {
+		long low = Math.min(myMemberId, opponentMemberId);
+		long high = Math.max(myMemberId, opponentMemberId);
+
+		QChatRoom cr = QChatRoom.chatRoom;
+		QChatRoomMember m1 = QChatRoomMember.chatRoomMember;
+		QChatRoomMember m2 = new QChatRoomMember("m2");
+
+		Long roomId = queryFactory
+			.select(cr.id)
+			.from(cr)
+			// 방 타입은 DIRECT만
+			.where(
+				cr.roomType.eq(RoomType.DIRECT),
+				cr.directMemberLowId.eq(low),
+				cr.directMemberHighId.eq(high)
+			)
+			// 내 membership
+			.join(m1).on(m1.room.eq(cr))
+			// 상대 membership (같은 room)
+			.join(m2).on(m2.room.eq(cr))
+			.where(
+				m1.member.id.eq(myMemberId),
+				m1.status.eq(MemberRoomStatus.ACTIVE),
+				m2.member.id.eq(opponentMemberId),
+				m2.status.eq(MemberRoomStatus.ACTIVE)
+			)
+			.fetchFirst();
+
+		return Optional.ofNullable(roomId);
+	}
+
+	/**
+	 * 히스토리 조회 ( 커서 기반)
+	 * - cursorSeq가 null이면 최신부터
+	 * - cursorSeq가 있으면 message_seq < cursorSeq (더 과거로)
+	 * - limit+1로 hasNext 판정
+	 */
+	public List<MessageRow> findRoomMessagesSlice(
+		Long roomId,
+		Long cursorSeq,
+		int limitPlusOne
+	){
+		QChatMessage m = QChatMessage.chatMessage;
+		QChatMessageAttachment a = QChatMessageAttachment.chatMessageAttachment;
+
+		BooleanBuilder where = new BooleanBuilder();
+		where.and(m.room.id.eq(roomId));
+		where.and(m.deletedAt.isNull());
+
+		// cursorSeq가 있으면 where 조건 추가
+		// 더 과거 메시지로
+		if(cursorSeq!=null){
+			where.and(m.messageSeq.lt(cursorSeq));
+		}
+
+		return queryFactory
+			.select(Projections.constructor(
+				MessageRow.class,
+				m.id,
+				m.messageSeq,
+				m.sender.id,
+				m.messageType,
+				m.content,
+				m.createdAt,
+
+				a.attachmentType,
+				a.objectKey,
+				a.mimeType,
+				a.sizeBytes,
+				a.status,
+				a.durationMs
+			))
+			.from(m)
+			.leftJoin(a).on(a.message.eq(m))
+			.where(where)
+			.orderBy(m.messageSeq.desc())
+			.limit(limitPlusOne)
 			.fetch();
 	}
 

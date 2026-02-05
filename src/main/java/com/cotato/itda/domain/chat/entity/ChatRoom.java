@@ -60,10 +60,28 @@ public class ChatRoom extends BaseTimeEntity {
 	@Column(name = "room_type", nullable = false, length = 20)
 	private RoomType roomType;
 
+	@Column(name = "direct_member_low_id")
+	private Long directMemberLowId;
+
+	@Column(name = "direct_member_high_id")
+	private Long directMemberHighId;
+
 	@Builder
-	private ChatRoom(String roomName, RoomType roomType) {
+	private ChatRoom(String roomName, RoomType roomType, Long directMemberLowId, Long directMemberHighId) {
+		this.directMemberLowId = directMemberLowId;
+		this.directMemberHighId = directMemberHighId;
 		this.roomName = roomName;
 		this.roomType = roomType;
+	}
+
+	public static ChatRoom createDirectRoom(Long myId, Long opponentId) {
+		Long lowId = Math.min(myId, opponentId);
+		Long highId = Math.max(myId, opponentId);
+		return ChatRoom.builder()
+			.roomType(RoomType.DIRECT)
+			.directMemberLowId(lowId)
+			.directMemberHighId(highId)
+			.build();
 	}
 
 	public void updateLastMessageCache(

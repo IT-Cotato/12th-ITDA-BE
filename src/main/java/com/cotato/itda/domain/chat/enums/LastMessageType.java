@@ -4,5 +4,6 @@ public enum LastMessageType {
 	TEXT,
 	IMAGE,
 	VOICE,
-	FILE
+	FILE,
+	ATTACHMENT
 }

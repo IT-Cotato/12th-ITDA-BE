@@ -11,6 +11,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ChatErrorCode implements ErrorCode {
 
+	INVALID_REQUEST_BOTH_ROOMID_OPPONENTID_NULL(
+		HttpStatus.BAD_REQUEST,
+		"roomId와 opponentMemberId가 모두 null일 수 없습니다.",
+		"CHAT_ERROR_400_INVALID_REQUEST_BOTH_ROOMID_OPPONENTID_NULL"
+	),
 	INVALID_CURSOR(
 		HttpStatus.BAD_REQUEST,
 		"잘못된 커서입니다.",
