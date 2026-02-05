@@ -3,7 +3,7 @@ package com.cotato.itda.domain.diary.validator;
 import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
-import com.cotato.itda.global.error.constant.DiaryErrorCode;
+import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

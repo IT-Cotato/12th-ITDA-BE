@@ -1,6 +1,6 @@
 package com.cotato.itda.domain.image.dto.request;
 
-import com.cotato.itda.global.common.constant.S3Folder;
+import com.cotato.itda.domain.image.enums.S3Folder;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

@@ -1,12 +1,13 @@
-package com.cotato.itda.global.error.constant;
+package com.cotato.itda.domain.diary.exception.code;
 
+import com.cotato.itda.global.error.constant.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum DiaryErrorCode implements ErrorCode{
+public enum DiaryErrorCode implements ErrorCode {
 
     DIARY_ALREADY_EXISTS(HttpStatus.CONFLICT, "해당 날짜에 일기를 이미 작성했습니다.", "DIARY_ERROR_409_DIARY_ALREADY_EXISTS"),
     DIARY_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 일기를 찾을 수 없습니다.", "DIARY_ERROR_404_DIARY_NOT_FOUND"),
