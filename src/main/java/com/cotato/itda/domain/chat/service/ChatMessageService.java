@@ -91,9 +91,7 @@ public class ChatMessageService {
 		if (roomId == null) {
 			log.info("[방 resolve 시작] senderMemberId={}, opponentMemberId={}", senderMemberId, opponentMemberId);
 
-			// ⚠️ 버그 포인트: 지금 코드는 orElseGet 결과(기존방/신규방)를 구분하지 못해서 isRoomCreatedNow=true로 고정됨
-			// 아래 로그로 실제로 새로 만든 건지 확인 가능하게 분기 로그를 넣는다.
-			Long resolvedRoomId = chatRoomQueryRepository.resolveDirectRoomId(senderMemberId, opponentMemberId)
+		Long resolvedRoomId = chatRoomQueryRepository.resolveDirectRoomId(senderMemberId, opponentMemberId)
 				.orElse(null);
 
 			if (resolvedRoomId != null) {
@@ -129,16 +127,17 @@ public class ChatMessageService {
 			log.info("[방 결정 완료] 요청에 roomId 포함. roomId={}", roomId);
 		}
 
-		// ===== [3] 권한 체크 =====
-		log.info("[권한 체크] senderMemberId={} 가 roomId={} ACTIVE 멤버인지 확인", senderMemberId, roomId);
 
 		final Long lockedRoomId = roomId; // 람다 내에서 사용하기 위한 final 변수
+
 		ChatRoomMember myMembership = chatRoomMemberRepository
-			.findOneByRoomMemberStatus(roomId, senderMemberId, MemberRoomStatus.ACTIVE)
-			.orElseThrow(() -> {
-				log.warn("[권한 체크 실패] senderMemberId={} 는 roomId={} ACTIVE 멤버가 아님", senderMemberId, lockedRoomId);
-				return new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
-			});
+			.findByRoomIdAndMemberId(roomId, senderMemberId)
+			.orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+
+		if (myMembership.getStatus() == MemberRoomStatus.KICKED) {
+			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
+		}
+
 
 		log.info("[권한 체크 성공] senderMemberId={} 는 roomId={} ACTIVE 멤버", senderMemberId, roomId);
 
@@ -155,6 +154,9 @@ public class ChatMessageService {
 		long lastSeq = (lastMessageSeq == null) ? 0L : lastMessageSeq;
 		long nextSeq = lastSeq + 1;
 
+		if (myMembership.getStatus() == MemberRoomStatus.LEFT) {
+			myMembership.rejoin(nextSeq);
+		}
 		log.info("[seq 발급] roomId={}, lastSeq={}, nextSeq={}", roomId, lastSeq, nextSeq);
 
 		ChatMessage message = ChatMessage.createChatMessage(
@@ -322,8 +324,19 @@ public class ChatMessageService {
 		int limitPlusOne = safeLimit + 1;
 
 		log.info("[히스토리 조회 파라미터] safeLimit={}, limitPlusOne={}, cursorSeq={}", safeLimit, limitPlusOne, cursorSeq);
+		ChatRoomMember myMembership = chatRoomMemberRepository
+			.findByRoomIdAndMemberId(roomId, memberId)
+			.orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+		if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
+		}
+		// 내가 볼 수 있는 최초 메시지 시퀀스
+		// 재입장 이후 메시지부터 보임
+		// null이면 처음부터 다 보여줌
+		// null이면 한 번도 나가지 않은 것
+		Long visibleFromSeq = myMembership.getJoinSeq();
 
-		List<MessageRow> fetched = chatRoomQueryRepository.findRoomMessagesSlice(roomId, cursorSeq, limitPlusOne);
+		List<MessageRow> fetched = chatRoomQueryRepository.findRoomMessagesSlice(roomId, cursorSeq,visibleFromSeq, limitPlusOne);
 
 		boolean hasNext = fetched.size() > safeLimit;
 		List<MessageRow> page = hasNext ? fetched.subList(0, safeLimit) : fetched;
