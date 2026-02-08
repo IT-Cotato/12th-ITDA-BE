@@ -129,13 +129,13 @@ public class ChatRoomMember extends BaseTimeEntity {
 		this.lastReadMessageId = readMesssageId;
 	}
 
-	public void setStatus(MemberRoomStatus status) {
-		this.status = status;
-		if (status == MemberRoomStatus.LEFT || status == MemberRoomStatus.KICKED) {
-			this.inactiveAt = LocalDateTime.now();
-		} else {
-			this.inactiveAt = null;
-		}
+	public void kick(){
+		this.status = MemberRoomStatus.KICKED;
+		this.inactiveAt = LocalDateTime.now();
+	}
+	public void leave() {
+		this.status = MemberRoomStatus.LEFT;
+		this.inactiveAt = LocalDateTime.now();
 	}
 
 	// 채팅 주제 변경

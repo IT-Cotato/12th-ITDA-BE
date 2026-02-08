@@ -12,10 +12,17 @@ import com.cotato.itda.domain.chat.controller.dto.ChatRoomListItemDto;
 import com.cotato.itda.domain.chat.controller.dto.ChatRoomSliceResponse;
 import com.cotato.itda.domain.chat.controller.dto.DirectRoomResolveResponse;
 import com.cotato.itda.domain.chat.controller.dto.OpponentSummaryDto;
+import com.cotato.itda.domain.chat.entity.ChatRoom;
+import com.cotato.itda.domain.chat.entity.ChatRoomMember;
+import com.cotato.itda.domain.chat.enums.MemberRoomStatus;
 import com.cotato.itda.domain.chat.enums.RoomType;
+import com.cotato.itda.domain.chat.exception.code.ChatErrorCode;
+import com.cotato.itda.domain.chat.repository.ChatRoomMemberRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomQueryRepository;
+import com.cotato.itda.domain.chat.repository.ChatRoomRepository;
 import com.cotato.itda.domain.chat.repository.dto.MyRoomRow;
 import com.cotato.itda.domain.chat.repository.dto.OpponentRow;
+import com.cotato.itda.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +33,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ChatRoomService {
 	private final ChatRoomQueryRepository chatRoomQueryRepository;
+	private final ChatRoomRepository chatRoomRepository;
+	private final ChatRoomMemberRepository chatRoomMemberRepository;
 
 	public ChatRoomSliceResponse getMyRooms(
 		Long memberId,
@@ -198,5 +207,23 @@ public class ChatRoomService {
 				);
 				return new DirectRoomResolveResponse(false, null);
 			});
+	}
+
+	@Transactional
+	public void leaveRoom(Long memberId, Long roomId){
+		log.info("[채팅방 나가기 시작] memberId={}, roomId={}", memberId, roomId);
+
+		// 채팅방 존재하는지 조회
+		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
+			.orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
+
+		//현재 ACTIVE로 속해있는지 확인
+		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
+			roomId, memberId, MemberRoomStatus.ACTIVE
+		).orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
+
+		chatRoomMember.leave();
+
+
 	}
 }

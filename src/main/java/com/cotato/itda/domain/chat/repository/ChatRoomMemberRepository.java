@@ -27,6 +27,8 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 		@Param("status") MemberRoomStatus status
 	);
 
+	Optional<ChatRoomMember> findByRoomIdAndMemberId(Long roomId, Long memberId);
+
 	// 특정 roomId의 멤버 중 내가 아닌 멤버(상대)를 찾는 쿼리
 	// DIRECT에서만 사용
 	@Query("""

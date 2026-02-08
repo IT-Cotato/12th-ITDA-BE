@@ -151,21 +151,18 @@ public class ChatRoomQueryRepository {
 		Long roomId = queryFactory
 			.select(cr.id)
 			.from(cr)
-			// 방 타입은 DIRECT만
 			.where(
 				cr.roomType.eq(RoomType.DIRECT),
 				cr.directMemberLowId.eq(low),
 				cr.directMemberHighId.eq(high)
 			)
-			// 내 membership
 			.join(m1).on(m1.room.eq(cr))
-			// 상대 membership (같은 room)
 			.join(m2).on(m2.room.eq(cr))
 			.where(
 				m1.member.id.eq(myMemberId),
-				m1.status.eq(MemberRoomStatus.ACTIVE),
+				m1.status.ne(MemberRoomStatus.KICKED),   //  ACTIVE 조건 제거, KICKED만 제외
 				m2.member.id.eq(opponentMemberId),
-				m2.status.eq(MemberRoomStatus.ACTIVE)
+				m2.status.ne(MemberRoomStatus.KICKED)    //  ACTIVE 조건 제거, KICKED만 제외
 			)
 			.fetchFirst();
 
@@ -181,6 +178,7 @@ public class ChatRoomQueryRepository {
 	public List<MessageRow> findRoomMessagesSlice(
 		Long roomId,
 		Long cursorSeq,
+		Long visibleFromSeq, //이 seq부터는 이 사람이 볼 수 있다 (재입장 이후)
 		int limitPlusOne
 	){
 		QChatMessage m = QChatMessage.chatMessage;
@@ -190,9 +188,20 @@ public class ChatRoomQueryRepository {
 		where.and(m.room.id.eq(roomId));
 		where.and(m.deletedAt.isNull());
 
+		// 재입장 이후만 보이게
+		if(visibleFromSeq != null){
+			// goe: greater or equal -> 크거나 같은 값
+			// message_seq >= visibleFromSeq
+			where.and(m.messageSeq.goe(visibleFromSeq));
+		}
 		// cursorSeq가 있으면 where 조건 추가
 		// 더 과거 메시지로
+		// 만약 cursorSeq가 visibleFromSeq 이하이면 빈 리스트 반환
+		// 왜냐하면 그 이후 메시지는 안 보이기 때문
 		if(cursorSeq!=null){
+			if (visibleFromSeq != null && cursorSeq <= visibleFromSeq) {
+				return List.of();
+			}
 			where.and(m.messageSeq.lt(cursorSeq));
 		}
 

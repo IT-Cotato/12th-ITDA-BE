@@ -6,6 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -112,5 +113,15 @@ public class ChatRoomController {
 		Long memberId = jwtPrincipal.memberId();
 		ChatMessageSliceResponse response = chatMessageService.getRoomMessages(memberId, roomId, limit, cursorSeq);
 		return ApiResponse.success(response);
+	}
+
+	@PostMapping("/left/{roomId}")
+	public ApiResponse<Void> leaveRoom(
+		@AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+		@PathVariable Long roomId
+	){
+		Long memberId = jwtPrincipal.memberId();
+		chatRoomService.leaveRoom(memberId, roomId);
+		return ApiResponse.success(null);
 	}
 }
