@@ -11,6 +11,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ChatErrorCode implements ErrorCode {
 
+	// 현재 상태가 ACTIVE가 아닙니다
+	CHAT_ROOM_MEMBER_STATUS_INVALID(
+		HttpStatus.BAD_REQUEST,
+		"현재 채팅 방 멤버의 상태가 유효하지 않습니다.",
+		"CHAT_ERROR_400_ROOM_MEMBER_STATUS_INVALID"
+	),
+
+
 	INVALID_REQUEST_BOTH_ROOMID_OPPONENTID_NULL(
 		HttpStatus.BAD_REQUEST,
 		"roomId와 opponentMemberId가 모두 null일 수 없습니다.",
