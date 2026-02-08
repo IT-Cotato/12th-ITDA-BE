@@ -124,4 +124,26 @@ public class ChatRoomController {
 		chatRoomService.leaveRoom(memberId, roomId);
 		return ApiResponse.success(null);
 	}
+
+	@PostMapping("/toggle-ai/{roomId}")
+	public ApiResponse<Void> toggleAiMode(
+		@AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+		@PathVariable Long roomId,
+		@RequestParam boolean enabled
+	) {
+		Long memberId = jwtPrincipal.memberId();
+		chatRoomService.toggleAiMode(memberId, roomId,enabled);
+		return ApiResponse.success(null);
+	}
+
+	@PostMapping("/toggle-notification/{roomId}")
+	public ApiResponse<Void> toggleNotification(
+		@AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+		@PathVariable Long roomId,
+		@RequestParam boolean enabled
+	) {
+		Long memberId = jwtPrincipal.memberId();
+		chatRoomService.toggleNotification(memberId, roomId, enabled);
+		return ApiResponse.success(null);
+	}
 }

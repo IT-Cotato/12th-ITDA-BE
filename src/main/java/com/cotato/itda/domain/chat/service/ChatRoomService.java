@@ -226,4 +226,30 @@ public class ChatRoomService {
 
 
 	}
+
+	// AI 모드 토글
+	@Transactional
+	public void toggleAiMode(Long memberId, Long roomId, boolean enabled) {
+		log.info("[AI 모드 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
+
+		//현재 ACTIVE로 속해있는지 확인
+		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
+			roomId, memberId, MemberRoomStatus.ACTIVE
+		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
+
+		chatRoomMember.setAiModeEnabled(enabled);
+	}
+
+	// 알림 설정 토글
+	@Transactional
+	public void toggleNotification(Long memberId, Long roomId, boolean enabled) {
+		log.info("[알림 설정 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
+
+		//현재 ACTIVE로 속해있는지 확인
+		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
+			roomId, memberId, MemberRoomStatus.ACTIVE
+		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
+		chatRoomMember.setNotificationEnabled(enabled);
+	}
+
 }
