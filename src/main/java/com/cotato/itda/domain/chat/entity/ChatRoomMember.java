@@ -150,9 +150,18 @@ public class ChatRoomMember extends BaseTimeEntity {
 		this.chatFrequency = frequency;
 	}
 
-	public void leave(MemberRoomStatus reason, LocalDateTime when) {
-		this.status = reason;
-		this.inactiveAt = when;
+	public void setAiModeEnabled(boolean enabled){
+		if(this.status  != MemberRoomStatus.ACTIVE){
+			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
+		}
+		this.aiModeEnabled = enabled;
+	}
+
+	public void setNotificationEnabled(boolean enabled) {
+		if (this.status != MemberRoomStatus.ACTIVE) {
+			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID);
+		}
+		this.notificationEnabled = enabled;
 	}
 
 	public void rejoin(long newJoinSeq) {
