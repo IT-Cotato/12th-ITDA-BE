@@ -9,6 +9,16 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ChatTopicErrorCode implements ErrorCode {
 
+    CHAT_TOPIC_TEMPLATE_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT_TOPIC_ERROR_404_CHAT_TOPIC_TEMPLATE_NOT_FOUND",
+            "대화 주제 템플릿을 찾을 수 없습니다."
+    ),
+    CHAT_TOPIC_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            "CHAT_TOPIC_ERROR_404_CHAT_TOPIC_NOT_FOUND",
+            "대화 주제를 찾을 수 없습니다."
+    ),
     NOT_FOUND(
             HttpStatus.NOT_FOUND,
             "CHAT_TOPIC_ERROR_404_NOT_FOUND",

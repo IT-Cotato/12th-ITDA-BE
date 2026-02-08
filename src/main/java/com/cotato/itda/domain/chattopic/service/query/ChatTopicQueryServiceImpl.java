@@ -23,4 +23,6 @@ public class ChatTopicQueryServiceImpl implements ChatTopicQueryService {
 
         return ChatTopicConverter.toChatTopicListDTO(chatTopics);
     }
+
+
 }
