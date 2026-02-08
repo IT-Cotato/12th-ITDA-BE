@@ -1,6 +1,5 @@
-package com.cotato.itda.domain.chat.entity;
+package com.cotato.itda.domain.chattopic.entity;
 
-import com.cotato.itda.domain.chattopic.entity.ChatTopic;
 import com.cotato.itda.global.entity.BaseTimeEntity;
 
 import jakarta.persistence.Column;
