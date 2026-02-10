@@ -1,5 +1,6 @@
 package com.cotato.itda.domain.garden.dto.res;
 
+import com.cotato.itda.domain.garden.enums.GardenState;
 import com.cotato.itda.domain.garden.enums.PlantStage;
 import com.cotato.itda.domain.garden.enums.SharedPlantStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -11,7 +12,32 @@ import java.util.List;
 public class SharedPlantResDTO {
 
     @Builder
+    @Schema(description = "식물 액션 후 공통 응답 DTO")
+    public record PlantActionResDTO(
+            @Schema(description = "공유 식물 ID", example = "1")
+            Long sharedPlantId,
+            @Schema(description = "성장 정도", example = "12")
+            Integer growthValue,
+            @Schema(description = "성장 퍼센티지", example = "45")
+            Integer percentage,
+            @Schema(description = "성장 단계", example = "SPROUT")
+            PlantStage growthStage,
+            @Schema(description = "정원 상태", example = "WATERED_RECENTLY")
+            GardenState gardenState,
+            @Schema(description = "DB 상태", example = "GROWING")
+            SharedPlantStatus status,
+            @JsonProperty("isSoloMode")
+            @Schema(description = "혼자 돌봄 모드 여부", example = "false")
+            boolean isSoloMode,
+            @Schema(description = "마지막으로 물 준 회원 정보")
+            LastWateredByDTO lastWateredBy,
+            @Schema(description = "현재 회원이 보유한 영양제 총 개수", example = "10")
+            Integer nutrientCount
+    ) {}
+
+    @Builder
     @Schema(description = "물 주기 후 식물 정보 응답 DTO")
+    @Deprecated
     public record WaterInfoResDTO(
             @Schema(description = "공유 식물 ID", example = "1")
             Long sharedPlantId,

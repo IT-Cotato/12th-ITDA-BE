@@ -2,13 +2,13 @@ package com.cotato.itda.domain.garden.repository;
 
 import com.cotato.itda.domain.garden.entity.SharedPlant;
 import com.cotato.itda.domain.garden.entity.SharedPlantLog;
-import com.cotato.itda.domain.member.entity.Member;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface SharedPlantLogRepository extends JpaRepository<SharedPlantLog, Long> {
 
@@ -28,4 +28,6 @@ public interface SharedPlantLogRepository extends JpaRepository<SharedPlantLog, 
             @Param("sharedPlantIds") List<Long> sharedPlantIds,
             @Param("memberId") Long memberId
     );
+
+    Optional<SharedPlantLog> findTopBySharedPlantOrderByCreatedAtDesc(SharedPlant sharedPlant);
 }

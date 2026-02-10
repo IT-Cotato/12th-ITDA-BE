@@ -5,6 +5,7 @@ import com.cotato.itda.domain.garden.dto.SharedPlantWithFriendship;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
 import com.cotato.itda.domain.garden.entity.SharedPlantInvite;
+import com.cotato.itda.domain.garden.enums.GardenState;
 import com.cotato.itda.domain.member.entity.Member;
 
 import java.time.LocalDateTime;
@@ -110,6 +111,33 @@ public class SharedPlantConverter {
                 .lastWateredBy(lastWateredBy)
                 .status(sharedPlant.getStatus())
                 .isSoloMode(sharedPlant.getIsSoloMode())
+                .nutrientCount(currentMember.getNutrientCount())
+                .build();
+    }
+
+    public static SharedPlantResDTO.PlantActionResDTO toPlantActionResDTO(
+            SharedPlant sharedPlant,
+            Member currentMember,
+            GardenState gardenState,
+            int percentage
+    ) {
+        SharedPlantResDTO.LastWateredByDTO lastWateredBy = null;
+        if (sharedPlant.getLastWateredBy() != null) {
+            lastWateredBy = SharedPlantResDTO.LastWateredByDTO.builder()
+                    .memberId(sharedPlant.getLastWateredBy())
+                    .isMe(sharedPlant.getLastWateredBy().equals(currentMember.getId()))
+                    .build();
+        }
+
+        return SharedPlantResDTO.PlantActionResDTO.builder()
+                .sharedPlantId(sharedPlant.getId())
+                .growthValue(sharedPlant.getGrowthValue())
+                .percentage(percentage)
+                .growthStage(sharedPlant.getGrowthStage())
+                .gardenState(gardenState)
+                .status(sharedPlant.getStatus())
+                .isSoloMode(sharedPlant.getIsSoloMode())
+                .lastWateredBy(lastWateredBy)
                 .nutrientCount(currentMember.getNutrientCount())
                 .build();
     }

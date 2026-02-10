@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -51,6 +52,9 @@ public class SharedPlant extends BaseEntity {
     @Column(name = "last_watered_by")
     private Long lastWateredBy;
 
+    @Column(name = "last_watered_at")
+    private LocalDateTime lastWateredAt;
+
     @Column(name = "is_solo_mode", nullable = false)
     @Builder.Default
     private Boolean isSoloMode = false;
@@ -63,6 +67,10 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private SharedPlantStatus status = SharedPlantStatus.GROWING;
 
+    @Column(name = "is_planted", nullable = false)
+    @Builder.Default
+    private boolean isPlanted = false;
+
     public void water(int growthValue, Member member, boolean isFirst) {
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
@@ -70,6 +78,7 @@ public class SharedPlant extends BaseEntity {
         else this.dailyGrowthCount++;
         this.lastWateredBy = member.getId();
         this.growthDate = LocalDate.now();
+        this.lastWateredAt = LocalDateTime.now();
     }
 
     public void nutrient(int growthValue, Member member) {
@@ -93,5 +102,9 @@ public class SharedPlant extends BaseEntity {
 
     public boolean hasReachedMaxGrowth() {
         return this.growthValue >= this.plant.getBloomMax();
+    }
+
+    public void plant() {
+        this.isPlanted = true;
     }
 }

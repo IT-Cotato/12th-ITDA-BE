@@ -31,6 +31,7 @@ public enum SharedPlantErrorCode implements ErrorCode {
             "SHARED_PLANT_400_NO_PERMISSION_TO_WATER_SOLO_PLANT",
             "혼자 돌봄 모드에서 물을 줄 권한이 없습니다."
     ),
+
     CANNOT_WATER_CONSECUTIVELY(
             HttpStatus.BAD_REQUEST,
             "SHARED_PLANT_400_CANNOT_WATER_CONSECUTIVELY",
@@ -57,7 +58,7 @@ public enum SharedPlantErrorCode implements ErrorCode {
 
     SHARED_PLANT_NOT_FOUND(
             HttpStatus.NOT_FOUND,
-            "SHARED_PLANT_400_SHARED_PLANT_NOT_FOUND",
+            "SHARED_PLANT_404_SHARED_PLANT_NOT_FOUND",
             "함께 키우는 식물을 찾지 못했습니다."
     ),
 
@@ -85,6 +86,17 @@ public enum SharedPlantErrorCode implements ErrorCode {
             "시든 식물에는 영양제가 필요합니다."
     ),
 
+    ALREADY_PLANTED(
+            HttpStatus.BAD_REQUEST,
+            "SHARED_PLANT_400_ALREADY_PLANTED",
+            "이미 씨앗이 심겨진 식물입니다."
+    ),
+
+    NOT_PLANTED(
+            HttpStatus.BAD_REQUEST,
+            "SHARED_PLANT_400_NOT_PLANTED",
+            "아직 씨앗이 심기지 않았습니다."
+    ),
     ;
 
     private final HttpStatus httpStatus;

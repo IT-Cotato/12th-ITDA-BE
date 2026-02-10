@@ -45,6 +45,10 @@ public class Plant extends BaseEntity {
     @Column(name = "bloom_max", nullable = false)
     private int bloomMax;
 
+    @Column(name = "unlock_required", nullable = false)
+    @Builder.Default
+    private int unlockRequired = 0;
+
     public PlantStage calculateGrowthStage(int growthValue) {
         if (growthValue <= seedMax) return PlantStage.SEED;
         else if (growthValue <= sproutMax) return PlantStage.SPROUT;
