@@ -58,6 +58,9 @@ signup:
     resend-windows-seconds: 60
   draft-ttl-minutes: 60
 
+password-reset:
+  draft-ttl-minutes: 60
+
 jwt:
   access:
     algorithm: HS256

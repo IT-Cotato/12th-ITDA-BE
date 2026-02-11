@@ -38,18 +38,25 @@ dependencyManagement {
  * Querydsl Q 클래스 생성 위치 (빌드 디렉토리)
  * - 생성물은 빌드 결과물이므로 Git에 커밋하지 않는 게 정석
  */
-def querydslDir = "$buildDir/generated/querydsl"
+def querydslDir = layout.buildDirectory.dir("generated/querydsl")
+def querydslTestDir = layout.buildDirectory.dir("generated/querydslTest")
 
-sourceSets {
-	main {
-		java {
-			srcDirs += querydslDir
-		}
-	}
+tasks.named('compileJava', JavaCompile) {
+	options.generatedSourceOutputDirectory.set(querydslDir)
 }
 
-tasks.withType(JavaCompile).configureEach {
-	options.generatedSourceOutputDirectory.set(file(querydslDir))
+tasks.named('compileTestJava', JavaCompile) {
+	options.generatedSourceOutputDirectory.set(querydslTestDir)
+}
+
+// IDE에서 소스처럼 보이게 하고 싶으면(선택)
+sourceSets {
+	main {
+		java.srcDir(querydslDir)
+	}
+	test {
+		java.srcDir(querydslTestDir)
+	}
 }
 
 tasks.named("clean") {
