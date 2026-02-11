@@ -7,7 +7,6 @@ import com.cotato.itda.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -42,13 +41,6 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private PlantStage growthStage = PlantStage.SEED;
 
-    @Column(name = "daily_growth_count", nullable = false)
-    @Builder.Default
-    private int dailyGrowthCount = 0;
-
-    @Column(name = "growth_date")
-    private LocalDate growthDate;
-
     @Column(name = "last_watered_by")
     private Long lastWateredBy;
 
@@ -71,13 +63,10 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private boolean isPlanted = false;
 
-    public void water(int growthValue, Member member, boolean isFirst) {
+    public void water(int growthValue, Member member) {
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
-        if (isFirst) this.dailyGrowthCount = 1;
-        else this.dailyGrowthCount++;
         this.lastWateredBy = member.getId();
-        this.growthDate = LocalDate.now();
         this.lastWateredAt = LocalDateTime.now();
     }
 

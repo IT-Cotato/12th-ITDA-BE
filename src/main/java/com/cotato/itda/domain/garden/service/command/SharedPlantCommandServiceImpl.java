@@ -3,8 +3,6 @@ package com.cotato.itda.domain.garden.service.command;
 import com.cotato.itda.domain.garden.converter.SharedPlantLogConverter;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
-import com.cotato.itda.domain.garden.entity.SharedPlantLog;
-import com.cotato.itda.domain.garden.enums.GardenTimeRule;
 import com.cotato.itda.domain.garden.enums.GrowthType;
 import com.cotato.itda.domain.garden.enums.SharedPlantStatus;
 import com.cotato.itda.domain.garden.exception.SharedPlantException;
@@ -12,6 +10,7 @@ import com.cotato.itda.domain.garden.exception.code.SharedPlantErrorCode;
 import com.cotato.itda.domain.garden.repository.SharedPlantLogRepository;
 import com.cotato.itda.domain.garden.repository.SharedPlantRepository;
 import com.cotato.itda.domain.garden.service.PlantActionResponseBuilder;
+import com.cotato.itda.domain.garden.service.SharedPlantValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.UserErrorCode;
@@ -19,9 +18,6 @@ import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -32,55 +28,39 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
     private final MemberRepository memberRepository;
     private final SharedPlantLogRepository sharedPlantLogRepository;
     private final PlantActionResponseBuilder plantActionResponseBuilder;
+    private final SharedPlantValidator sharedPlantValidator;
 
     @Override
     public SharedPlantResDTO.PlantActionResDTO water(Long sharedPlantId, Long memberId) {
         Member member = findMemberById(memberId);
         SharedPlant sharedPlant = findSharedPlantById(sharedPlantId);
-        validateParticipant(sharedPlant, memberId);
 
-        if (!sharedPlant.isPlanted()) {
-            throw new SharedPlantException(SharedPlantErrorCode.NOT_PLANTED);
-        }
+        // 참여자 검증
+        sharedPlantValidator.validateParticipant(sharedPlant, memberId);
 
-        if (sharedPlant.getStatus() == SharedPlantStatus.COMPLETED) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_ACTION_COMPLETED_PLANT);
-        }
-
+        // 물주기 가능 여부 검증
+        sharedPlantValidator.validateCanWater(sharedPlant, memberId);
 
         boolean wasWithered = sharedPlant.getStatus() == SharedPlantStatus.WITHERED;
-        if (wasWithered && sharedPlant.getLastWateredAt() != null
-                && ChronoUnit.HOURS.between(sharedPlant.getLastWateredAt(), LocalDateTime.now()) >= GardenTimeRule.NUTRITION_AVAILABLE.getHours()) {
-            SharedPlantLog lastLog = sharedPlantLogRepository.findTopBySharedPlantOrderByCreatedAtDesc(sharedPlant).orElse(null);
 
-            boolean isAfterMyNutrition = lastLog != null
-                    && lastLog.isUsedNutrient()
-                    && lastLog.getWateredBy().equals(memberId);
-
-            if (!isAfterMyNutrition) {
-                throw new SharedPlantException(SharedPlantErrorCode.WITHERED_REQUIRES_NUTRIENT);
-            }
-        }
-
+        // 혼자 돌봄 모드 종료 로직
         if (sharedPlant.getIsSoloMode() && !memberId.equals(sharedPlant.getSoloPowerMemberId())) {
             sharedPlant.exitSoloMode();
         }
 
-        if (sharedPlant.getLastWateredBy() != null && memberId.equals(sharedPlant.getLastWateredBy())) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_WATER_CONSECUTIVELY);
-        }
+        sharedPlant.water(GrowthType.WATER.getGrowth(), member);
 
-        boolean isFirst = sharedPlant.getLastWateredAt() == null && sharedPlant.getLastWateredBy() == null && sharedPlant.getGrowthDate() == null;
-        sharedPlant.water(GrowthType.WATER.getGrowth(), member, isFirst);
-
+        // WITHERED 상태에서 물을 주면 GROWING으로
         if (wasWithered) {
             sharedPlant.revive();
         }
 
+        // 성장 완료 시 COMPLETED로
         if (sharedPlant.hasReachedMaxGrowth()) {
             sharedPlant.complete();
         }
 
+        // 로그 저장
         sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.WATER.getGrowth(), false));
 
         return plantActionResponseBuilder.build(sharedPlant, member);
@@ -90,32 +70,21 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
     public SharedPlantResDTO.PlantActionResDTO giveNutrient(Long sharedPlantId, Long memberId) {
         Member member = findMemberById(memberId);
         SharedPlant sharedPlant = findSharedPlantById(sharedPlantId);
-        validateParticipant(sharedPlant, memberId);
 
-        if (!sharedPlant.isPlanted()) {
-            throw new SharedPlantException(SharedPlantErrorCode.NOT_PLANTED);
-        }
+        // 참여자 검증
+        sharedPlantValidator.validateParticipant(sharedPlant, memberId);
 
-        if (sharedPlant.getStatus() == SharedPlantStatus.COMPLETED) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_ACTION_COMPLETED_PLANT);
-        }
+        // 영양제 주기 가능 여부 검증
+        sharedPlantValidator.validateCanGiveNutrient(sharedPlant, member);
 
-        if (sharedPlant.getStatus() != SharedPlantStatus.WITHERED
-                || sharedPlant.getLastWateredAt() == null
-                || ChronoUnit.HOURS.between(sharedPlant.getLastWateredAt(), LocalDateTime.now()) < GardenTimeRule.NUTRITION_AVAILABLE.getHours()) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_GIVE_NUTRIENT);
-        }
-
-        if (member.getNutrientCount() <= 0) {
-            throw new SharedPlantException(SharedPlantErrorCode.DONT_HAVE_NUTRIENT);
-        }
-
+        // 혼자 돌봄 모드 -> 공동 돌봄 모드로
         if (sharedPlant.getIsSoloMode() && !memberId.equals(sharedPlant.getSoloPowerMemberId())) {
             sharedPlant.exitSoloMode();
         }
 
         sharedPlant.nutrient(GrowthType.NUTRIENT.getGrowth(), member);
 
+        // 로그 저장
         sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.NUTRIENT.getGrowth(), true));
 
         return plantActionResponseBuilder.build(sharedPlant, member);
@@ -125,11 +94,12 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
     public SharedPlantResDTO.PlantActionResDTO plantSeed(Long sharedPlantId, Long memberId) {
         Member member = findMemberById(memberId);
         SharedPlant sharedPlant = findSharedPlantById(sharedPlantId);
-        validateParticipant(sharedPlant, memberId);
 
-        if (sharedPlant.isPlanted()) {
-            throw new SharedPlantException(SharedPlantErrorCode.ALREADY_PLANTED);
-        }
+        // 참여자 검증
+        sharedPlantValidator.validateParticipant(sharedPlant, memberId);
+
+        // 심어지지 않은 상태 검증
+        sharedPlantValidator.validateNotPlanted(sharedPlant);
 
         sharedPlant.plant();
 
@@ -144,11 +114,5 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
     private SharedPlant findSharedPlantById(Long sharedPlantId) {
         return sharedPlantRepository.findById(sharedPlantId)
                 .orElseThrow(() -> new SharedPlantException(SharedPlantErrorCode.SHARED_PLANT_NOT_FOUND));
-    }
-
-    private void validateParticipant(SharedPlant sharedPlant, Long memberId) {
-        if (!(memberId.equals(sharedPlant.getMemberA().getId()) || memberId.equals(sharedPlant.getMemberB().getId()))) {
-            throw new SharedPlantException(SharedPlantErrorCode.NOT_A_PARTICIPANT);
-        }
     }
 }
