@@ -1,6 +1,5 @@
 package com.cotato.itda.domain.garden.service.command;
 
-import com.cotato.itda.domain.garden.dto.req.SharedPlantReqDTO;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 
 public interface SharedPlantCommandService {
