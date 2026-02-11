@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.cotato.itda.domain.signup.config.SignupProperties;
 import com.cotato.itda.domain.signup.dto.response.CreateDraftResponse;
 import com.cotato.itda.domain.signup.dto.SignupDraftRedisValue;
 import com.cotato.itda.domain.signup.dto.TermsItem;
