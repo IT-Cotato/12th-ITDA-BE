@@ -68,3 +68,28 @@ security:
 app:
   websocket:
     allowed-origins: http://localhost:5173,http://localhost:8080, ${FRONTEND_URL}
+
+signup:
+  otp:
+    length: 4
+    ttl-seconds: 180
+    resend-windows-seconds: 60
+  draft-ttl-minutes: 60
+
+password-reset:
+  draft-ttl-minutes: 60
+
+gemini:
+  base-url: https://generativelanguage.googleapis.com
+  model: gemini-2.5-flash-lite
+  api-key: ${GEMINI_API_KEY}
+  temperature: 0.8
+  max-output-tokens: 512
+
+feign:
+  client:
+    config:
+      geminiClient:
+        connectTimeout: 3000
+        readTimeout: 7000
+        loggerLevel: basic

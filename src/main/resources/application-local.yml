@@ -82,3 +82,18 @@ app:
 logging:
   level:
     org.springframework.messaging: DEBUG
+
+gemini:
+  base-url: https://generativelanguage.googleapis.com
+  model: gemini-2.5-flash-lite
+  api-key: ${GEMINI_API_KEY}
+  temperature: 0.8
+  max-output-tokens: 512
+
+feign:
+  client:
+    config:
+      geminiClient:
+        connectTimeout: 3000
+        readTimeout: 7000
+        loggerLevel: basic
