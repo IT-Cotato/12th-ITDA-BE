@@ -75,6 +75,15 @@ public class SwaggerConfig {
             .build();
     }
     @Bean
+    public GroupedOpenApi passwordResetApi() {
+        return GroupedOpenApi.builder()
+            .group("PasswordReset")
+            .displayName("PasswordReset API")
+            .packagesToScan("com.cotato.itda.domain.passwordreset.controller")
+            .pathsToMatch("/api/password-reset/**")
+            .build();
+    }
+    @Bean
     public GroupedOpenApi MemberApi() {
         return GroupedOpenApi.builder()
             .group("Member")
