@@ -36,27 +36,6 @@ public class SharedPlantResDTO {
     ) {}
 
     @Builder
-    @Schema(description = "물 주기 후 식물 정보 응답 DTO")
-    @Deprecated
-    public record WaterInfoResDTO(
-            @Schema(description = "공유 식물 ID", example = "1")
-            Long sharedPlantId,
-            @Schema(description = "성장 정도", example = "12")
-            Integer growthValue,
-            @Schema(description = "성장 단계", example = "SPROUT")
-            PlantStage growthStage,
-            @Schema(description = "마지막으로 물 준 회원 정보")
-            LastWateredByDTO lastWateredBy,
-            @Schema(description = "공유 식물의 현재 상태", example = "GROWING")
-            SharedPlantStatus status,
-            @JsonProperty("isSoloMode")
-            @Schema(description = "혼자 돌봄 모드 여부", example = "false")
-            boolean isSoloMode,
-            @Schema(description = "현재 회원이 보유한 영양제 총 개수", example = "10")
-            Integer nutrientCount
-    ) {}
-
-    @Builder
     @Schema(description = "마지막으로 물 준 회원 정보 DTO")
     public record LastWateredByDTO(
             @Schema(description = "회원 ID", example = "1")

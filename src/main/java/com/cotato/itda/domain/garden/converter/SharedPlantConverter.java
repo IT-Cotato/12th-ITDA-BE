@@ -101,20 +101,6 @@ public class SharedPlantConverter {
                 .build();
     }
 
-    public static SharedPlantResDTO.WaterInfoResDTO toWaterInfoResDTO(SharedPlant sharedPlant, Member currentMember) {
-        SharedPlantResDTO.LastWateredByDTO lastWateredBy = toLastWateredByDTO(currentMember);
-
-        return SharedPlantResDTO.WaterInfoResDTO.builder()
-                .sharedPlantId(sharedPlant.getId())
-                .growthValue(sharedPlant.getGrowthValue())
-                .growthStage(sharedPlant.getGrowthStage())
-                .lastWateredBy(lastWateredBy)
-                .status(sharedPlant.getStatus())
-                .isSoloMode(sharedPlant.getIsSoloMode())
-                .nutrientCount(currentMember.getNutrientCount())
-                .build();
-    }
-
     public static SharedPlantResDTO.PlantActionResDTO toPlantActionResDTO(
             SharedPlant sharedPlant,
             Member currentMember,
