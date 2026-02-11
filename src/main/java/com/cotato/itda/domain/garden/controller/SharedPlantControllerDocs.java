@@ -49,8 +49,9 @@ public interface SharedPlantControllerDocs {
             """)
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "씨앗이 심어지지 않음 / 연속 물주기 불가 / 영양제 필요 / 참여자가 아님"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "씨앗이 심어지지 않음 / 연속 물주기 불가 / 영양제 필요 / 완료된 식물"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "참여자가 아님"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "공유 식물을 찾을 수 없음")
     })
     @PostMapping("/{sharedPlantId}/water")
@@ -59,11 +60,36 @@ public interface SharedPlantControllerDocs {
             @Parameter(description = "공유 식물 ID") @PathVariable(name = "sharedPlantId") Long sharedPlantId
     );
 
+    @Operation(summary = "영양제 주기 API By 정원", description = """
+            시든 식물에 영양제를 줍니다.
+
+            **영양제 규칙:**
+            - 72시간 이상 물을 주지 않은 경우에만 사용 가능
+            - 영양제 투여 후 같은 사람이 물을 줘야 식물이 회복됩니다
+            - 영양제 보유 개수가 1개 이상이어야 합니다
+
+            **상태 변화:**
+            - NUTRITION_AVAILABLE (72h+) → AFTER_NUTRITION
+            """)
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "씨앗이 심어지지 않음 / 영양제를 줄 수 없음 / 영양제 없음 / 완료된 식물"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "참여자가 아님"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "공유 식물을 찾을 수 없음")
+    })
+    @PostMapping("/{sharedPlantId}/nutrient")
+    ApiResponse<SharedPlantResDTO.PlantActionResDTO> giveNutrient(
+            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @Parameter(description = "공유 식물 ID") @PathVariable(name = "sharedPlantId") Long sharedPlantId
+    );
+
     @Operation(summary = "씨앗 심기 API By 정원", description = "초대 수락 후 씨앗을 심습니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 심어진 식물 / 참여자가 아님"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "이미 심어진 식물 / 완료된 식물"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "참여자가 아님"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "공유 식물을 찾을 수 없음")
     })
     @PostMapping("/{sharedPlantId}/plant")

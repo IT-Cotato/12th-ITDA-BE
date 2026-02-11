@@ -41,6 +41,14 @@ public class SharedPlantController implements SharedPlantControllerDocs {
         return ApiResponse.success(sharedPlantCommandService.water(sharedPlantId, jwtPrincipal.memberId()));
     }
 
+    @PostMapping("/{sharedPlantId}/nutrient")
+    public ApiResponse<SharedPlantResDTO.PlantActionResDTO> giveNutrient(
+            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @PathVariable(name = "sharedPlantId") Long sharedPlantId
+    ) {
+        return ApiResponse.success(sharedPlantCommandService.giveNutrient(sharedPlantId, jwtPrincipal.memberId()));
+    }
+
     @PostMapping("/{sharedPlantId}/plant")
     public ApiResponse<SharedPlantResDTO.PlantActionResDTO> plantSeed(
             @AuthenticationPrincipal JwtPrincipal jwtPrincipal,

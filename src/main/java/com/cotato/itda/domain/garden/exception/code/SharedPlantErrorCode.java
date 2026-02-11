@@ -69,15 +69,15 @@ public enum SharedPlantErrorCode implements ErrorCode {
     ),
 
     NOT_A_PARTICIPANT(
-            HttpStatus.BAD_REQUEST,
-            "SHARED_PLANT_400_NOT_A_PARTICIPANT",
+            HttpStatus.FORBIDDEN,
+            "SHARED_PLANT_403_NOT_A_PARTICIPANT",
             "함께 키우는 식물 참여자가 아닙니다."
     ),
 
-    CANNOT_WATER_COMPLETED_PLANT(
+    CANNOT_ACTION_COMPLETED_PLANT(
             HttpStatus.BAD_REQUEST,
-            "SHARED_PLANT_400_CANNOT_WATER_COMPLETED_PLANT",
-            "키우기가 완료된 식물에는 물을 줄 수 없습니다."
+            "SHARED_PLANT_400_CANNOT_ACTION_COMPLETED_PLANT",
+            "키우기가 완료된 식물에는 행동할 수 없습니다."
     ),
 
     WITHERED_REQUIRES_NUTRIENT(
@@ -96,6 +96,12 @@ public enum SharedPlantErrorCode implements ErrorCode {
             HttpStatus.BAD_REQUEST,
             "SHARED_PLANT_400_NOT_PLANTED",
             "아직 씨앗이 심기지 않았습니다."
+    ),
+
+    CANNOT_GIVE_NUTRIENT(
+            HttpStatus.BAD_REQUEST,
+            "SHARED_PLANT_400_CANNOT_GIVE_NUTRIENT",
+            "아직 영양제를 줄 수 없습니다."
     ),
     ;
 

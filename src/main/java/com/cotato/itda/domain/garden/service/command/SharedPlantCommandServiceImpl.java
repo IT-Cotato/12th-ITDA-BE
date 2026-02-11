@@ -56,7 +56,7 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         }
 
         if (sharedPlant.getStatus() == SharedPlantStatus.COMPLETED) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_WATER_COMPLETED_PLANT);
+            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_ACTION_COMPLETED_PLANT);
         }
 
         boolean wasWithered = sharedPlant.getStatus() == SharedPlantStatus.WITHERED;
@@ -115,7 +115,7 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         }
 
         if (sharedPlant.getStatus() == SharedPlantStatus.COMPLETED) {
-            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_WATER_COMPLETED_PLANT);
+            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_ACTION_COMPLETED_PLANT);
         }
 
 
@@ -153,6 +153,41 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         }
 
         sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.WATER.getGrowth(), false));
+
+        return plantActionResponseBuilder.build(sharedPlant, member);
+    }
+
+    @Override
+    public SharedPlantResDTO.PlantActionResDTO giveNutrient(Long sharedPlantId, Long memberId) {
+        Member member = findMemberById(memberId);
+        SharedPlant sharedPlant = findSharedPlantById(sharedPlantId);
+        validateParticipant(sharedPlant, memberId);
+
+        if (!sharedPlant.isPlanted()) {
+            throw new SharedPlantException(SharedPlantErrorCode.NOT_PLANTED);
+        }
+
+        if (sharedPlant.getStatus() == SharedPlantStatus.COMPLETED) {
+            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_ACTION_COMPLETED_PLANT);
+        }
+
+        if (sharedPlant.getStatus() != SharedPlantStatus.WITHERED
+                || sharedPlant.getLastWateredAt() == null
+                || ChronoUnit.HOURS.between(sharedPlant.getLastWateredAt(), LocalDateTime.now()) < GardenTimeRule.NUTRITION_AVAILABLE.getHours()) {
+            throw new SharedPlantException(SharedPlantErrorCode.CANNOT_GIVE_NUTRIENT);
+        }
+
+        if (member.getNutrientCount() <= 0) {
+            throw new SharedPlantException(SharedPlantErrorCode.DONT_HAVE_NUTRIENT);
+        }
+
+        if (sharedPlant.getIsSoloMode() && !memberId.equals(sharedPlant.getSoloPowerMemberId())) {
+            sharedPlant.exitSoloMode();
+        }
+
+        sharedPlant.nutrient(GrowthType.NUTRIENT.getGrowth(), member);
+
+        sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.NUTRIENT.getGrowth(), true));
 
         return plantActionResponseBuilder.build(sharedPlant, member);
     }
