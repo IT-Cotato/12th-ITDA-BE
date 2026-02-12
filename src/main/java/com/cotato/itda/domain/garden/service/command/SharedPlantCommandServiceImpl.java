@@ -1,5 +1,6 @@
 package com.cotato.itda.domain.garden.service.command;
 
+import com.cotato.itda.domain.garden.converter.SharedPlantConverter;
 import com.cotato.itda.domain.garden.converter.SharedPlantLogConverter;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
@@ -9,7 +10,7 @@ import com.cotato.itda.domain.garden.exception.SharedPlantException;
 import com.cotato.itda.domain.garden.exception.code.SharedPlantErrorCode;
 import com.cotato.itda.domain.garden.repository.SharedPlantLogRepository;
 import com.cotato.itda.domain.garden.repository.SharedPlantRepository;
-import com.cotato.itda.domain.garden.service.PlantActionResponseBuilder;
+import com.cotato.itda.domain.garden.service.GardenStateCalculator;
 import com.cotato.itda.domain.garden.service.SharedPlantValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
@@ -27,7 +28,7 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
     private final SharedPlantRepository sharedPlantRepository;
     private final MemberRepository memberRepository;
     private final SharedPlantLogRepository sharedPlantLogRepository;
-    private final PlantActionResponseBuilder plantActionResponseBuilder;
+    private final GardenStateCalculator gardenStateCalculator;
     private final SharedPlantValidator sharedPlantValidator;
 
     @Override
@@ -63,7 +64,11 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         // 로그 저장
         sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.WATER.getGrowth(), false));
 
-        return plantActionResponseBuilder.build(sharedPlant, member);
+        return SharedPlantConverter.toPlantActionResDTO(
+                sharedPlant, member,
+                gardenStateCalculator.calculateState(sharedPlant),
+                gardenStateCalculator.calculatePercentage(sharedPlant)
+        );
     }
 
     @Override
@@ -87,7 +92,11 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         // 로그 저장
         sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.NUTRIENT.getGrowth(), true));
 
-        return plantActionResponseBuilder.build(sharedPlant, member);
+        return SharedPlantConverter.toPlantActionResDTO(
+                sharedPlant, member,
+                gardenStateCalculator.calculateState(sharedPlant),
+                gardenStateCalculator.calculatePercentage(sharedPlant)
+        );
     }
 
     @Override
@@ -103,7 +112,11 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
 
         sharedPlant.plant();
 
-        return plantActionResponseBuilder.build(sharedPlant, member);
+        return SharedPlantConverter.toPlantActionResDTO(
+                sharedPlant, member,
+                gardenStateCalculator.calculateState(sharedPlant),
+                gardenStateCalculator.calculatePercentage(sharedPlant)
+        );
     }
 
     private Member findMemberById(Long memberId) {

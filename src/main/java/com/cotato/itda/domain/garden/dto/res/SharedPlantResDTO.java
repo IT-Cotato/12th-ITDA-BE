@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class SharedPlantResDTO {
@@ -73,17 +74,21 @@ public class SharedPlantResDTO {
             String nickname,
             @Schema(description = "성장 정도", example = "0")
             int growthValue,
+            @Schema(description = "성장 퍼센티지", example = "45")
+            int percentage,
             @Schema(description = "성장 단계", example = "SEED")
             PlantStage growthStage,
-            @Schema(description = "상태", example = "GROWING")
+            @Schema(description = "정원 상태", example = "WATERABLE")
+            GardenState gardenState,
+            @Schema(description = "DB 상태", example = "GROWING")
             SharedPlantStatus status,
             @JsonProperty("isSoloMode")
             @Schema(description = "혼자 돌봄 모드 여부", example = "false")
             boolean isSoloMode,
             @Schema(description = "마지막으로 물 준 회원 정보")
             LastWateredByDTO lastWateredBy,
-            @Schema(description = "내가 마지막으로 물 준 시간 (물을 준 적 없으면 null)", example = "2025-01-15 14:30")
-            String myLastWateredAt,
+            @Schema(description = "마지막으로 물 준 시간")
+            LocalDateTime lastWateredAt,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
             String createdAt
     ) {}

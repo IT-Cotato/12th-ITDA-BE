@@ -7,10 +7,10 @@ import com.cotato.itda.domain.garden.converter.SharedPlantConverter;
 import com.cotato.itda.domain.garden.dto.SharedPlantWithFriendship;
 import com.cotato.itda.domain.garden.dto.res.SharedPlantResDTO;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
-import com.cotato.itda.domain.garden.entity.SharedPlantLog;
+import com.cotato.itda.domain.garden.enums.GardenState;
 import com.cotato.itda.domain.garden.enums.SharedPlantStatus;
-import com.cotato.itda.domain.garden.repository.SharedPlantLogRepository;
 import com.cotato.itda.domain.garden.repository.SharedPlantRepository;
+import com.cotato.itda.domain.garden.service.GardenStateCalculator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.UserErrorCode;
@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,9 +29,9 @@ import java.util.stream.Collectors;
 public class SharedPlantQueryServiceImpl implements SharedPlantQueryService {
 
     private final SharedPlantRepository sharedPlantRepository;
-    private final SharedPlantLogRepository sharedPlantLogRepository;
     private final FriendshipRepository friendshipRepository;
     private final MemberRepository memberRepository;
+    private final GardenStateCalculator gardenStateCalculator;
 
     @Override
     public SharedPlantResDTO.SharedPlantInfoListDTO getSharedPlants(Long memberId, List<SharedPlantStatus> statuses) {
@@ -74,20 +73,19 @@ public class SharedPlantQueryServiceImpl implements SharedPlantQueryService {
                 })
                 .toList();
 
-        // 5. 현재 멤버의 마지막 물주기 시간 조회
-        List<Long> sharedPlantIds = sharedPlants.stream()
-                .map(SharedPlant::getId)
+        // 5. DTO 변환 (gardenState, percentage 계산 포함)
+        List<SharedPlantResDTO.SharedPlantInfoDTO> sharedPlantInfoDTOs = pairs.stream()
+                .filter(pair -> pair.friendship() != null)
+                .map(pair -> {
+                    SharedPlant sp = pair.sharedPlant();
+                    GardenState gardenState = gardenStateCalculator.calculateState(sp);
+                    int percentage = gardenStateCalculator.calculatePercentage(sp);
+                    return SharedPlantConverter.toSharedPlantInfoDTO(
+                            sp, pair.friendship(), memberId, gardenState, percentage
+                    );
+                })
                 .toList();
 
-        List<SharedPlantLog> latestLogs = sharedPlantLogRepository.findLatestLogsBySharedPlantIdsAndMemberId(
-                sharedPlantIds, memberId);
-
-        Map<Long, LocalDateTime> myLastWateredAtMap = latestLogs.stream()
-                .collect(Collectors.toMap(
-                        log -> log.getSharedPlant().getId(),
-                        SharedPlantLog::getWateredAt
-                ));
-
-        return SharedPlantConverter.toSharedPlantInfoListDTO(pairs, member.getNutrientCount(), memberId, myLastWateredAtMap);
+        return SharedPlantConverter.toSharedPlantInfoListDTO(sharedPlantInfoDTOs, member.getNutrientCount());
     }
 }

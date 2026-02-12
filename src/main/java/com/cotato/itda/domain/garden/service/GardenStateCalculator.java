@@ -18,7 +18,7 @@ public class GardenStateCalculator {
 
     private final SharedPlantLogRepository sharedPlantLogRepository;
 
-    public GardenState calculate(SharedPlant plant) {
+    public GardenState calculateState(SharedPlant plant) {
         if (plant.getStatus() == SharedPlantStatus.COMPLETED) return GardenState.COMPLETED;
         if (!plant.isPlanted()) return GardenState.SEED_READY;
 
@@ -37,5 +37,13 @@ public class GardenStateCalculator {
         if (log.isStageChanged()) return GardenState.GROWING;
         if (hours <= 24) return GardenState.WATERED_RECENTLY;
         return GardenState.WATERABLE;
+    }
+
+    public int calculatePercentage(SharedPlant plant) {
+        int bloomMax = plant.getPlant().getBloomMax();
+        if (bloomMax <= 0) return 0;
+
+        int percentage = (plant.getGrowthValue() * 100) / bloomMax;
+        return Math.min(percentage, 100);
     }
 }
