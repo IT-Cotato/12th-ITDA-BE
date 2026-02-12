@@ -2,6 +2,7 @@ package com.cotato.itda.domain.websocket.dto;
 
 import java.time.LocalDateTime;
 
+import com.cotato.itda.domain.chat.controller.dto.ChatMessageItemDto;
 import com.cotato.itda.domain.chat.enums.AttachmentStatus;
 import com.cotato.itda.domain.chat.enums.AttachmentType;
 import com.cotato.itda.domain.chat.enums.MessageType;
@@ -20,7 +21,7 @@ public record ChatRoomMessageDto(
 	MessageType messageType,
 	String content,
 	LocalDateTime createdAt,
-	Attachment attachment
+	ChatMessageItemDto.AttachmentMeta attachment
 ) {
 	@Builder
 	public record Attachment(
