@@ -56,7 +56,7 @@ public class SharedPlantResDTO {
             @Schema(description = "식물 닉네임", example = "두쫀쿠")
             String nickname,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
-            String createdAt
+            LocalDateTime createdAt
     ) {}
 
     @Builder
@@ -90,7 +90,7 @@ public class SharedPlantResDTO {
             @Schema(description = "마지막으로 물 준 시간")
             LocalDateTime lastWateredAt,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
-            String createdAt
+            LocalDateTime createdAt
     ) {}
 
     @Builder

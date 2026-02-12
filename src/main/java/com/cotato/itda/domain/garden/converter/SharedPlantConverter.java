@@ -12,8 +12,6 @@ import java.util.List;
 
 public class SharedPlantConverter {
 
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-
     public static SharedPlant toSharedPlant(SharedPlantInvite invite) {
         Member inviter = invite.getInviter();
         Member invitee = invite.getInvitee();
@@ -34,7 +32,7 @@ public class SharedPlantConverter {
                 .sharedPlantId(sharedPlant.getId())
                 .plantId(sharedPlant.getPlant().getId())
                 .nickname(sharedPlant.getNickname())
-                .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
+                .createdAt(sharedPlant.getCreatedAt())
                 .build();
     }
 
@@ -47,10 +45,7 @@ public class SharedPlantConverter {
     ) {
         SharedPlantResDTO.LastWateredByDTO lastWateredBy = null;
         if (sharedPlant.getLastWateredBy() != null) {
-            lastWateredBy = SharedPlantResDTO.LastWateredByDTO.builder()
-                    .memberId(sharedPlant.getLastWateredBy())
-                    .isMe(sharedPlant.getLastWateredBy().equals(currentMemberId))
-                    .build();
+            lastWateredBy = SharedPlantConverter.toLastWateredByDTO(sharedPlant, currentMemberId);
         }
 
         return SharedPlantResDTO.SharedPlantInfoDTO.builder()
@@ -67,7 +62,7 @@ public class SharedPlantConverter {
                 .isSoloMode(sharedPlant.getIsSoloMode())
                 .lastWateredBy(lastWateredBy)
                 .lastWateredAt(sharedPlant.getLastWateredAt())
-                .createdAt(sharedPlant.getCreatedAt().format(FORMATTER))
+                .createdAt(sharedPlant.getCreatedAt())
                 .build();
     }
 
@@ -82,10 +77,10 @@ public class SharedPlantConverter {
                 .build();
     }
 
-    public static SharedPlantResDTO.LastWateredByDTO toLastWateredByDTO(Member member) {
+    public static SharedPlantResDTO.LastWateredByDTO toLastWateredByDTO(SharedPlant sharedPlant, Long currentMemberId) {
         return SharedPlantResDTO.LastWateredByDTO.builder()
-                .memberId(member.getId())
-                .isMe(true)
+                .memberId(sharedPlant.getLastWateredBy())
+                .isMe(sharedPlant.getLastWateredBy().equals(currentMemberId))
                 .build();
     }
 
@@ -97,10 +92,7 @@ public class SharedPlantConverter {
     ) {
         SharedPlantResDTO.LastWateredByDTO lastWateredBy = null;
         if (sharedPlant.getLastWateredBy() != null) {
-            lastWateredBy = SharedPlantResDTO.LastWateredByDTO.builder()
-                    .memberId(sharedPlant.getLastWateredBy())
-                    .isMe(sharedPlant.getLastWateredBy().equals(currentMember.getId()))
-                    .build();
+            lastWateredBy = SharedPlantConverter.toLastWateredByDTO(sharedPlant, currentMember.getId());
         }
 
         return SharedPlantResDTO.PlantActionResDTO.builder()
