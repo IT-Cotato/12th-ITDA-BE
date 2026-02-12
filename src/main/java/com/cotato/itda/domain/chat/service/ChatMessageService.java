@@ -8,15 +8,19 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.cotato.itda.domain.chat.controller.dto.ChatAttachmentRequest;
 import com.cotato.itda.domain.chat.controller.dto.ChatMessageItemDto;
 import com.cotato.itda.domain.chat.controller.dto.ChatMessageSliceResponse;
 import com.cotato.itda.domain.chat.entity.ChatMessage;
+import com.cotato.itda.domain.chat.entity.ChatMessageAttachment;
 import com.cotato.itda.domain.chat.entity.ChatRoom;
 import com.cotato.itda.domain.chat.entity.ChatRoomMember;
+import com.cotato.itda.domain.chat.enums.AttachmentStatus;
 import com.cotato.itda.domain.chat.enums.LastMessageType;
 import com.cotato.itda.domain.chat.enums.MemberRoomStatus;
 import com.cotato.itda.domain.chat.enums.MessageType;
 import com.cotato.itda.domain.chat.exception.code.ChatErrorCode;
+import com.cotato.itda.domain.chat.repository.ChatMessageAttachmentRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomMemberRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomQueryRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomRepository;
@@ -44,7 +48,7 @@ public class ChatMessageService {
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomQueryRepository chatRoomQueryRepository;
-
+	private final ChatMessageAttachmentRepository chatMessageAttachmentRepository;
 	private final MemberRepository memberRepository;
 
 	private final SimpMessagingTemplate messagingTemplate;
@@ -68,6 +72,7 @@ public class ChatMessageService {
 			throw new BusinessException(ChatErrorCode.INVALID_REQUEST_BOTH_ROOMID_OPPONENTID_NULL);
 		}
 
+		validateSendRequest(req);
 		// ===== [1] 발신자 조회 =====
 		log.info("[발신자 조회] senderMemberId={} 조회 시작", senderMemberId);
 		Member sender = memberRepository.findById(senderMemberId)
@@ -172,6 +177,23 @@ public class ChatMessageService {
 			roomId, message.getId(), message.getMessageSeq(), senderMemberId, req.messageType()
 		);
 
+		ChatMessageAttachment savedAttachment = null;
+		if (req.messageType() == MessageType.ATTACHMENT) {
+
+			ChatAttachmentRequest a = req.attachment();
+
+			ChatMessageAttachment attachment = ChatMessageAttachment.builder()
+				.message(message)
+				.attachmentType(a.attachmentType())
+				.objectKey(a.objectKey())
+				.mimeType(a.mimeType())
+				.sizeBytes(a.sizeBytes())
+				.durationMs(a.durationMs())
+				.status(AttachmentStatus.READY) // 초기 상태는 READY
+				.build();
+
+			savedAttachment = chatMessageAttachmentRepository.save(attachment);
+		}
 		// ===== [5] 내 메시지 자동 읽음 처리 =====
 		myMembership.markRead(nextSeq, message.getId());
 		log.info("[읽음 처리] senderMemberId={} 가 보낸 메시지 자동 읽음 처리. roomId={}, readSeq={}, readMessageId={}",
@@ -210,6 +232,19 @@ public class ChatMessageService {
 		log.info("[상대 조회] roomId={}, senderMemberId={}, opponentId={}",
 			roomId, senderMemberId, opponentId
 		);
+		ChatMessageItemDto.AttachmentMeta meta = null;
+
+		if (savedAttachment != null) {
+			meta = ChatMessageItemDto.AttachmentMeta.builder()
+				.attachmentType(savedAttachment.getAttachmentType())
+				.objectKey(savedAttachment.getObjectKey())
+				.mimeType(savedAttachment.getMimeType())
+				.sizeBytes(savedAttachment.getSizeBytes())
+				.status(savedAttachment.getStatus())
+				.durationMs(savedAttachment.getDurationMs())
+				.build();
+		}
+
 
 		// ===== [8] 방 토픽 발행 =====
 		ChatRoomMessageDto roomMessageDto = ChatRoomMessageDto.builder()
@@ -220,7 +255,7 @@ public class ChatMessageService {
 			.messageType(req.messageType())
 			.content(req.content())
 			.createdAt(now)
-			.attachment(null)
+			.attachment(meta)
 			.build();
 
 		String roomTopicDest = "/topic/chat/rooms/" + roomId;
@@ -378,5 +413,31 @@ public class ChatMessageService {
 			.hasNext(hasNext)
 			.nextCursorSeq(nextCursor)
 			.build();
+	}
+
+	private void validateSendRequest(ChatSendMessageRequest req) {
+		if (req.messageType() == MessageType.TEXT) {
+			if (req.content() == null || req.content().isBlank()) {
+				throw new BusinessException(ChatErrorCode.INVALID_MESSAGE_CONTENT);
+			}
+			if (req.attachment() != null) {
+				throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_FOR_TEXT);
+			}
+			return;
+		}
+
+		// ATTACHMENT
+		if (req.attachment() == null) {
+			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_REQUIRED);
+		}
+		if (req.attachment().objectKey() == null || req.attachment().objectKey().isBlank()) {
+			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
+		}
+
+		// 보안/검증: objectKey 접두어 제한 추천
+		// 예: attachments/ 로 시작하는 것만 허용
+		if (!req.attachment().objectKey().startsWith("attachments/")) {
+			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
+		}
 	}
 }
