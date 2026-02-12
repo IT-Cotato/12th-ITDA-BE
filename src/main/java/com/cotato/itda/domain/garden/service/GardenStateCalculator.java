@@ -21,20 +21,21 @@ public class GardenStateCalculator {
     public GardenState calculateState(SharedPlant plant) {
         if (plant.getStatus() == SharedPlantStatus.COMPLETED) return GardenState.COMPLETED;
         if (!plant.isPlanted()) return GardenState.SEED_READY;
+        if (plant.getLastWateredAt() == null) return GardenState.WATERABLE;
+
+        long hours = ChronoUnit.HOURS.between(plant.getLastWateredAt(), LocalDateTime.now());
 
         Optional<SharedPlantLog> lastLog = sharedPlantLogRepository.findTopBySharedPlantOrderByCreatedAtDesc(plant);
-        if (lastLog.isEmpty()) return GardenState.SEED_READY;
-
-        SharedPlantLog log = lastLog.get();
-        long hours = ChronoUnit.HOURS.between(log.getWateredAt(), LocalDateTime.now());
-
-        if (log.isUsedNutrient() && plant.getStatus() == SharedPlantStatus.WITHERED) {
-            return GardenState.AFTER_NUTRITION;
+        if (lastLog.isPresent()) {
+            SharedPlantLog log = lastLog.get();
+            if (log.isUsedNutrient() && plant.getStatus() == SharedPlantStatus.WITHERED) {
+                return GardenState.AFTER_NUTRITION;
+            }
+            if (log.isStageChanged() && hours <= 24) return GardenState.GROWING;
         }
 
         if (hours >= 72) return GardenState.NUTRITION_AVAILABLE;
         if (hours >= 48) return GardenState.WITHERED;
-        if (log.isStageChanged()) return GardenState.GROWING;
         if (hours <= 24) return GardenState.WATERED_RECENTLY;
         return GardenState.WATERABLE;
     }

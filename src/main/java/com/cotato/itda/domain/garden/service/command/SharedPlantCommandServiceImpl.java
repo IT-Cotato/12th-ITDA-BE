@@ -49,7 +49,7 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
             sharedPlant.exitSoloMode();
         }
 
-        sharedPlant.water(GrowthType.WATER.getGrowth(), member);
+        boolean stageChanged = sharedPlant.water(GrowthType.WATER.getGrowth(), member);
 
         // WITHERED 상태에서 물을 주면 GROWING으로
         if (wasWithered) {
@@ -62,7 +62,7 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         }
 
         // 로그 저장
-        sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.WATER.getGrowth(), false));
+        sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.WATER.getGrowth(), false, stageChanged));
 
         return SharedPlantConverter.toPlantActionResDTO(
                 sharedPlant, member,
@@ -87,10 +87,10 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
             sharedPlant.exitSoloMode();
         }
 
-        sharedPlant.nutrient(GrowthType.NUTRIENT.getGrowth(), member);
+        boolean stageChanged = sharedPlant.nutrient(GrowthType.NUTRIENT.getGrowth(), member);
 
         // 로그 저장
-        sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.NUTRIENT.getGrowth(), true));
+        sharedPlantLogRepository.save(SharedPlantLogConverter.toSharedPlantLog(sharedPlant, memberId, true, GrowthType.NUTRIENT.getGrowth(), true, stageChanged));
 
         return SharedPlantConverter.toPlantActionResDTO(
                 sharedPlant, member,

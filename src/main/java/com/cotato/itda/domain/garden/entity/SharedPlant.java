@@ -63,17 +63,21 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private boolean isPlanted = false;
 
-    public void water(int growthValue, Member member) {
+    public boolean water(int growthValue, Member member) {
+        PlantStage previousStage = this.growthStage;
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
         this.lastWateredBy = member.getId();
         this.lastWateredAt = LocalDateTime.now();
+        return this.growthStage != previousStage;
     }
 
-    public void nutrient(int growthValue, Member member) {
+    public boolean nutrient(int growthValue, Member member) {
+        PlantStage previousStage = this.growthStage;
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
         member.decreaseNutrient();
+        return this.growthStage != previousStage;
     }
 
     public void exitSoloMode() {

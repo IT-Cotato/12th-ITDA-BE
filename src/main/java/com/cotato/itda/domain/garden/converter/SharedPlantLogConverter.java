@@ -10,7 +10,8 @@ public class SharedPlantLogConverter {
             Long wateredBy,
             boolean affectedGrowth,
             int growthIncrement,
-            boolean usedNutrient
+            boolean usedNutrient,
+            boolean stageChanged
     ) {
         return SharedPlantLog.builder()
                 .sharedPlant(sharedPlant)
@@ -18,6 +19,7 @@ public class SharedPlantLogConverter {
                 .affectedGrowth(affectedGrowth)
                 .growthIncrement(growthIncrement)
                 .usedNutrient(usedNutrient)
+                .stageChanged(stageChanged)
                 .build();
     }
 }
