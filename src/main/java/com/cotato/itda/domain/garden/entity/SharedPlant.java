@@ -89,10 +89,6 @@ public class SharedPlant extends BaseEntity {
         this.status = SharedPlantStatus.COMPLETED;
     }
 
-    public void revive() {
-        this.status = SharedPlantStatus.GROWING;
-    }
-
     public boolean hasReachedMaxGrowth() {
         return this.growthValue >= this.plant.getBloomMax();
     }

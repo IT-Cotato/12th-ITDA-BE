@@ -54,8 +54,7 @@ public class SharedPlantValidator {
         validateNotCompleted(sharedPlant);
 
         // 72시간 + 시듦 상태면 영양제 먼저 줘야함
-        boolean wasWithered = sharedPlant.getStatus() == SharedPlantStatus.WITHERED;
-        if (wasWithered && sharedPlant.getLastWateredAt() != null
+        if (GardenTimeRule.isWithered(sharedPlant.getLastWateredAt()) && sharedPlant.getLastWateredAt() != null
                 && ChronoUnit.HOURS.between(sharedPlant.getLastWateredAt(), LocalDateTime.now()) >= GardenTimeRule.NUTRITION_AVAILABLE.getHours()) {
             SharedPlantLog lastLog = sharedPlantLogRepository.findTopBySharedPlantOrderByCreatedAtDesc(sharedPlant).orElse(null);
 
@@ -78,7 +77,7 @@ public class SharedPlantValidator {
         validatePlanted(sharedPlant);
         validateNotCompleted(sharedPlant);
 
-        if (sharedPlant.getStatus() != SharedPlantStatus.WITHERED
+        if (!GardenTimeRule.isWithered(sharedPlant.getLastWateredAt())
                 || sharedPlant.getLastWateredAt() == null
                 || ChronoUnit.HOURS.between(sharedPlant.getLastWateredAt(), LocalDateTime.now()) < GardenTimeRule.NUTRITION_AVAILABLE.getHours()
         ) {

@@ -28,7 +28,7 @@ public class SharedPlantController implements SharedPlantControllerDocs {
             @RequestParam(name = "status", required = false) List<SharedPlantStatus> statuses
     ) {
         List<SharedPlantStatus> effectiveStatuses = (statuses == null || statuses.isEmpty())
-                ? List.of(SharedPlantStatus.GROWING, SharedPlantStatus.WITHERED)
+                ? List.of(SharedPlantStatus.GROWING)
                 : statuses;
         return ApiResponse.success(sharedPlantQueryService.getSharedPlants(jwtPrincipal.memberId(), effectiveStatuses));
     }

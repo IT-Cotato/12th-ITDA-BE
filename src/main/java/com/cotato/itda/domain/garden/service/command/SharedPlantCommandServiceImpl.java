@@ -42,19 +42,12 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         // 물주기 가능 여부 검증
         sharedPlantValidator.validateCanWater(sharedPlant, memberId);
 
-        boolean wasWithered = sharedPlant.getStatus() == SharedPlantStatus.WITHERED;
-
         // 혼자 돌봄 모드 종료 로직
         if (sharedPlant.getIsSoloMode() && !memberId.equals(sharedPlant.getSoloPowerMemberId())) {
             sharedPlant.exitSoloMode();
         }
 
         boolean stageChanged = sharedPlant.water(GrowthType.WATER.getGrowth(), member);
-
-        // WITHERED 상태에서 물을 주면 GROWING으로
-        if (wasWithered) {
-            sharedPlant.revive();
-        }
 
         // 성장 완료 시 COMPLETED로
         if (sharedPlant.hasReachedMaxGrowth()) {

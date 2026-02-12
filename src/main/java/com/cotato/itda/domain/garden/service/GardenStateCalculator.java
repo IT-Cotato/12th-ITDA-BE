@@ -3,6 +3,7 @@ package com.cotato.itda.domain.garden.service;
 import com.cotato.itda.domain.garden.entity.SharedPlant;
 import com.cotato.itda.domain.garden.entity.SharedPlantLog;
 import com.cotato.itda.domain.garden.enums.GardenState;
+import com.cotato.itda.domain.garden.enums.GardenTimeRule;
 import com.cotato.itda.domain.garden.enums.SharedPlantStatus;
 import com.cotato.itda.domain.garden.repository.SharedPlantLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class GardenStateCalculator {
         Optional<SharedPlantLog> lastLog = sharedPlantLogRepository.findTopBySharedPlantOrderByCreatedAtDesc(plant);
         if (lastLog.isPresent()) {
             SharedPlantLog log = lastLog.get();
-            if (log.isUsedNutrient() && plant.getStatus() == SharedPlantStatus.WITHERED) {
+            if (log.isUsedNutrient() && GardenTimeRule.isWithered(plant.getLastWateredAt())) {
                 return GardenState.AFTER_NUTRITION;
             }
             if (log.isStageChanged() && hours <= 24) return GardenState.GROWING;
