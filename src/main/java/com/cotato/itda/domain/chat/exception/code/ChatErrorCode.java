@@ -11,6 +11,26 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ChatErrorCode implements ErrorCode {
 
+	INVALID_MESSAGE_CONTENT(
+		HttpStatus.BAD_REQUEST,
+		"메시지 내용이 유효하지 않습니다.",
+		"CHAT_ERROR_400_INVALID_MESSAGE_CONTENT"
+	),
+	INVALID_ATTACHMENT_FOR_TEXT(
+		HttpStatus.BAD_REQUEST,
+		"텍스트 메시지에는 첨부파일이 포함될 수 없습니다.",
+		"CHAT_ERROR_400_INVALID_ATTACHMENT_FOR_TEXT"
+	),
+	INVALID_ATTACHMENT_REQUIRED(
+		HttpStatus.BAD_REQUEST,
+		"첨부파일 메시지에는 첨부파일이 반드시 포함되어야 합니다.",
+		"CHAT_ERROR_400_INVALID_ATTACHMENT_REQUIRED"
+	),
+	INVALID_ATTACHMENT_OBJECT_KEY(
+		HttpStatus.BAD_REQUEST,
+		"첨부파일의 objectKey가 유효하지 않습니다.",
+		"CHAT_ERROR_400_INVALID_ATTACHMENT_OBJECT_KEY"
+	),
 	// 현재 상태가 ACTIVE가 아닙니다
 	CHAT_ROOM_MEMBER_STATUS_INVALID(
 		HttpStatus.BAD_REQUEST,
