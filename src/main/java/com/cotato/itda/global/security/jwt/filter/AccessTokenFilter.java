@@ -50,6 +50,9 @@ public class AccessTokenFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String uri = request.getRequestURI();
 
+		// WS 엔드포인트는 필터링 제외
+		if (uri.startsWith("/ws")) return true;
+
 		if (uri.startsWith("/api/auth/refresh"))
 			return true;
 		if (uri.startsWith("/api/onboarding"))
