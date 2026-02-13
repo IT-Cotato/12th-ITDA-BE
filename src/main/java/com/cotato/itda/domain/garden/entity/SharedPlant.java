@@ -7,7 +7,7 @@ import com.cotato.itda.global.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Builder
@@ -41,15 +41,11 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private PlantStage growthStage = PlantStage.SEED;
 
-    @Column(name = "daily_growth_count", nullable = false)
-    @Builder.Default
-    private int dailyGrowthCount = 0;
-
-    @Column(name = "growth_date")
-    private LocalDate growthDate;
-
     @Column(name = "last_watered_by")
     private Long lastWateredBy;
+
+    @Column(name = "last_watered_at")
+    private LocalDateTime lastWateredAt;
 
     @Column(name = "is_solo_mode", nullable = false)
     @Builder.Default
@@ -63,19 +59,25 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private SharedPlantStatus status = SharedPlantStatus.GROWING;
 
-    public void water(int growthValue, Member member, boolean isFirst) {
+    @Column(name = "is_planted", nullable = false)
+    @Builder.Default
+    private boolean isPlanted = false;
+
+    public boolean water(int growthValue, Member member) {
+        PlantStage previousStage = this.growthStage;
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
-        if (isFirst) this.dailyGrowthCount = 1;
-        else this.dailyGrowthCount++;
         this.lastWateredBy = member.getId();
-        this.growthDate = LocalDate.now();
+        this.lastWateredAt = LocalDateTime.now();
+        return this.growthStage != previousStage;
     }
 
-    public void nutrient(int growthValue, Member member) {
+    public boolean nutrient(int growthValue, Member member) {
+        PlantStage previousStage = this.growthStage;
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
         member.decreaseNutrient();
+        return this.growthStage != previousStage;
     }
 
     public void exitSoloMode() {
@@ -87,11 +89,11 @@ public class SharedPlant extends BaseEntity {
         this.status = SharedPlantStatus.COMPLETED;
     }
 
-    public void revive() {
-        this.status = SharedPlantStatus.GROWING;
-    }
-
     public boolean hasReachedMaxGrowth() {
         return this.growthValue >= this.plant.getBloomMax();
+    }
+
+    public void plant() {
+        this.isPlanted = true;
     }
 }

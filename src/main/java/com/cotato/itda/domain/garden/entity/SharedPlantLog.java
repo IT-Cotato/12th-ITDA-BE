@@ -42,6 +42,10 @@ public class SharedPlantLog {
     @Builder.Default
     private boolean usedNutrient = false;
 
+    @Column(name = "stage_changed", nullable = false)
+    @Builder.Default
+    private boolean stageChanged = false;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
