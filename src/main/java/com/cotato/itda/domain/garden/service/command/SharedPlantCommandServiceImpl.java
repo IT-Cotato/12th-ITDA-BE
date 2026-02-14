@@ -75,6 +75,10 @@ public class SharedPlantCommandServiceImpl implements SharedPlantCommandService 
         // 영양제 주기 가능 여부 검증
         sharedPlantValidator.validateCanGiveNutrient(sharedPlant, member);
 
+        // 밀린 페널티 적용
+        int expectedPenalty = gardenStateCalculator.calculateExpectedPenalty(sharedPlant);
+        sharedPlant.applyMissedPenalty(expectedPenalty);
+
         // 혼자 돌봄 모드 -> 공동 돌봄 모드로
         if (sharedPlant.getIsSoloMode() && !memberId.equals(sharedPlant.getSoloPowerMemberId())) {
             sharedPlant.exitSoloMode();
