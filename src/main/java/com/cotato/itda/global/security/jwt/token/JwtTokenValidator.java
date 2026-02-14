@@ -80,7 +80,12 @@ public class JwtTokenValidator {
 			return claims;
 
 		} catch (ExpiredJwtException e) {
-			// 만료는 정상적인 인증 실패 케이스
+			var now = new java.util.Date();
+			var exp = e.getClaims() != null ? e.getClaims().getExpiration() : null;
+			log.warn("[JWT][EXPIRED] now={}, exp={}, diffSec={}",
+				now, exp,
+				(exp == null ? null : (now.getTime() - exp.getTime()) / 1000)
+			);
 			throw new BusinessException(JwtErrorCode.EXPIRED_TOKEN);
 		} catch (JwtException | IllegalArgumentException e) {
 			// 서명/형식/파싱 오류
