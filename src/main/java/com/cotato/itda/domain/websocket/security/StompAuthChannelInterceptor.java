@@ -33,12 +33,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
 	@Override
 	public Message<?> preSend(Message<?> message, MessageChannel channel) {
-		StompHeaderAccessor accessor =
-			MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
-		if (accessor == null) return message;
-
-		accessor.setLeaveMutable(true);
+		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message); // 핵심: wrap
 
 		StompCommand command = accessor.getCommand();
 		String sessionId = accessor.getSessionId();
@@ -59,6 +54,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 				}
 
 				String token = extractBearerToken(authHeader);
+
 				Claims claims = jwtTokenValidator.validateAndGetClaims(token, JwtPurpose.ACCESS);
 				Authentication authentication = jwtTokenProvider.getAuthentication(claims);
 
@@ -69,6 +65,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 
 				log.info("[WS][CONNECT] 인증 완료. username={}, sessionId={}", authentication.getName(), sessionId);
 
+				// CONNECT에서 변경했으니 새 메시지로 리턴
 				return org.springframework.messaging.support.MessageBuilder
 					.createMessage(message.getPayload(), accessor.getMessageHeaders());
 			}
@@ -81,9 +78,6 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 				}
 			}
 
-			// (추천) SUBSCRIBE destination 권한 체크는 여기 추가
-			// if (command == StompCommand.SUBSCRIBE) { ... }
-
 			return message;
 
 		} catch (BusinessException e) {
@@ -92,6 +86,7 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 			throw e;
 		}
 	}
+
 
 
 	public String extractBearerToken(String authHeader) {
