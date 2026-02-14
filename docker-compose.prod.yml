@@ -53,6 +53,7 @@ services:
       - 80:80
       - 443:443
     volumes:
+      - /home/ubuntu/compose/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     depends_on:
@@ -65,7 +66,6 @@ services:
     container_name: certbot
     image: certbot/certbot
     volumes:
-      - /home/ubuntu/compose/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
