@@ -45,7 +45,25 @@ public class GardenStateCalculator {
         int bloomMax = plant.getPlant().getBloomMax();
         if (bloomMax <= 0) return 0;
 
-        int percentage = (plant.getGrowthValue() * 100) / bloomMax;
+        int effectiveGrowth = calculateEffectiveGrowthValue(plant);
+        int percentage = (effectiveGrowth * 100) / bloomMax;
         return Math.min(percentage, 100);
+    }
+
+    public int calculateExpectedPenalty(SharedPlant plant) {
+        if (plant.getLastWateredAt() == null) return 0;
+
+        long hours = ChronoUnit.HOURS.between(plant.getLastWateredAt(), LocalDateTime.now());
+
+        if (hours >= 120) return 20;
+        else if (hours >= 96) return 10;
+        else if (hours >= 72) return 5;
+        return 0;
+    }
+
+    public int calculateEffectiveGrowthValue(SharedPlant plant) {
+        int expectedPenalty = calculateExpectedPenalty(plant);
+        int pendingPenalty = expectedPenalty - plant.getAppliedPenalty();
+        return Math.max(plant.getGrowthValue() - pendingPenalty, 0);
     }
 }

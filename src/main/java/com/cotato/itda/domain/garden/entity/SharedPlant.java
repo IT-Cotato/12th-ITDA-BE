@@ -63,12 +63,17 @@ public class SharedPlant extends BaseEntity {
     @Builder.Default
     private boolean isPlanted = false;
 
+    @Column(name = "applied_penalty", nullable = false)
+    @Builder.Default
+    private int appliedPenalty = 0;
+
     public boolean water(int growthValue, Member member) {
         PlantStage previousStage = this.growthStage;
         this.growthValue += growthValue;
         this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
         this.lastWateredBy = member.getId();
         this.lastWateredAt = LocalDateTime.now();
+        this.appliedPenalty = 0;
         return this.growthStage != previousStage;
     }
 
@@ -95,5 +100,20 @@ public class SharedPlant extends BaseEntity {
 
     public void plant() {
         this.isPlanted = true;
+    }
+
+    public void applyPenalty(int penalty) {
+        this.growthValue = Math.max(0, this.growthValue - penalty);
+        this.appliedPenalty += penalty;
+        this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
+    }
+
+    public void applyMissedPenalty(int expectedPenalty) {
+        int diff = expectedPenalty - this.appliedPenalty;
+        if (diff > 0) {
+            this.growthValue = Math.max(0, this.growthValue - diff);
+            this.appliedPenalty += diff;
+            this.growthStage = this.plant.calculateGrowthStage(this.growthValue);
+        }
     }
 }

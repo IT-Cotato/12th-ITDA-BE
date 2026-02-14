@@ -25,4 +25,6 @@ public interface SharedPlantRepository extends JpaRepository<SharedPlant, Long> 
             "AND sp.status IN :statuses " +
             "ORDER BY sp.createdAt DESC")
     List<SharedPlant> findAllByMemberIdAndStatusIn(@Param("memberId") Long memberId, @Param("statuses") List<SharedPlantStatus> statuses);
+
+    List<SharedPlant> findAllByStatusAndIsPlantedTrue(SharedPlantStatus status);
 }
