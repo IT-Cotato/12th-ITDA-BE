@@ -47,18 +47,21 @@ public class StompAuthChannelInterceptor implements ChannelInterceptor {
 				if (authHeader == null || authHeader.isBlank()) {
 					authHeader = accessor.getFirstNativeHeader("authorization");
 				}
-
+				log.info("[WS][CONNECT] Authorization 헤더 조회. authHeader={}, sessionId={}", authHeader, sessionId);
 				if (authHeader == null || authHeader.isBlank()) {
 					log.warn("[WS][CONNECT][차단] Authorization 헤더 없음. sessionId={}", sessionId);
 					throw new BusinessException(JwtErrorCode.MISSING_TOKEN);
 				}
+				log.info("[WS][CONNECT] Authorization 헤더 존재 확인. sessionId={}", sessionId);
 
 				String token = extractBearerToken(authHeader);
-
+				log.info("[WS][CONNECT] 토큰 추출 완료. token={}, sessionId={}", token, sessionId);
 				Claims claims = jwtTokenValidator.validateAndGetClaims(token, JwtPurpose.ACCESS);
 				Authentication authentication = jwtTokenProvider.getAuthentication(claims);
+				log.info("[WS][CONNECT] 토큰 검증 및 인증 객체 생성 완료. username={}, sessionId={}", authentication.getName(), sessionId);
 
 				accessor.setUser(authentication);
+				log.info("[WS][CONNECT] 인증 객체 설정 완료. username={}, sessionId={}", authentication.getName(), sessionId);
 
 				Map<String, Object> attrs = accessor.getSessionAttributes();
 				if (attrs != null) attrs.put("wsUsername", authentication.getName());
