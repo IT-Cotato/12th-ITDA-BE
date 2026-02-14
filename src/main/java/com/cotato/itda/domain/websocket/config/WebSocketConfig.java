@@ -37,7 +37,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		registry.addEndpoint("/ws")
 			// 브라우저 CORS
 			// setAllowedOriginPatterns를 쓰면 와일드카드(*) 사용 가능+ 여러 도메인 허용 가능
-			.setAllowedOriginPatterns(allowedOriginPatterns)
+			//.setAllowedOriginPatterns(allowedOriginPatterns)
+			.setAllowedOriginPatterns("*")
 			//핸드셰이크에서 IP정보 뽑아오는 인터셉터 추가
 			// IP/User-Agent를 session attributes에 저장해두면
 			// 이후에 connect/disconnect 이벤트에서 참조 가능
