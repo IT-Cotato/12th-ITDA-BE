@@ -108,7 +108,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "http://localhost:3000",
                 "http://localhost:5173",
-                "https://simtalk.vercel.app"
+                "https://simtalk.vercel.app",
+                "https://43.202.184.232.nip.io"
         ));
 
         // 허용할 HTTP 메서드
