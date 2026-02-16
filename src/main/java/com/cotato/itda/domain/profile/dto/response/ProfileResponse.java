@@ -6,6 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 
 public record ProfileResponse(
+
+        @Schema(description = "멤버 ID", example = "1")
+        Long memberId,
+
         @Schema(description = "프로필 이미지 URL", example = "https://...amazonaws.com/profile/uuid_filename.png")
         String profileImageUrl,
 
@@ -20,6 +24,7 @@ public record ProfileResponse(
 ) {
     public static ProfileResponse from(Member member) {
         return new ProfileResponse(
+                member.getId(),
                 member.getProfileImageUrl(),
                 member.getName(),
                 member.getPhoneNumber(),
