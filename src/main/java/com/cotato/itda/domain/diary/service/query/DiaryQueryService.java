@@ -53,20 +53,19 @@ public class DiaryQueryService {
         boolean isMe = writer.getId().equals(memberId);
         String nickname;
 
-//        if (isMe) {
-//            nickname = writer.getName();
-//        } else {
-//            // 작성자가 친구 관계인지 확인
-//            Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
-//                    .orElseThrow(() -> new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN));
-//
-//            nickname = friendship.getDisplayName();
-//        }
+        if (isMe) {
+            nickname = writer.getName();
+        } else {
+            // 작성자가 친구 관계인지 확인
+            nickname = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, writer.getId(), FriendshipStatus.ACTIVE)
+                    .map(Friendship::getDisplayName) // 친구면 설정한 친구 닉네임
+                    .orElse(writer.getName()); // 친구가 아니면 기존 이름
+        }
 
         // 좋아요 여부 판별
         boolean isLiked = diaryLikeRepository.existsByDiaryIdAndMemberId(diaryId, memberId);
 
-        WriterInfo diaryWriterInfo = DiaryConverter.toWriterInfo(writer, writer.getName(), isMe);
+        WriterInfo diaryWriterInfo = DiaryConverter.toWriterInfo(writer, nickname, isMe);
         return DiaryConverter.toDetailResponse(diary, diaryWriterInfo, isLiked);
     }
 
