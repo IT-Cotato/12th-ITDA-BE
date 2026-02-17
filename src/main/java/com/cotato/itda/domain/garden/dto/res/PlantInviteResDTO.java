@@ -36,7 +36,7 @@ public class PlantInviteResDTO {
         @Builder
         public record MyPlantInviteResDTO(
                         @Schema(description = "초대 ID", example = "12") Long inviteId,
-                        @Schema(description = "식물 ID", example = "1") Long plantId,
+                        @Schema(description = "식물 이름", example = "lily") String plantName,
                         @Schema(description = "초대자 회원 ID", example = "1") Long inviterId,
                         @Schema(description = "초대자 보여지는 이름", example = "콩순이") String inviterName,
                         @Schema(description = "식물 닉네임", example = "두쫀쿠") String nickname,

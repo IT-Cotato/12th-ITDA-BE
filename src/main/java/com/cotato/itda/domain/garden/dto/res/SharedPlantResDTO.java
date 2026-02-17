@@ -51,8 +51,8 @@ public class SharedPlantResDTO {
     public record AcceptedSharedPlantDTO(
             @Schema(description = "공유 식물 ID", example = "1")
             Long sharedPlantId,
-            @Schema(description = "식물 ID", example = "1")
-            Long plantId,
+            @Schema(description = "식물 이름", example = "lily")
+            String plantName,
             @Schema(description = "식물 닉네임", example = "두쫀쿠")
             String nickname,
             @Schema(description = "생성 일시", example = "2025-12-28 12:34")
@@ -68,8 +68,8 @@ public class SharedPlantResDTO {
             Long friendId,
             @Schema(description = "친구 닉네임", example = "콩순이")
             String friendNickname,
-            @Schema(description = "식물 ID", example = "1")
-            Long plantId,
+            @Schema(description = "식물 이름", example = "lily")
+            String plantName,
             @Schema(description = "식물 닉네임", example = "두쫀쿠")
             String nickname,
             @Schema(description = "성장 정도", example = "0")

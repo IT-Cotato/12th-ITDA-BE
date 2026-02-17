@@ -30,7 +30,7 @@ public class SharedPlantConverter {
     public static SharedPlantResDTO.AcceptedSharedPlantDTO toAcceptedSharedPlantDTO(SharedPlant sharedPlant) {
         return SharedPlantResDTO.AcceptedSharedPlantDTO.builder()
                 .sharedPlantId(sharedPlant.getId())
-                .plantId(sharedPlant.getPlant().getId())
+                .plantName(sharedPlant.getPlant().getName())
                 .nickname(sharedPlant.getNickname())
                 .createdAt(sharedPlant.getCreatedAt())
                 .build();
@@ -52,7 +52,7 @@ public class SharedPlantConverter {
                 .sharedPlantId(sharedPlant.getId())
                 .friendId(friendship.getFriendId())
                 .friendNickname(friendship.getDisplayName())
-                .plantId(sharedPlant.getPlant().getId())
+                .plantName(sharedPlant.getPlant().getName())
                 .nickname(sharedPlant.getNickname())
                 .growthValue(sharedPlant.getGrowthValue())
                 .percentage(percentage)
