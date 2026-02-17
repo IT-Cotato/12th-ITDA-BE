@@ -252,4 +252,61 @@ public class ChatRoomService {
 		chatRoomMember.setNotificationEnabled(enabled);
 	}
 
+	@Transactional
+	public void enterRoom(Long memberId, Long roomId) {
+
+		log.info("[채팅방 ENTER 시작] memberId={}, roomId={}", memberId, roomId);
+
+		if (memberId == null || roomId == null) {
+			log.warn("[채팅방 ENTER 거절] memberId/roomId null. memberId={}, roomId={}", memberId, roomId);
+			throw new BusinessException(ChatErrorCode.INVALID_REQUEST_BOTH_ROOMID_OPPONENTID_NULL); // 적당한 코드로 교체해도 됨
+		}
+
+		ChatRoom room = chatRoomRepository.findById(roomId)
+			.orElseThrow(() -> {
+				log.warn("[채팅방 ENTER 실패] roomId={} 방 없음", roomId);
+				return new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
+			});
+
+		ChatRoomMember myMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId)
+			.orElseThrow(() -> {
+				log.warn("[채팅방 ENTER 실패] 멤버십 없음. memberId={}, roomId={}", memberId, roomId);
+				return new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND);
+			});
+
+		if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+			log.warn("[채팅방 ENTER 거절] ACTIVE 아님. memberId={}, roomId={}, status={}",
+				memberId, roomId, myMembership.getStatus()
+			);
+			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
+		}
+
+		Long lastMessageSeqObj = room.getLastMessageSeq();
+		Long lastMessageId = room.getLastMessageId(); // ChatRoom에 이 필드/게터가 있어야 함
+
+		long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
+
+		// 메시지 없으면 읽음 처리할 것도 없음
+		if (lastSeq <= 0L) {
+			log.info("[채팅방 ENTER 읽음처리 생략] roomId={}, memberId={} (메시지 없음)", roomId, memberId);
+			return;
+		}
+
+		// 혹시 lastSeq는 있는데 lastMessageId가 null이면 데이터 이상이라 일단 스킵
+		if (lastMessageId == null) {
+			log.warn("[채팅방 ENTER 읽음처리 스킵] roomId={}, memberId={} (lastSeq={}, lastMessageId=null)",
+				roomId, memberId, lastSeq
+			);
+			return;
+		}
+
+		// 여기서 “현재 마지막 seq까지” 읽음 처리
+		myMembership.markRead(lastSeq, lastMessageId);
+
+		log.info("[채팅방 ENTER 완료] memberId={}, roomId={}, readSeq={}, readMessageId={}",
+			memberId, roomId, lastSeq, lastMessageId
+		);
+	}
+
+
 }
