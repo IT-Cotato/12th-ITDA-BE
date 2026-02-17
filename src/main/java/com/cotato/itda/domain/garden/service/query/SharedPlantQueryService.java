@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface SharedPlantQueryService {
     SharedPlantResDTO.SharedPlantInfoListDTO getSharedPlants(Long memberId, List<SharedPlantStatus> statuses);
+
+    SharedPlantResDTO.SharedPlantInfoListDTO getWidgetSharedPlants(Long memberId);
 }
