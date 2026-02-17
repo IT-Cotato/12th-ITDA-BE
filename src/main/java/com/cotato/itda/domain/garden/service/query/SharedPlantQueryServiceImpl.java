@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,6 +85,67 @@ public class SharedPlantQueryServiceImpl implements SharedPlantQueryService {
                             sp, pair.friendship(), memberId, gardenState, percentage
                     );
                 })
+                .toList();
+
+        return SharedPlantConverter.toSharedPlantInfoListDTO(sharedPlantInfoDTOs, member.getNutrientCount());
+    }
+
+    @Override
+    public SharedPlantResDTO.SharedPlantInfoListDTO getWidgetSharedPlants(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
+
+        // 1. GROWING + isPlanted=true 식물 조회
+        List<SharedPlant> sharedPlants = sharedPlantRepository
+                .findAllGrowingAndPlantedByMemberId(memberId);
+
+        if (sharedPlants.isEmpty()) {
+            return SharedPlantResDTO.SharedPlantInfoListDTO.builder()
+                    .totalCount(0)
+                    .nutrientCount(member.getNutrientCount())
+                    .sharedPlants(List.of())
+                    .build();
+        }
+
+        // 2. 각 공유 식물에서 친구 ID 추출
+        List<Long> friendIds = sharedPlants.stream()
+                .map(sp -> sp.getMemberA().getId().equals(memberId)
+                        ? sp.getMemberB().getId()
+                        : sp.getMemberA().getId())
+                .toList();
+
+        // 3. Friendship 조회 후 Map으로 변환
+        List<Friendship> friendships = friendshipRepository.findAllByMember_IdAndFriend_IdInAndStatus(
+                memberId, friendIds, FriendshipStatus.ACTIVE);
+
+        Map<Long, Friendship> friendshipMap = friendships.stream()
+                .collect(Collectors.toMap(Friendship::getFriendId, f -> f));
+
+        // 4. 위젯 대상 상태 정의
+        Set<GardenState> widgetStates = Set.of(
+                GardenState.WATERABLE,
+                GardenState.WITHERED,
+                GardenState.WATERED_RECENTLY
+        );
+
+        // 5. SharedPlant와 Friendship 짝짓기 및 위젯 상태 필터링
+        List<SharedPlantResDTO.SharedPlantInfoDTO> sharedPlantInfoDTOs = sharedPlants.stream()
+                .map(sp -> {
+                    Long friendId = sp.getMemberA().getId().equals(memberId)
+                            ? sp.getMemberB().getId()
+                            : sp.getMemberA().getId();
+                    return new SharedPlantWithFriendship(sp, friendshipMap.get(friendId));
+                })
+                .filter(pair -> pair.friendship() != null)
+                .map(pair -> {
+                    SharedPlant sp = pair.sharedPlant();
+                    GardenState gardenState = gardenStateCalculator.calculateState(sp);
+                    int percentage = gardenStateCalculator.calculatePercentage(sp);
+                    return SharedPlantConverter.toSharedPlantInfoDTO(
+                            sp, pair.friendship(), memberId, gardenState, percentage
+                    );
+                })
+                .filter(dto -> widgetStates.contains(dto.gardenState()))
                 .toList();
 
         return SharedPlantConverter.toSharedPlantInfoListDTO(sharedPlantInfoDTOs, member.getNutrientCount());

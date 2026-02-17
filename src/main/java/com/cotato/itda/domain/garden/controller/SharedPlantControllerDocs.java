@@ -97,4 +97,28 @@ public interface SharedPlantControllerDocs {
             @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(description = "공유 식물 ID") @PathVariable(name = "sharedPlantId") Long sharedPlantId
     );
+
+    @Operation(summary = "홈 위젯용 공유 식물 조회 API", description = """
+            홈 위젯에 표시할 공유 식물 목록을 조회합니다.
+
+            **필터링 조건:**
+            - GROWING 상태이면서 씨앗이 심어진 식물만 조회
+            - 활성 친구 관계인 경우만 포함
+            - WATERABLE, WITHERED, WATERED_RECENTLY 상태만 반환
+
+            **제외되는 상태:**
+            - COMPLETED (완료)
+            - SEED_READY (씨앗 미심음)
+            - NUTRITION_AVAILABLE (72h+ 경과)
+            - AFTER_NUTRITION (영양제 투여 후)
+            - GROWING (24h 내 stageChanged)
+            """)
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
+    })
+    @GetMapping("/widget")
+    ApiResponse<SharedPlantResDTO.SharedPlantInfoListDTO> getWidgetSharedPlants(
+            @AuthenticationPrincipal JwtPrincipal jwtPrincipal
+    );
 }

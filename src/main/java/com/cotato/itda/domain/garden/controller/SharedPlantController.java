@@ -56,4 +56,11 @@ public class SharedPlantController implements SharedPlantControllerDocs {
     ) {
         return ApiResponse.success(sharedPlantCommandService.plantSeed(sharedPlantId, jwtPrincipal.memberId()));
     }
+
+    @GetMapping("/widget")
+    public ApiResponse<SharedPlantResDTO.SharedPlantInfoListDTO> getWidgetSharedPlants(
+            @AuthenticationPrincipal JwtPrincipal jwtPrincipal
+    ) {
+        return ApiResponse.success(sharedPlantQueryService.getWidgetSharedPlants(jwtPrincipal.memberId()));
+    }
 }
