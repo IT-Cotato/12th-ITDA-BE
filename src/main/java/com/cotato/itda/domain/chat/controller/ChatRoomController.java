@@ -146,4 +146,23 @@ public class ChatRoomController {
 		chatRoomService.toggleNotification(memberId, roomId, enabled);
 		return ApiResponse.success(null);
 	}
+
+	@Operation(
+		summary = "채팅방 입장 처리(읽음 처리)",
+		description = """
+			- roomId가 있는 채팅 화면에 '진입'할 때 호출
+			- 서버가 현재 마지막 메시지 seq까지 lastReadSeq를 올려서 unread를 정리
+			- resolve는 조회만 하고, 실제 상태 변경은 enter에서 처리
+		"""
+	)
+	@PostMapping("/{roomId}/enter")
+	public ApiResponse<Void> enterRoom(
+		@AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+		@PathVariable Long roomId
+	) {
+		Long memberId = jwtPrincipal.memberId();
+		chatRoomService.enterRoom(memberId, roomId);
+		return ApiResponse.success(null);
+	}
+
 }
