@@ -13,31 +13,31 @@ import java.util.Map;
 @RequiredArgsConstructor
 public enum ChatGoal {
 
-    DAY_1("주 1일"),
-    DAY_2("주 2일"),
-    DAY_3("주 3일"),
-    DAY_4("주 4일"),
-    DAY_5("주 5일"),
-    DAY_6("주 6일"),
-    EVERY_DAY("매일"),
-    NONE("선택하지 않음"),
+    DAY_1(1),
+    DAY_2(2),
+    DAY_3(3),
+    DAY_4(4),
+    DAY_5(5),
+    DAY_6(6),
+    EVERY_DAY(7),
+    NONE(0),
     ;
 
-    private final String description;
+    private final Integer value;
 
     @JsonValue
-    public String getDescription() {
-        return this.description;
+    public Integer getDescription() {
+        return this.value;
     }
 
     @JsonCreator
-    public static ChatGoal from(String value) {
+    public static ChatGoal from(Integer value) {
         for (ChatGoal goal : ChatGoal.values()) {
-            if (goal.description.equals(value)) {
+            if (goal.value.equals(value)) {
                 return goal;
             }
         }
 
-        throw new FriendshipException(FriendshipErrorCode.INVALID_CHAT_GOAL, Map.of("chatGoal", value));
+        throw new FriendshipException(FriendshipErrorCode.INVALID_CHAT_GOAL, Map.of("chatGoal", String.valueOf(value)));
     }
 }
