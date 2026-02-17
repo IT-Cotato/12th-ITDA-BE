@@ -19,7 +19,7 @@ import java.util.List;
 
 public interface SharedPlantControllerDocs {
 
-    @Operation(summary = "공유 식물 목록 조회 API By 정원", description = "상태별로 공유 식물 목록을 조회합니다. ?status=GROWING&status=WITHERED 또는 ?status=COMPLETED 형태로 조회합니다. status를 지정하지 않으면 기본값으로 GROWING, WITHERED를 조회합니다.")
+    @Operation(summary = "공유 식물 목록 조회 API By 정원", description = "상태별로 공유 식물 목록을 조회합니다. ?status=GROWING 또는 ?status=COMPLETED 형태로 조회합니다. status를 지정하지 않으면 기본값으로 GROWING을 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "인증 실패")
@@ -28,7 +28,7 @@ public interface SharedPlantControllerDocs {
     ApiResponse<SharedPlantResDTO.SharedPlantInfoListDTO> getSharedPlants(
             @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
             @Parameter(
-                    description = "조회할 상태 목록 (GROWING, WITHERED, COMPLETED). 미지정 시 기본값: GROWING, WITHERED",
+                    description = "조회할 상태 목록 (GROWING, COMPLETED). 미지정 시 기본값: GROWING",
                     array = @ArraySchema(schema = @Schema(implementation = SharedPlantStatus.class))
             )
             @RequestParam(name = "status", required = false) List<SharedPlantStatus> statuses
