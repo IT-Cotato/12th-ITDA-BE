@@ -31,10 +31,10 @@ public class DiaryCommandService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND, Map.of("userId", memberId)));
 
-        // 해당 날짜 일기 중복 작성 방지
-        if (diaryRepository.existsByMemberIdAndDate(memberId, date)) {
-            throw new BusinessException(DiaryErrorCode.DIARY_ALREADY_EXISTS);
-        }
+        // 해당 날짜 일기 중복 작성 방지 -> 편의상 임시로 주석 처리
+        // if (diaryRepository.existsByMemberIdAndDate(memberId, date)) {
+        //     throw new BusinessException(DiaryErrorCode.DIARY_ALREADY_EXISTS);
+        // }
 
         Diary diary = DiaryConverter.toEntity(request, date, member);
         Diary savedDiary = diaryRepository.save(diary);
