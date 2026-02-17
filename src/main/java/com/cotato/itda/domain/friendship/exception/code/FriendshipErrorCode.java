@@ -37,7 +37,13 @@ public enum FriendshipErrorCode implements ErrorCode {
                         HttpStatus.BAD_REQUEST,
                         "FRIENDSHIP_ERROR_400_NOT_ACTIVE",
                         "활성 상태인 친구 관계가 아닙니다."),
-                        ;
+
+        INVALID_CHAT_GOAL(
+                HttpStatus.BAD_REQUEST,
+                "FRIENDSHIP_ERROR_400_INVALID_CHAT_GOAL",
+                "유효하지 않은 대화 목표입니다."
+        ),
+        ;
 
         private final HttpStatus httpStatus;
         private final String code;
