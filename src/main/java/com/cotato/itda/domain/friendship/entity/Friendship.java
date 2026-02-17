@@ -1,6 +1,7 @@
 package com.cotato.itda.domain.friendship.entity;
 
 import com.cotato.itda.domain.friendship.entity.mapping.FriendshipTopic;
+import com.cotato.itda.domain.friendship.enums.ChatGoal;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.enums.SpeechStyle;
 import com.cotato.itda.domain.member.entity.Member;
@@ -36,7 +37,8 @@ public class Friendship extends BaseEntity {
     private SpeechStyle speechStyle;
 
     @Column(name = "chat_goal")
-    private String chatGoal;
+    @Enumerated(EnumType.STRING)
+    private ChatGoal chatGoal;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -52,9 +54,10 @@ public class Friendship extends BaseEntity {
     private LocalDateTime lastInteractedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "friendship", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<FriendshipTopic> friendshipTopics = new ArrayList<>();
 
-    public void update(String nickname, SpeechStyle speechStyle, String chatGoal, FriendshipStatus status) {
+    public void update(String nickname, SpeechStyle speechStyle, ChatGoal chatGoal, FriendshipStatus status) {
         this.nickname = nickname;
         if (speechStyle != null)
             this.speechStyle = speechStyle;

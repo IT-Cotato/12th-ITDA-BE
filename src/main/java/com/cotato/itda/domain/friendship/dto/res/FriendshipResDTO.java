@@ -1,6 +1,7 @@
 package com.cotato.itda.domain.friendship.dto.res;
 
 import com.cotato.itda.domain.chattopic.entity.ChatTopic;
+import com.cotato.itda.domain.friendship.enums.ChatGoal;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.enums.SpeechStyle;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -78,8 +79,8 @@ public class FriendshipResDTO {
             String nickname,
             @Schema(description = "대화 말투", example = "존댓말")
             SpeechStyle speechStyle,
-            @Schema(description = "대화 목표", example = "주 1-2회")
-            String chatGoal,
+            @Schema(description = "대화 목표", example = "주 1일")
+            ChatGoal chatGoal,
             @Schema(description = "대화 주제 코드 리스트", example = "[\"DAILY_LIFE\", \"WEATHER\"]")
             List<String> topicCodes
     ) {}
