@@ -34,7 +34,7 @@ public class SharedPlantInviteConverter {
     public static MyPlantInviteResDTO toMyPlantInviteResDTO(SharedPlantInvite invite, String inviterName) {
         return MyPlantInviteResDTO.builder()
                 .inviteId(invite.getId())
-                .plantId(invite.getPlant().getId())
+                .plantName(invite.getPlant().getName())
                 .inviterId(invite.getInviter().getId())
                 .inviterName(inviterName)
                 .nickname(invite.getNickname())

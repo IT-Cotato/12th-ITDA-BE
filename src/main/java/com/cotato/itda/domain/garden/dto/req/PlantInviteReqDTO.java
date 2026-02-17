@@ -10,7 +10,7 @@ public class PlantInviteReqDTO {
     public record CreateSharedPlantInviteReqDTO(
             @Schema(description = "초대받을 친구 회원 ID", example = "12") @NotNull(message = "초대받을 친구 ID는 필수입니다.") Long inviteeId,
 
-            @Schema(description = "식물 ID", example = "1") @NotNull(message = "식물 ID는 필수입니다.") Long plantId,
+            @Schema(description = "식물 이름", example = "lily") @NotBlank(message = "식물 이름은 필수입니다.") String plantName,
 
             @Schema(description = "함께 키울 식물 닉네임", example = "두쫀쿠") @NotBlank(message = "식물 닉네임은 필수입니다.") @Size(max = 20, message = "닉네임은 20자 이내여야 합니다.") String nickname,
 

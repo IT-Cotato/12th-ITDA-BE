@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.data.jpa.repository.Query;
 import java.util.List;
+import java.util.Optional;
 
 public interface PlantRepository extends JpaRepository<Plant, Long> {
     boolean existsByName(String name);
@@ -20,4 +21,6 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
             "WHEN com.cotato.itda.domain.garden.enums.PlantDifficulty.NORMAL THEN 1 " +
             "ELSE 2 END DESC")
     List<Plant> findAllOrderByDifficultyDesc();
+
+    Optional<Plant> findByName(String name);
 }

@@ -54,7 +54,7 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
         Member invitee = memberRepository.findById(dto.inviteeId())
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
 
-        Plant plant = plantRepository.findById(dto.plantId())
+        Plant plant = plantRepository.findByName(dto.plantName())
                 .orElseThrow(() -> new PlantException(PlantErrorCode.NOT_FOUND));
 
         // 2. 두 유저가 활성 친구(ACTIVE) 상태인지 확인
