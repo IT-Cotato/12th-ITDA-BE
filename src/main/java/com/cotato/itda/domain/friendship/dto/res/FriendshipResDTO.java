@@ -81,7 +81,7 @@ public class FriendshipResDTO {
             SpeechStyle speechStyle,
             @Schema(description = "대화 목표", example = "주 1일")
             ChatGoal chatGoal,
-            @Schema(description = "대화 주제 코드 리스트", example = "[\"DAILY_LIFE\", \"WEATHER\"]")
+            @Schema(description = "대화 주제 코드 리스트", example = "[\"HEALTH\", \"WEATHER\"]")
             List<String> topicCodes
     ) {}
 }
