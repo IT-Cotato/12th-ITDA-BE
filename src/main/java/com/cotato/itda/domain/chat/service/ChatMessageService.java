@@ -415,6 +415,7 @@ public class ChatMessageService {
 			.build();
 	}
 
+
 	private void validateSendRequest(ChatSendMessageRequest req) {
 		if (req.messageType() == MessageType.TEXT) {
 			if (req.content() == null || req.content().isBlank()) {
@@ -426,17 +427,29 @@ public class ChatMessageService {
 			return;
 		}
 
-		// ATTACHMENT
 		if (req.attachment() == null) {
 			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_REQUIRED);
 		}
-		if (req.attachment().objectKey() == null || req.attachment().objectKey().isBlank()) {
+
+		String objectKey = req.attachment().objectKey();
+		if (objectKey == null || objectKey.isBlank()) {
 			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
 		}
 
-		// 보안/검증: objectKey 접두어 제한 추천
-		// 예: attachments/ 로 시작하는 것만 허용
-		if (!req.attachment().objectKey().startsWith("attachments/")) {
+		log.info("[ATTACH_VALIDATE] messageType={}, objectKey={}", req.messageType(), objectKey);
+
+		// URL 금지
+		if (objectKey.startsWith("http://") || objectKey.startsWith("https://")) {
+			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
+		}
+
+		// 경로 관련 방어
+		if (objectKey.contains("..") || objectKey.contains("\\") || objectKey.startsWith("/")) {
+			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
+		}
+
+		// chat/ 또는 attachments/ 허용
+		if (!objectKey.startsWith("chat/") && !objectKey.startsWith("attachments/")) {
 			throw new BusinessException(ChatErrorCode.INVALID_ATTACHMENT_OBJECT_KEY);
 		}
 	}

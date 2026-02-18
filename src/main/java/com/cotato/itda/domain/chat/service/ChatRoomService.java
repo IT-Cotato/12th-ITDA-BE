@@ -282,7 +282,7 @@ public class ChatRoomService {
 		}
 
 		Long lastMessageSeqObj = room.getLastMessageSeq();
-		Long lastMessageId = room.getLastMessageId(); // ChatRoom에 이 필드/게터가 있어야 함
+		Long lastMessageId = room.getLastMessageId();
 
 		long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
 
