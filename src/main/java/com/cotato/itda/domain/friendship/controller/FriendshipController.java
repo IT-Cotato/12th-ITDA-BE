@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.SortDefault;
@@ -84,5 +85,16 @@ public class FriendshipController implements FriendshipControllerDocs {
     ) {
         Long memberId = jwtPrincipal.memberId();
         return ApiResponse.success(friendshipQueryService.getFriendshipSettings(friendshipId, memberId));
+    }
+
+    @SecurityRequirement(name = "AccessToken")
+    @GetMapping("/search")
+    @Override
+    public ApiResponse<FriendshipResDTO.SearchByInviteCodeDTO> searchByInviteCode(
+            @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
+            @RequestParam @NotBlank(message = "초대 코드는 필수입니다.") String inviteCode
+    ) {
+        Long memberId = jwtPrincipal.memberId();
+        return ApiResponse.success(friendshipQueryService.searchByInviteCode(memberId, inviteCode));
     }
 }

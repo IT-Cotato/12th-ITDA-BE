@@ -10,4 +10,6 @@ public interface FriendshipQueryService {
     FriendshipResDTO.FriendshipListDTO getFriendshipList(Long memberId, List<FriendshipStatus> statuses, Sort sort);
 
     FriendshipResDTO.FriendshipSettingsDTO getFriendshipSettings(Long friendshipId, Long memberId);
+
+    FriendshipResDTO.SearchByInviteCodeDTO searchByInviteCode(Long memberId, String inviteCode);
 }
