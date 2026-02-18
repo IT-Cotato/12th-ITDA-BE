@@ -20,7 +20,10 @@ public record ProfileResponse(
         String phoneNumber,
 
         @Schema(description = "생년월일", example = "19801201")
-        LocalDate birthDate
+        LocalDate birthDate,
+
+        @Schema(description = "초대코드", example = "Dc2kd0")
+        String inviteCode
 ) {
     public static ProfileResponse from(Member member) {
         return new ProfileResponse(
@@ -28,7 +31,8 @@ public record ProfileResponse(
                 member.getProfileImageUrl(),
                 member.getName(),
                 member.getPhoneNumber(),
-                member.getBirthDate()
+                member.getBirthDate(),
+                member.getInviteCode()
         );
     }
 }
