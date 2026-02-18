@@ -10,9 +10,12 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
@@ -145,5 +148,51 @@ public class S3Service {
             throw new BusinessException(ImageErrorCode.FILE_NOT_FOUND, Map.of("imageUrl", imageUrl));
         }
     }
+
+    public PresignedGetUrlResponse getPresignedGetUrl(String objectKey) {
+
+        if (objectKey == null || objectKey.isBlank()) {
+            throw new BusinessException(ImageErrorCode.URL_NOT_VALID, Map.of("objectKey", objectKey));
+        }
+
+        // URL 전체가 들어오는 실수 방지
+        if (objectKey.startsWith("http://") || objectKey.startsWith("https://")) {
+            throw new BusinessException(ImageErrorCode.URL_NOT_VALID, Map.of("objectKey", objectKey));
+        }
+
+        // 경로탈출 방지
+        if (objectKey.contains("..") || objectKey.contains("\\") || objectKey.startsWith("/")) {
+            throw new BusinessException(ImageErrorCode.URL_NOT_VALID, Map.of("objectKey", objectKey));
+        }
+
+        Duration expires = Duration.ofMinutes(10);
+        Instant expiresAt = Instant.now().plus(expires);
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+            .bucket(bucket)
+            .key(objectKey)
+            .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+            .signatureDuration(expires)
+            .getObjectRequest(getObjectRequest)
+            .build();
+
+        PresignedGetObjectRequest presigned = s3Presigner.presignGetObject(presignRequest);
+
+        return new PresignedGetUrlResponse(
+            objectKey,
+            presigned.url().toString(),
+            expires.toSeconds(),
+            expiresAt.toString()
+        );
+    }
+
+    public record PresignedGetUrlResponse(
+        String objectKey,
+        String url,
+        long expiresInSeconds,
+        String expiresAt
+    ) {}
 
 }
