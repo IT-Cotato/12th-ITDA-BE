@@ -117,4 +117,21 @@ public interface FriendshipControllerDocs {
 
             @Parameter(hidden = true) JwtPrincipal jwtPrincipal
     );
+
+    @Operation(
+            summary = "초대 코드로 회원 검색 API By 정원",
+            description = "초대 코드를 통해 친구로 추가할 회원을 검색합니다."
+    )
+    @ApiResponses({
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "본인의 초대 코드로 검색할 수 없음"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "해당 초대 코드의 회원을 찾을 수 없음")
+    })
+    @GetMapping("/search")
+    ApiResponse<FriendshipResDTO.SearchByInviteCodeDTO> searchByInviteCode(
+            @Parameter(hidden = true) JwtPrincipal jwtPrincipal,
+
+            @Parameter(description = "검색할 초대 코드", required = true)
+            @RequestParam String inviteCode
+    );
 }

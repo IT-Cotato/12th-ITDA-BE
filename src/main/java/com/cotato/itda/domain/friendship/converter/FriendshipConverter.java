@@ -76,4 +76,12 @@ public class FriendshipConverter {
                 .topicCodes(topicCodes)
                 .build();
     }
+
+    public static FriendshipResDTO.SearchByInviteCodeDTO toSearchByInviteCodeDTO(Member member) {
+        return FriendshipResDTO.SearchByInviteCodeDTO.builder()
+                .memberId(member.getId())
+                .memberName(member.getName())
+                .profileImageUrl(member.getProfileImageUrl())
+                .build();
+    }
 }

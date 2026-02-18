@@ -81,7 +81,17 @@ public class FriendshipResDTO {
             SpeechStyle speechStyle,
             @Schema(description = "대화 목표", example = "주 1일")
             ChatGoal chatGoal,
-            @Schema(description = "대화 주제 코드 리스트", example = "[\"DAILY_LIFE\", \"WEATHER\"]")
+            @Schema(description = "대화 주제 코드 리스트", example = "[\"HEALTH\", \"WEATHER\"]")
             List<String> topicCodes
+    ) {}
+
+    @Builder
+    public record SearchByInviteCodeDTO(
+            @Schema(description = "회원 ID", example = "1")
+            Long memberId,
+            @Schema(description = "회원 이름", example = "홍길동")
+            String memberName,
+            @Schema(description = "회원 프로필 이미지 URL", example = "https://example.com/profile.jpg")
+            String profileImageUrl
     ) {}
 }

@@ -7,6 +7,7 @@ import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.exception.FriendshipException;
 import com.cotato.itda.domain.friendship.exception.code.FriendshipErrorCode;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
+import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -66,5 +67,17 @@ public class FriendshipQueryServiceImpl implements FriendshipQueryService {
         }
 
         return FriendshipConverter.toFriendshipSettingsDTO(friendship);
+    }
+
+    @Override
+    public FriendshipResDTO.SearchByInviteCodeDTO searchByInviteCode(Long memberId, String inviteCode) {
+        Member member = memberRepository.findByInviteCode(inviteCode)
+                .orElseThrow(() -> new FriendshipException(FriendshipErrorCode.MEMBER_NOT_FOUND_BY_INVITE_CODE));
+
+        if (member.getId().equals(memberId)) {
+            throw new FriendshipException(FriendshipErrorCode.CANNOT_SEARCH_SELF);
+        }
+
+        return FriendshipConverter.toSearchByInviteCodeDTO(member);
     }
 }

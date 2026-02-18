@@ -24,4 +24,5 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     """)
 	void updatePasswordByPhoneNumber(String encodedPassword, String phoneNumber);
 
+	Optional<Member> findByInviteCode(String inviteCode);
 }

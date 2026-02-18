@@ -43,6 +43,18 @@ public enum FriendshipErrorCode implements ErrorCode {
                 "FRIENDSHIP_ERROR_400_INVALID_CHAT_GOAL",
                 "유효하지 않은 대화 목표입니다."
         ),
+
+        MEMBER_NOT_FOUND_BY_INVITE_CODE(
+                HttpStatus.NOT_FOUND,
+                "FRIENDSHIP_ERROR_404_MEMBER_NOT_FOUND_BY_INVITE_CODE",
+                "해당 초대 코드의 회원을 찾을 수 없습니다."
+        ),
+
+        CANNOT_SEARCH_SELF(
+                HttpStatus.BAD_REQUEST,
+                "FRIENDSHIP_ERROR_400_CANNOT_SEARCH_SELF",
+                "본인의 초대 코드로 검색할 수 없습니다."
+        ),
         ;
 
         private final HttpStatus httpStatus;
