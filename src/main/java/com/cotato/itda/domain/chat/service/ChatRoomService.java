@@ -22,6 +22,9 @@ import com.cotato.itda.domain.chat.repository.ChatRoomQueryRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomRepository;
 import com.cotato.itda.domain.chat.repository.dto.MyRoomRow;
 import com.cotato.itda.domain.chat.repository.dto.OpponentRow;
+import com.cotato.itda.domain.friendship.entity.Friendship;
+import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
+import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
 import com.cotato.itda.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +38,7 @@ public class ChatRoomService {
 	private final ChatRoomQueryRepository chatRoomQueryRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
+	private final FriendshipRepository friendshipRepository;
 
 	public ChatRoomSliceResponse getMyRooms(
 		Long memberId,
@@ -118,6 +122,7 @@ public class ChatRoomService {
 			log.info("[DIRECT 상대 매핑 완료] opponentMapKeys(roomIds)={}", opponentMap.keySet());
 		}
 
+
 		// ===== [4] unread_count 계산 + DTO 조립 =====
 		List<ChatRoomListItemDto> items = page.stream()
 			.map(row -> {
@@ -128,6 +133,10 @@ public class ChatRoomService {
 				OpponentSummaryDto opp = (row.roomType() == RoomType.DIRECT)
 					? opponentMap.get(row.roomId())
 					: null;
+
+				Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, opponentMap.get(row.roomId()).memberId(),
+					FriendshipStatus.ACTIVE)
+					.orElseThrow(()-> new BusinessException(ChatErrorCode.FRIENDSHIP_NOT_FOUND));
 
 				// 각 row마다 핵심값 로그 (너무 많으면 INFO가 과하니, 필요하면 DEBUG로 내려도 됨)
 				log.info("[방 아이템 계산] roomId={}, roomType={}, lastMessageSeq={}, lastReadSeq={}, joinSeq={}, effectiveReadSeq={}, unread={}, opponentMemberId={}",
@@ -148,6 +157,7 @@ public class ChatRoomService {
 					.lastMessageId(row.lastMessageId())
 					.lastMessageSeq(row.lastMessageSeq())
 					.lastMessageAt(row.lastMessageAt())
+					.friendShipId(friendship.getId())
 					.lastMessagePreview(row.lastMessagePreview())
 					.lastMessageType(row.lastMessageType())
 					.unreadCount(unread)

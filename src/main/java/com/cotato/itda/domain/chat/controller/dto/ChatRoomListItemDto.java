@@ -17,6 +17,9 @@ public record ChatRoomListItemDto(
 	@Schema(description = "채팅방 이름", example = "기민님과의 대화")
 	String roomName,
 
+	@Schema(description = "친구 관계 ID", example = "123")
+	Long friendShipId,
+
 	@Schema(description = "채팅방 타입", example = "DIRECT")
 	RoomType roomType,
 

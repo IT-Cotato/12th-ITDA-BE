@@ -11,6 +11,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ChatErrorCode implements ErrorCode {
 
+	FRIENDSHIP_NOT_FOUND(
+		HttpStatus.NOT_FOUND,
+		"친구 관계를 찾을 수 없습니다.",
+		"CHAT_ERROR_404_FRIENDSHIP_NOT_FOUND"
+	),
 	INVALID_MESSAGE_CONTENT(
 		HttpStatus.BAD_REQUEST,
 		"메시지 내용이 유효하지 않습니다.",
