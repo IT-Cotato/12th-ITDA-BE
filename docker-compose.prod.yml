@@ -40,6 +40,8 @@ services:
     ports:
       - "8080:8080"
     restart: on-failure
+    environment:
+      - TZ=Asia/Seoul
     env_file:
       - .env.prod
     depends_on:
