@@ -55,12 +55,12 @@ jwt:
   access:
     algorithm: HS256
     secret-key: ${JWT_ACCESS_SECRET_BASE64}
-    validity-in-seconds: 3600 #1시간
+    validity-in-seconds: ${JWT_ACCESS_VALIDITY_SECONDS:3600} # 1시간
 
   refresh:
     algorithm: HS256
     secret-key: ${JWT_REFRESH_SECRET_BASE64}
-    validity-in-seconds: 1209600 #14일
+    validity-in-seconds: ${JWT_REFRESH_VALIDITY_SECONDS:2592000} # 30일
 
 security:
   jwt:
