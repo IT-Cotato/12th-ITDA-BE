@@ -92,7 +92,7 @@ public class FriendshipController implements FriendshipControllerDocs {
     @Override
     public ApiResponse<FriendshipResDTO.SearchByInviteCodeDTO> searchByInviteCode(
             @AuthenticationPrincipal JwtPrincipal jwtPrincipal,
-            @RequestParam @NotBlank(message = "초대 코드는 필수입니다.") String inviteCode
+            @RequestParam String inviteCode
     ) {
         Long memberId = jwtPrincipal.memberId();
         return ApiResponse.success(friendshipQueryService.searchByInviteCode(memberId, inviteCode));
