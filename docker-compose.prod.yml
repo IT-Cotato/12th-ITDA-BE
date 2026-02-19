@@ -10,9 +10,11 @@ services:
       MYSQL_DATABASE: symtalk
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Seoul
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
+      - --default-time-zone=+09:00
     ports:
       - "3306:3306"
     volumes:
