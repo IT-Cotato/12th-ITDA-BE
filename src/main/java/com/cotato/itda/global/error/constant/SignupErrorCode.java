@@ -9,6 +9,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum SignupErrorCode implements ErrorCode{
 
+	INVITE_CODE_ISSUANCE_FAILED(
+		HttpStatus.INTERNAL_SERVER_ERROR,
+		"초대 코드 발급에 실패했습니다.",
+		"SIGNUP_ERROR_500_INVITE_CODE_ISSUANCE_FAILED"
+	),
+	INVALID_INVITE_CODE(
+		HttpStatus.BAD_REQUEST,
+		"유효하지 않은 초대 코드입니다.",
+		"SIGNUP_ERROR_400_INVALID_INVITE_CODE"
+	),
 	OTP_SMS_SEND_FAILED(
 		HttpStatus.INTERNAL_SERVER_ERROR,
 		"OTP 문자 발송에 실패했습니다.",

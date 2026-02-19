@@ -60,7 +60,7 @@ public class Member extends BaseTimeEntity {
 	@Column(name = "profile_image_url", length = 500)
 	private String profileImageUrl;
 
-	@Column(name = "invite_code", length = 50)
+	@Column(name = "invite_code", length = 6)
 	private String inviteCode;
 
 	@Column(name = "password_hash", nullable = false, length = 200)
@@ -129,6 +129,13 @@ public class Member extends BaseTimeEntity {
 			this.nutrientCount += nutrientsToAdd;
 			this.points = this.points % 10;
 		}
+	}
+
+	public void issueInviteCode(String inviteCode) {
+		if (inviteCode == null || !inviteCode.matches("^[A-Z0-9]{6}$")) {
+			throw new BusinessException(SignupErrorCode.INVALID_INVITE_CODE);
+		}
+		this.inviteCode = inviteCode;
 	}
 
 	public void decreaseNutrient() {
