@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
@@ -132,6 +134,6 @@ public interface FriendshipControllerDocs {
             @Parameter(hidden = true) JwtPrincipal jwtPrincipal,
 
             @Parameter(description = "검색할 초대 코드", required = true)
-            @RequestParam String inviteCode
+            @RequestParam @NotBlank(message = "초대 코드는 필수입니다.") String inviteCode
     );
 }
