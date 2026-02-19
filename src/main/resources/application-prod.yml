@@ -18,6 +18,10 @@ spring:
     # 운영에서는 절대 자동으로 스키마 건드리지 않도록 none
     hibernate:
       ddl-auto: ${JPA_HIBERNATE_DDL_AUTO:none}
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
   cloud:
     aws:
       s3:
@@ -50,6 +54,7 @@ logging:
   level:
     root: INFO
     com.cotato.itda: INFO
+    org.hibernate.orm.jdbc.bind: TRACE
 
 jwt:
   access:
