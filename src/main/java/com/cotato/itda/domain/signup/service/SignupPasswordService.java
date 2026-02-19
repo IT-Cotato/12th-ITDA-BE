@@ -1,5 +1,6 @@
 package com.cotato.itda.domain.signup.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +30,7 @@ import com.cotato.itda.global.security.jwt.token.IssuedAccessToken;
 import com.cotato.itda.global.security.jwt.token.IssuedRefreshToken;
 import com.cotato.itda.global.security.jwt.token.IssuedToken;
 import com.cotato.itda.global.security.jwt.token.JwtTokenProvider;
+import com.cotato.itda.global.util.InviteCodeGenerator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +46,7 @@ public class SignupPasswordService {
 	private final PasswordEncoder passwordEncoder;
 	private final MemberTermsConsentRepository memberTermsConsentRepository;
 	private final TermsItemJpaRepository termsItemJpaRepository;
+	private final InviteCodeGenerator inviteCodeGenerator;
 
 	@Transactional
 	public SubmitPasswordResponse submit(
@@ -95,7 +98,7 @@ public class SignupPasswordService {
 
 		String phone = requireOtpPhone(draft);
 		String name = draft.profile().name();
-		var birthDate = draft.profile().birthDate();
+		LocalDate birthDate = draft.profile().birthDate();
 
 		// 4. 비밀번호 검증 (재입력 일치 + 정책)
 		String password = request.password();
@@ -114,19 +117,13 @@ public class SignupPasswordService {
 
 		// 6. 비밀번호 해시(BCrypt)
 		String passwordHash = passwordEncoder.encode(password);
-		log.info("비밀번호 해시 생성 완료 : {}", password);
+
 
 		try {
 			// 7. 회원 생성 및 저장
-			Member saved = memberRepository.save(
-					Member.createLocalMember(
-							phone,
-							name,
-							birthDate,
-							MemberRole.USER,
-							null,
-							passwordHash));
-			log.info("신규 회원 생성 및 저장 완료: {}", saved);
+			Member saved = saveMemberWithInviteCodeRetry(phone, name, birthDate, passwordHash);
+			log.info("신규 회원 생성 및 저장 완료: memberId={}", saved.getId());
+
 
 			// 번들 기준으로 약관 아이템 전체를 조회
 			List<TermsItemEntity> items = termsItemJpaRepository
@@ -150,8 +147,6 @@ public class SignupPasswordService {
 			IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(saved.getId(), saved.getRole().name());
 			IssuedToken issuedRefreshToken = jwtTokenProvider.createRefreshToken(saved.getId());
 			log.info("액세스 토큰 및 리프레시 토큰 발급 완료");
-			log.info("Access Token: {}", ((IssuedAccessToken) issuedAccessToken).token());
-			log.info("Refresh Token: {}", ((IssuedRefreshToken) issuedRefreshToken).token());
 
 			// 10. Draft COMPLETED로 전이(비밀번호는 저장하지 않음)
 			SignupDraftRedisValue completed = draft.onSignupCompleted();
@@ -269,5 +264,58 @@ public class SignupPasswordService {
 		}
 
 		// 여기까지 오면 정책 통과(예외 발생 없음)
+	}
+
+	private Member saveMemberWithInviteCodeRetry(
+		String phone,
+		String name,
+		LocalDate birthDate,
+		String passwordHash
+	) {
+		final int maxAttempts = 5;
+
+		for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+			String inviteCode = inviteCodeGenerator.generate();
+
+			try {
+				Member member = Member.createLocalMember(
+					phone,
+					name,
+					birthDate,
+					MemberRole.USER,
+					null,
+					passwordHash
+				);
+
+				member.issueInviteCode(inviteCode);
+				return memberRepository.save(member);
+
+			} catch (DataIntegrityViolationException e) {
+				// invite_code 유니크 충돌이면 재시도
+				if (isInviteCodeDuplicate(e)) {
+					log.warn("inviteCode 중복으로 재시도 attempt={}/{}", attempt, maxAttempts);
+					continue;
+				}
+				// phone_number 유니크 등 다른 무결성 에러면 가입 중복 처리
+				throw new BusinessException(SignupErrorCode.MEMBER_ALREADY_EXISTS);
+			}
+		}
+
+		throw new BusinessException(SignupErrorCode.INVITE_CODE_ISSUANCE_FAILED);
+	}
+
+	private boolean isInviteCodeDuplicate(Throwable e) {
+		Throwable cur = e;
+		while (cur != null) {
+			String msg = cur.getMessage();
+			if (msg != null) {
+				String lower = msg.toLowerCase();
+				if (lower.contains("uk_members_invite_code") || lower.contains("invite_code")) {
+					return true;
+				}
+			}
+			cur = cur.getCause();
+		}
+		return false;
 	}
 }
