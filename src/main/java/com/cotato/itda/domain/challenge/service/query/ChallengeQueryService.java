@@ -21,6 +21,7 @@ import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -51,10 +53,13 @@ public class ChallengeQueryService {
 
     public ChallengeDashboardResponse getChallengeDashboard(Long memberId) {
         LocalDate today = LocalDate.now(ZoneId.of("Asia/Seoul"));
+        log.info("[TIMEZONE DEBUG] Current date in Asia/Seoul: {}", today);
+        log.info("[TIMEZONE DEBUG] System default timezone: {}", ZoneId.systemDefault());
 
         // 1. 오늘 미션 조회
         Mission mission = missionRepository.findByMissionDate(today)
                 .orElseThrow(() -> new BusinessException(ChallengeErrorCode.MISSION_NOT_FOUND));
+        log.info("[TIMEZONE DEBUG] Found mission with missionDate: {}, missionId: {}", mission.getMissionDate(), mission.getId());
 
         // 2. 오늘의 내 챌린지 조회 (없는 경우 null 반환)
         Challenge myChallenge = challengeRepository.findByMemberIdAndMission(memberId, mission)
