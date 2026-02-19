@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @Table(name = "mission")
 public class Mission extends BaseEntity {
 
-    @Column(name = "mission_date", nullable = false)
+    @Column(name = "mission_date", nullable = false, columnDefinition = "DATE")
     private LocalDate missionDate;
 
     @Enumerated(EnumType.STRING)
