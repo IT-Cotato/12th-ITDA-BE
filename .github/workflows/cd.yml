@@ -82,3 +82,29 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/symtalk-be
             docker pull ${{ secrets.DOCKER_USERNAME }}/nginx
             docker compose -f docker-compose.prod.yml up -d
+
+            echo "Waiting for application health check..."
+            HEALTH_URL='${{ secrets.BACKEND_HEALTH_URL }}'
+            if [ -z "$HEALTH_URL" ]; then
+              echo "BACKEND_HEALTH_URL secret is not set."
+              exit 1
+            fi
+
+            i=1
+            while [ "$i" -le 30 ]; do
+              if curl -fsS "$HEALTH_URL"; then
+                echo "Application is healthy."
+                docker compose -f docker-compose.prod.yml ps
+                exit 0
+              fi
+
+              echo "Health check attempt $i failed. Retrying in 10 seconds..."
+              i=$((i + 1))
+              sleep 10
+            done
+
+            echo "Deployment health check failed."
+            docker compose -f docker-compose.prod.yml ps
+            docker logs symtalk-be --tail=200 || true
+            docker logs nginx --tail=200 || true
+            exit 1
