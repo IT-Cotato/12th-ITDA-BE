@@ -21,6 +21,12 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - symtalk_net
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   redis:
     container_name: redis
@@ -33,22 +39,36 @@ services:
       - redis_data:/data
     networks:
       - symtalk_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   application:
     container_name: symtalk-be
     image: ccjngwn/symtalk-be:latest
     ports:
       - "8080:8080"
-    restart: on-failure
+    restart: unless-stopped
     environment:
       - TZ=Asia/Seoul
     env_file:
       - .env.prod
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - symtalk_net
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
 
   nginx:
     container_name: nginx
@@ -61,10 +81,17 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot
     depends_on:
-      - application
+      application:
+        condition: service_healthy
     networks:
       - symtalk_net
     command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   certbot:
     container_name: certbot
