@@ -77,7 +77,6 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - /home/ubuntu/compose/nginx/conf.d:/etc/nginx/conf.d:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro
       - ./certbot/www:/var/www/certbot
     depends_on:

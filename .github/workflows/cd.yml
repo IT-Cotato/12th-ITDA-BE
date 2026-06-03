@@ -84,9 +84,15 @@ jobs:
             docker compose -f docker-compose.prod.yml up -d
 
             echo "Waiting for application health check..."
+            HEALTH_URL='${{ secrets.BACKEND_HEALTH_URL }}'
+            if [ -z "$HEALTH_URL" ]; then
+              echo "BACKEND_HEALTH_URL secret is not set."
+              exit 1
+            fi
+
             i=1
             while [ "$i" -le 30 ]; do
-              if curl -fsS https://43.202.184.232.nip.io/health; then
+              if curl -fsS "$HEALTH_URL"; then
                 echo "Application is healthy."
                 docker compose -f docker-compose.prod.yml ps
                 exit 0
