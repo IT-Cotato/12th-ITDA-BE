@@ -22,6 +22,7 @@ import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.JwtErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import com.cotato.itda.global.security.jwt.config.JwtPurpose;
+import com.cotato.itda.global.security.jwt.token.JwtSubjectParser;
 import com.cotato.itda.global.security.jwt.token.JwtTokenValidator;
 
 import io.jsonwebtoken.Claims;
@@ -35,6 +36,9 @@ class MemberServiceTest {
 
 	@Mock
 	private JwtTokenValidator jwtTokenValidator;
+
+	@Mock
+	private JwtSubjectParser jwtSubjectParser;
 
 	@Mock
 	private LogoutService logoutService;
@@ -54,6 +58,7 @@ class MemberServiceTest {
 
 		when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 		when(jwtTokenValidator.validateAndGetClaims(refreshToken, JwtPurpose.REFRESH)).thenReturn(claims);
+		when(jwtSubjectParser.parseMemberId(claims)).thenReturn(1L);
 
 		memberService.withdraw(1L, request);
 
@@ -73,6 +78,7 @@ class MemberServiceTest {
 
 		when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 		when(jwtTokenValidator.validateAndGetClaims(refreshToken, JwtPurpose.REFRESH)).thenReturn(claims);
+		when(jwtSubjectParser.parseMemberId(claims)).thenReturn(2L);
 
 		assertThatThrownBy(() -> memberService.withdraw(1L, request))
 			.isInstanceOf(BusinessException.class)

@@ -25,6 +25,7 @@ import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.JwtErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import com.cotato.itda.global.security.jwt.token.IssuedAccessToken;
+import com.cotato.itda.global.security.jwt.token.JwtSubjectParser;
 import com.cotato.itda.global.security.jwt.token.JwtTokenProvider;
 
 import io.jsonwebtoken.Claims;
@@ -41,6 +42,9 @@ class TokenReissueServiceTest {
 
 	@Mock
 	private MemberRepository memberRepository;
+
+	@Mock
+	private JwtSubjectParser jwtSubjectParser;
 
 	@InjectMocks
 	private TokenReissueService tokenReissueService;
@@ -71,6 +75,7 @@ class TokenReissueServiceTest {
 			.build();
 
 		when(refreshTokenBlacklistRepository.exists(refreshToken)).thenReturn(false);
+		when(jwtSubjectParser.parseMemberId(claims)).thenReturn(1L);
 		when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 		when(jwtTokenProvider.createAccessToken(1L, "ROLE_USER"))
 			.thenReturn(new IssuedAccessToken("new-access-token", expiresAt));
@@ -91,6 +96,7 @@ class TokenReissueServiceTest {
 			.build();
 
 		when(refreshTokenBlacklistRepository.exists(refreshToken)).thenReturn(false);
+		when(jwtSubjectParser.parseMemberId(claims)).thenReturn(1L);
 		when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
 		assertThatThrownBy(() -> tokenReissueService.reissue(refreshToken, claims))

@@ -12,6 +12,7 @@ import com.cotato.itda.global.error.constant.JwtErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import com.cotato.itda.global.security.jwt.config.JwtPurpose;
+import com.cotato.itda.global.security.jwt.token.JwtSubjectParser;
 import com.cotato.itda.global.security.jwt.token.JwtTokenValidator;
 
 import io.jsonwebtoken.Claims;
@@ -23,6 +24,7 @@ public class MemberService {
 
 	private final MemberRepository memberRepository;
 	private final JwtTokenValidator jwtTokenValidator;
+	private final JwtSubjectParser jwtSubjectParser;
 	private final LogoutService logoutService;
 
 	@Transactional
@@ -34,25 +36,12 @@ public class MemberService {
 		}
 
 		Claims refreshClaims = jwtTokenValidator.validateAndGetClaims(request.refreshToken(), JwtPurpose.REFRESH);
-		Long refreshMemberId = parseMemberId(refreshClaims);
+		Long refreshMemberId = jwtSubjectParser.parseMemberId(refreshClaims);
 		if (!memberId.equals(refreshMemberId)) {
 			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
 		}
 
 		member.withdraw();
 		logoutService.logout(request.refreshToken(), refreshClaims);
-	}
-
-	private Long parseMemberId(Claims refreshClaims) {
-		String subject = refreshClaims.getSubject();
-		if (subject == null || subject.isBlank()) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
-
-		try {
-			return Long.parseLong(subject);
-		} catch (NumberFormatException e) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
 	}
 }

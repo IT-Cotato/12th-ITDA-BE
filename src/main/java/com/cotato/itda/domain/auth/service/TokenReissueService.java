@@ -11,6 +11,7 @@ import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.JwtErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import com.cotato.itda.global.security.jwt.token.IssuedToken;
+import com.cotato.itda.global.security.jwt.token.JwtSubjectParser;
 import com.cotato.itda.global.security.jwt.token.JwtTokenProvider;
 
 import io.jsonwebtoken.Claims;
@@ -24,6 +25,7 @@ public class TokenReissueService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RefreshTokenBlacklistRepository refreshTokenBlacklistRepository;
 	private final MemberRepository memberRepository;
+	private final JwtSubjectParser jwtSubjectParser;
 
 	@Transactional(readOnly = true)
 	public Tokens.AccessTokenOnly reissue(String refreshToken, Claims refreshClaims) {
@@ -31,20 +33,7 @@ public class TokenReissueService {
 			throw new BusinessException(JwtErrorCode.LOGGED_OUT_TOKEN);
 		}
 
-		// sub에서 사용자 식별자(memberId) 추출
-		String subject = refreshClaims.getSubject();
-		if (subject == null || subject.isBlank()) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
-		log.info("리프레시 토큰에서 추출한 subject: {}", subject);
-		Long memberId;
-
-		// subject(String) -> memberId(Long) 파싱
-		try {
-			memberId = Long.parseLong(subject);
-		} catch (NumberFormatException e) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
+		Long memberId = jwtSubjectParser.parseMemberId(refreshClaims);
 		log.info("리프레시 토큰에서 추출한 memberId: {}", memberId);
 
 		Member member = memberRepository.findById(memberId)
