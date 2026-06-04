@@ -117,6 +117,10 @@ public class Member extends BaseTimeEntity {
 		this.status = MemberStatus.ACTIVE;
 	}
 
+	public void withdraw() {
+		this.status = MemberStatus.WITHDRAWN;
+	}
+
     public void updateProfile(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
     }

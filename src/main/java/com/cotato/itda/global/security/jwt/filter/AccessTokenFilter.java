@@ -55,6 +55,8 @@ public class AccessTokenFilter extends OncePerRequestFilter {
 
 		if (uri.startsWith("/api/auth/refresh"))
 			return true;
+		if (uri.startsWith("/api/auth/logout"))
+			return true;
 		if (uri.startsWith("/api/onboarding"))
 			return true;
 

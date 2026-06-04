@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import com.cotato.itda.domain.auth.dto.LoginRequest;
 import com.cotato.itda.domain.auth.dto.Tokens;
 import com.cotato.itda.domain.member.entity.Member;
+import com.cotato.itda.domain.member.entity.MemberStatus;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.AuthErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -36,6 +37,9 @@ public class AuthService {
 		Member savedMember = memberRepository.findByPhoneNumber(phoneNumber)
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.INVALID_CREDENTIALS));
 		log.info("전화번호로 Member 조회 성공");
+		if (savedMember.getStatus() != MemberStatus.ACTIVE) {
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
+		}
 
 		// 3. DB에서 조회한 유저의 해시 변환된 비밀번호와 비교
 		String inputPassword = request.password();
