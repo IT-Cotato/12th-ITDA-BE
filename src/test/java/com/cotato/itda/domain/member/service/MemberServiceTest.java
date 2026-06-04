@@ -47,7 +47,7 @@ class MemberServiceTest {
 	private MemberService memberService;
 
 	@Test
-	void withdraw_marks_member_as_withdrawn_and_blacklists_refresh_token() {
+	void withdraw_marks_member_as_withdrawal_pending_and_blacklists_refresh_token() {
 		String refreshToken = "refresh-token";
 		WithdrawRequest request = new WithdrawRequest(refreshToken);
 		Member member = Member.builder()
@@ -62,7 +62,8 @@ class MemberServiceTest {
 
 		memberService.withdraw(1L, request);
 
-		assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWN);
+		assertThat(member.getStatus()).isEqualTo(MemberStatus.WITHDRAWAL_PENDING);
+		assertThat(member.getWithdrawnAt()).isNotNull();
 		verify(logoutService).logout(refreshToken, claims);
 	}
 
