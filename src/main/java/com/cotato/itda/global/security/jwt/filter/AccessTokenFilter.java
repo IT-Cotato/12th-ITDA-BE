@@ -8,8 +8,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.cotato.itda.domain.member.entity.MemberStatus;
+import com.cotato.itda.domain.member.repository.MemberRepository;
+import com.cotato.itda.global.error.constant.JwtErrorCode;
+import com.cotato.itda.global.error.exception.BusinessException;
+import com.cotato.itda.global.error.exception.JwtAuthenticationException;
 import com.cotato.itda.global.security.jwt.config.JwtPurpose;
 import com.cotato.itda.global.security.jwt.extractor.BearerTokenExtractor;
+import com.cotato.itda.global.security.jwt.handler.JwtAuthenticationEntryPoint;
+import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 import com.cotato.itda.global.security.jwt.token.JwtTokenProvider;
 import com.cotato.itda.global.security.jwt.token.JwtTokenValidator;
 
@@ -39,6 +46,8 @@ public class AccessTokenFilter extends OncePerRequestFilter {
 
 	private final JwtTokenValidator jwtTokenValidator;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final MemberRepository memberRepository;
+	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 	/**
 	 * Access 인증이 필요 없는 경로는 필터를 스킵한다.
@@ -86,16 +95,38 @@ public class AccessTokenFilter extends OncePerRequestFilter {
 		 *
 		 * 2) 검증 성공 시에만 Authentication 생성
 		 */
-		Claims claims = jwtTokenValidator.validateAndGetClaims(token, JwtPurpose.ACCESS);
+		try {
+			Claims claims = jwtTokenValidator.validateAndGetClaims(token, JwtPurpose.ACCESS);
 
-		/**
-		 *   JwtTokenProvider가 "Claims 기반 Authentication 생성" 오버로드를 제공하는 것.
-		 */
-		Authentication authentication = jwtTokenProvider.getAuthentication(claims);
+			/**
+			 *   JwtTokenProvider가 "Claims 기반 Authentication 생성" 오버로드를 제공하는 것.
+			 */
+			Authentication authentication = jwtTokenProvider.getAuthentication(claims);
+			validateActiveMember(authentication);
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+			SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		filterChain.doFilter(request, response);
+			filterChain.doFilter(request, response);
+		} catch (BusinessException e) {
+			SecurityContextHolder.clearContext();
+			JwtErrorCode errorCode = e.getErrorCode() instanceof JwtErrorCode jwtErrorCode
+				? jwtErrorCode
+				: JwtErrorCode.INVALID_TOKEN;
+			jwtAuthenticationEntryPoint.commence(request, response, new JwtAuthenticationException(errorCode));
+		}
+	}
+
+	private void validateActiveMember(Authentication authentication) {
+		if (!(authentication.getPrincipal() instanceof JwtPrincipal principal)) {
+			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
+		}
+
+		MemberStatus status = memberRepository.findById(principal.memberId())
+			.orElseThrow(() -> new BusinessException(JwtErrorCode.INVALID_TOKEN))
+			.getStatus();
+		if (status != MemberStatus.ACTIVE) {
+			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
+		}
 	}
 
 }
