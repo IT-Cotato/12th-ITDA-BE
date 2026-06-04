@@ -54,7 +54,7 @@ class TokenReissueServiceTest {
 		assertThatThrownBy(() -> tokenReissueService.reissue(refreshToken, claims))
 			.isInstanceOf(BusinessException.class)
 			.extracting("errorCode")
-			.isEqualTo(JwtErrorCode.INVALID_TOKEN);
+			.isEqualTo(JwtErrorCode.LOGGED_OUT_TOKEN);
 
 		verify(memberRepository, never()).findById(1L);
 		verify(jwtTokenProvider, never()).createAccessToken(anyLong(), anyString());

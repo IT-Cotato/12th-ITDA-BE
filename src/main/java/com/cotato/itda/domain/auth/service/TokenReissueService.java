@@ -28,7 +28,7 @@ public class TokenReissueService {
 	@Transactional(readOnly = true)
 	public Tokens.AccessTokenOnly reissue(String refreshToken, Claims refreshClaims) {
 		if (refreshTokenBlacklistRepository.exists(refreshToken)) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
+			throw new BusinessException(JwtErrorCode.LOGGED_OUT_TOKEN);
 		}
 
 		// sub에서 사용자 식별자(memberId) 추출

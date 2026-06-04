@@ -13,6 +13,7 @@ public enum JwtErrorCode implements ErrorCode {
 	// 401 Unauthorized: 인증 실패
 
 	INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "유효하지 않은 JWT 입니다.", "JWT_401_INVALID"),
+	LOGGED_OUT_TOKEN(HttpStatus.UNAUTHORIZED, "이미 로그아웃 처리된 JWT 토큰입니다.", "JWT_401_LOGGED_OUT"),
 	EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "만료된 JWT 토큰입니다.", "JWT_401_EXPIRED"),
 	UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "지원되지 않는 JWT 토큰입니다.", "JWT_401_UNSUPPORTED"),
 	MALFORMED_TOKEN(HttpStatus.UNAUTHORIZED, "잘못된 형식의 JWT 토큰입니다.", "JWT_401_MALFORMED"),
