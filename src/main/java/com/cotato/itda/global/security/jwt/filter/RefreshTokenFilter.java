@@ -7,6 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.cotato.itda.global.error.constant.JwtErrorCode;
+import com.cotato.itda.global.error.exception.BusinessException;
 import com.cotato.itda.global.error.exception.JwtAuthenticationException;
 import com.cotato.itda.global.security.jwt.config.JwtPurpose;
 import com.cotato.itda.global.security.jwt.extractor.BearerTokenExtractor;
@@ -39,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class RefreshTokenFilter extends OncePerRequestFilter {
 
 	public static final String ATTR_REFRESH_CLAIMS = "REFRESH_CLAIMS";
+	public static final String ATTR_REFRESH_TOKEN = "REFRESH_TOKEN";
 
 	private final JwtTokenValidator jwtTokenValidator;
 	private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -47,8 +50,8 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 		String uri = request.getRequestURI();
 
-		// refresh 엔드포인트에서만 필터 동작
-		return !uri.startsWith("/api/auth/refresh");
+		// refresh token 검증이 필요한 인증 엔드포인트에서만 필터 동작
+		return !uri.startsWith("/api/auth/refresh") && !uri.startsWith("/api/auth/logout");
 	}
 
 	@Override
@@ -67,6 +70,7 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
 			// 목적/alg/만료/서명/형식 검증 + Claims 반환
 			Claims claims = jwtTokenValidator.validateAndGetClaims(refreshToken, JwtPurpose.REFRESH);
 
+			request.setAttribute(ATTR_REFRESH_TOKEN, refreshToken);
 			request.setAttribute(ATTR_REFRESH_CLAIMS, claims);
 
 			filterChain.doFilter(request, response);
@@ -74,7 +78,13 @@ public class RefreshTokenFilter extends OncePerRequestFilter {
 			SecurityContextHolder.clearContext();
 			jwtAuthenticationEntryPoint.commence(request, response, e);
 			return;
+		} catch (BusinessException e) {
+			SecurityContextHolder.clearContext();
+			JwtErrorCode errorCode = e.getErrorCode() instanceof JwtErrorCode jwtErrorCode
+				? jwtErrorCode
+				: JwtErrorCode.INVALID_TOKEN;
+			jwtAuthenticationEntryPoint.commence(request, response, new JwtAuthenticationException(errorCode));
+			return;
 		}
 	}
 }
-
