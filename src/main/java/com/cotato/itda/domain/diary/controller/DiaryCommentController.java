@@ -27,17 +27,20 @@ public class DiaryCommentController {
     private final DiaryCommentQueryService diaryCommentQueryService;
 
     @Operation(
-            summary = "공유일기 댓글 등록",
+            summary = "공유일기 댓글/대댓글 등록",
             description = """
                     pathVariable로 전달받은 특정 일기에 댓글을 등록합니다. 
                     - 등록 후 댓글 정보와 작성자 정보가 반환됩니다.
                     - 본인 또는 친구의 일기에만 댓글을 등록할 수 있습니다.
+                    - 대댓글 작성 시, Request Body에 부모 댓글 ID(`parentId`)를 포함해야 합니다.
+                    - 대댓글에 다시 대댓글을 달 경우 400 에러가 발생합니다.
                     """
     )
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "성공"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "대댓글에 추가 대댓글 작성 불가 (Depth 2 제한)"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "일기 접근 권한 없음 "),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 일기 ID"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "존재하지 않는 일기 ID 또는 댓글 ID"),
     })
     @SecurityRequirement(name = "AccessToken")
     @PostMapping("/{diaryId}/comments")

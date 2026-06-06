@@ -9,6 +9,7 @@ import com.cotato.itda.domain.diary.entity.Diary;
 import com.cotato.itda.domain.diary.entity.DiaryComment;
 import com.cotato.itda.domain.member.entity.Member;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DiaryCommentConverter {
@@ -22,8 +23,11 @@ public class DiaryCommentConverter {
     }
 
     public static DiaryCommentResponse toResponse(DiaryComment comment, WriterInfo writerInfo) {
+        Long parentId = (comment.getParentComment() != null) ? comment.getParentComment().getId() : null;
+
         return DiaryCommentResponse.builder()
                 .commentId(comment.getId())
+                .parentId(parentId)
                 .writerInfo(writerInfo)
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
@@ -39,12 +43,17 @@ public class DiaryCommentConverter {
                 .build();
     }
 
-    public static DiaryCommentListResponse.CommentItem toListItem(DiaryComment comment, WriterInfo writerInfo) {
+    public static DiaryCommentListResponse.CommentItem toListItem(
+            DiaryComment comment,
+            WriterInfo writerInfo,
+            List<DiaryCommentListResponse.CommentItem> childComments
+    ) {
         return DiaryCommentListResponse.CommentItem.builder()
                 .commentId(comment.getId())
                 .writerInfo(writerInfo)
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
+                .childComments(childComments != null ? childComments : new ArrayList<>()) // ◀ 대댓글 리스트 주입
                 .build();
     }
 

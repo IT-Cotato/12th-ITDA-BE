@@ -38,6 +38,9 @@ public record DiaryCommentListResponse(
             String content,
 
             @Schema(description = "작성 시간", example = "2026-01-10T10:00:00")
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+
+            @Schema(description = "대댓글 목록, 없을 경우 빈 배열이 반환됩니다.")
+            List<CommentItem> childComments
     ) {}
 }

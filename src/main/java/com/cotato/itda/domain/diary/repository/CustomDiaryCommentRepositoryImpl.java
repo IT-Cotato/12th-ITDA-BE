@@ -25,8 +25,10 @@ public class CustomDiaryCommentRepositoryImpl implements CustomDiaryCommentRepos
         List<DiaryComment> comments = jpaQueryFactory
                 .selectFrom(diaryComment)
                 .join(diaryComment.member, member).fetchJoin() // member도 같이 조회
+                .leftJoin(diaryComment.childComments).fetchJoin()
                 .where(
                         diaryComment.diary.id.eq(diaryId),
+                        diaryComment.parentComment.isNull(),
                         cursorCondition(lastId)
                 )
                 .orderBy(diaryComment.id.asc())
@@ -47,5 +49,4 @@ public class CustomDiaryCommentRepositoryImpl implements CustomDiaryCommentRepos
         }
         return diaryComment.id.gt(lastId); // 댓글 오름차순 조회
     }
-
 }
