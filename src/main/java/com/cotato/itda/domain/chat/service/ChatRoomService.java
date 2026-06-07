@@ -3,8 +3,11 @@ package com.cotato.itda.domain.chat.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.cotato.itda.domain.member.entity.Member;
+import com.cotato.itda.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +42,7 @@ public class ChatRoomService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	private final FriendshipRepository friendshipRepository;
+    private final MemberRepository memberRepository;
 
 	public ChatRoomSliceResponse getMyRooms(
 		Long memberId,
@@ -134,9 +138,13 @@ public class ChatRoomService {
 					? opponentMap.get(row.roomId())
 					: null;
 
-				Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, opponentMap.get(row.roomId()).memberId(),
-					FriendshipStatus.ACTIVE)
-					.orElseThrow(()-> new BusinessException(ChatErrorCode.FRIENDSHIP_NOT_FOUND));
+                Long friendshipId = null;
+                if (row.roomType() == RoomType.DIRECT && opp != null) {
+                    friendshipId = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(
+                                    memberId, opp.memberId(), FriendshipStatus.ACTIVE)
+                            .map(Friendship::getId)
+                            .orElse(null); // 혹은 예외를 꼭 던져야 한다면 프로젝트 정책에 맞게 처리하되, null 방어가 우선입니다.
+                }
 
 				// 각 row마다 핵심값 로그 (너무 많으면 INFO가 과하니, 필요하면 DEBUG로 내려도 됨)
 				log.info("[방 아이템 계산] roomId={}, roomType={}, lastMessageSeq={}, lastReadSeq={}, joinSeq={}, effectiveReadSeq={}, unread={}, opponentMemberId={}",
@@ -157,7 +165,7 @@ public class ChatRoomService {
 					.lastMessageId(row.lastMessageId())
 					.lastMessageSeq(row.lastMessageSeq())
 					.lastMessageAt(row.lastMessageAt())
-					.friendShipId(friendship.getId())
+					.friendShipId(friendshipId)
 					.lastMessagePreview(row.lastMessagePreview())
 					.lastMessageType(row.lastMessageType())
 					.unreadCount(unread)
@@ -227,14 +235,12 @@ public class ChatRoomService {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
 
 		chatRoomMember.leave();
-
-
 	}
 
 	// AI 모드 토글
@@ -242,7 +248,7 @@ public class ChatRoomService {
 	public void toggleAiMode(Long memberId, Long roomId, boolean enabled) {
 		log.info("[AI 모드 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
@@ -255,7 +261,7 @@ public class ChatRoomService {
 	public void toggleNotification(Long memberId, Long roomId, boolean enabled) {
 		log.info("[알림 설정 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
@@ -278,23 +284,37 @@ public class ChatRoomService {
 				return new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
 			});
 
-		ChatRoomMember myMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId)
-			.orElseThrow(() -> {
-				log.warn("[채팅방 ENTER 실패] 멤버십 없음. memberId={}, roomId={}", memberId, roomId);
-				return new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND);
-			});
-
-		if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
-			log.warn("[채팅방 ENTER 거절] ACTIVE 아님. memberId={}, roomId={}, status={}",
-				memberId, roomId, myMembership.getStatus()
-			);
-			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
-		}
+        // 기존 멤버십 기록 조회
+        Optional<ChatRoomMember> maybeMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId);
+        ChatRoomMember myMembership;
 
 		Long lastMessageSeqObj = room.getLastMessageSeq();
 		Long lastMessageId = room.getLastMessageId();
 
 		long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
+
+        if (maybeMembership.isEmpty()) {
+            // 처음 입장하는 멤버이면 신규 생성
+            log.info("[채팅방 ENTER] 최초 입장 멤버 생성. memberId={}, roomId={}", memberId, roomId);
+            Member member = memberRepository.findById(memberId) // 필요 시 주입받아 사용
+                    .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+
+            myMembership = ChatRoomMember.create(member, room);
+            chatRoomMemberRepository.save(myMembership);
+            chatRoomMemberRepository.flush();
+
+        } else {
+            // 기존 기록이 있는 멤버
+            myMembership = maybeMembership.get();
+
+            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
+                        memberId, roomId, myMembership.getStatus());
+
+                myMembership.rejoin(lastSeq);
+                chatRoomMemberRepository.flush();
+            }
+        }
 
 		// 메시지 없으면 읽음 처리할 것도 없음
 		if (lastSeq <= 0L) {
@@ -310,13 +330,11 @@ public class ChatRoomService {
 			return;
 		}
 
-		// 여기서 “현재 마지막 seq까지” 읽음 처리
+		// 복구되거나 새로 생성된 멤버십 상태에서 최종 읽음 처리 수행
 		myMembership.markRead(lastSeq, lastMessageId);
 
 		log.info("[채팅방 ENTER 완료] memberId={}, roomId={}, readSeq={}, readMessageId={}",
 			memberId, roomId, lastSeq, lastMessageId
 		);
-	}
-
-
+    }
 }
