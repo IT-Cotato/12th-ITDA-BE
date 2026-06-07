@@ -53,13 +53,6 @@ public class DiaryCommandService {
             throw new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN);
         }
 
-        // 날짜 변경하는 경우 일기 중복 확인
-        if (!diary.getDate().equals(request.date())) {
-            if (diaryRepository.existsByMemberIdAndDate(memberId, request.date())) {
-                throw new BusinessException(DiaryErrorCode.DIARY_ALREADY_EXISTS);
-            }
-        }
-
         diary.update(request.date(), request.emojiCode(), request.content(), request.imageUrl());
         return DiaryConverter.toResponse(diary);
     }
