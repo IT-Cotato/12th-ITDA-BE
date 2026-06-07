@@ -41,6 +41,9 @@ public record DiaryCommentListResponse(
             LocalDateTime createdAt,
 
             @Schema(description = "대댓글 목록, 없을 경우 빈 배열이 반환됩니다.")
-            List<CommentItem> childComments
+            List<CommentItem> childComments,
+
+            @Schema(description = "댓글 삭제 여부", example = "false")
+            boolean isDeleted
     ) {}
 }

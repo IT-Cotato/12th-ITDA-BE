@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Table(name = "diary_comment")
-@SQLRestriction("is_deleted = false")
 public class DiaryComment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
