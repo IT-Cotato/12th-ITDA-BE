@@ -4,6 +4,7 @@ import com.cotato.itda.domain.diary.converter.DiaryConverter;
 import com.cotato.itda.domain.diary.dto.request.DiaryRequest;
 import com.cotato.itda.domain.diary.dto.response.DiaryResponse;
 import com.cotato.itda.domain.diary.entity.Diary;
+import com.cotato.itda.domain.diary.repository.DiaryCommentRepository;
 import com.cotato.itda.domain.diary.repository.DiaryRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -24,6 +26,7 @@ public class DiaryCommandService {
 
     private final MemberRepository memberRepository;
     private final DiaryRepository diaryRepository;
+    private final DiaryCommentRepository diaryCommentRepository;
 
     @Transactional
     public DiaryResponse createDiary(Long memberId, DiaryRequest request, LocalDate date) {
@@ -71,6 +74,8 @@ public class DiaryCommandService {
             throw new BusinessException(DiaryErrorCode.DIARY_FORBIDDEN);
         }
 
+        // 해당 일기의 댓글 일괄 soft delete 처리
+        diaryCommentRepository.softDeleteAllByDiaryId(diaryId, LocalDateTime.now());
         diary.delete();
     }
 
