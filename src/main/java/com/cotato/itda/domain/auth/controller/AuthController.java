@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.cotato.itda.domain.auth.dto.LoginRequest;
 import com.cotato.itda.domain.auth.dto.Tokens;
 import com.cotato.itda.domain.auth.service.AuthService;
+import com.cotato.itda.domain.auth.service.LogoutService;
 import com.cotato.itda.domain.auth.service.TokenReissueService;
 import com.cotato.itda.global.common.response.ApiResponse;
 
@@ -29,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
 	private final AuthService authService;
+	private final LogoutService logoutService;
 	private final TokenReissueService tokenReissueService;
 
 	@Operation(
@@ -66,9 +68,27 @@ public class AuthController {
 	@PostMapping("/refresh")
 	public ApiResponse<Tokens.AccessTokenOnly> refresh(
 		@Parameter(hidden = true)
-		@RequestAttribute(ATTR_REFRESH_CLAIMS) Claims refreshClaims
+		@RequestAttribute(ATTR_REFRESH_CLAIMS) Claims refreshClaims,
+		@Parameter(hidden = true)
+		@RequestAttribute(ATTR_REFRESH_TOKEN) String refreshToken
 	) {
-		Tokens.AccessTokenOnly response = tokenReissueService.reissue(refreshClaims);
+		Tokens.AccessTokenOnly response = tokenReissueService.reissue(refreshToken, refreshClaims);
 		return ApiResponse.success(response);
+	}
+
+	@Operation(
+		summary = "로그아웃",
+		description = "Refresh 토큰을 블랙리스트에 등록해 이후 재발급을 차단한다."
+	)
+	@SecurityRequirement(name = "RefreshToken")
+	@PostMapping("/logout")
+	public ApiResponse<Void> logout(
+		@Parameter(hidden = true)
+		@RequestAttribute(ATTR_REFRESH_CLAIMS) Claims refreshClaims,
+		@Parameter(hidden = true)
+		@RequestAttribute(ATTR_REFRESH_TOKEN) String refreshToken
+	) {
+		logoutService.logout(refreshToken, refreshClaims);
+		return ApiResponse.success(null);
 	}
 }

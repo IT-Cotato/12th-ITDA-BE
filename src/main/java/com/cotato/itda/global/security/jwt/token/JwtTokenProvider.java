@@ -43,6 +43,7 @@ public class JwtTokenProvider {
 	private static final String CLAIM_PURPOSE = "purpose";
 	private final JwtProperties jwtProperties;
 	private final JwtKeyProvider jwtKeyProvider;
+	private final JwtSubjectParser jwtSubjectParser;
 
 	public IssuedToken createAccessToken(Long memberId, String role) {
 		return createToken(
@@ -121,36 +122,15 @@ public class JwtTokenProvider {
 		// 객체가 null이면 안됨
 		Objects.requireNonNull(claims, "claims must not be null");
 		log.info("JwtTokenProvider.getAuthentication called with claims: {}", claims);
-		/**
-		 * 1) 사용자 식별자 확보
-		 * - 최소한 subject는 있어야 인증된 사용자로 의미가 성립된다.
-		 * - subject가 없으면 토큰 구조/발급 정책 위반으로 간주한다.
-		 */
-		String subject = claims.getSubject();
-		if (subject == null || subject.isBlank()) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
-
-		/**
-		 * 2) 목적 클레임이 ACCESS가 아니면 예외
-		 */
+		// ACCESS 목적 클레임이 아니면 예외
 		String purpose = claims.get(CLAIM_PURPOSE, String.class);
 		if (!JwtPurpose.ACCESS.name().equals(purpose)) {
 			throw new BusinessException(JwtErrorCode.TOKEN_PURPOSE_MISMATCH);
 		}
 
-		/**
-		 * 3) sub = memberId이므로 String(subject) -> Long(memberId) 파싱
-		 * 만약 sub을 memberId로 안두고 따로 둔다면 건너뛰기
-		 */
-		Long memberId;
-		try {
-			memberId = Long.parseLong(subject);
-		} catch (NumberFormatException e) {
-			throw new BusinessException(JwtErrorCode.INVALID_TOKEN);
-		}
+		Long memberId = jwtSubjectParser.parseMemberId(claims);
 
-		JwtPrincipal principal = new JwtPrincipal(memberId, subject, "ACCESS");
+		JwtPrincipal principal = new JwtPrincipal(memberId, claims.getSubject(), "ACCESS");
 
 		/**
 		 * 권한(Authorities) 구성

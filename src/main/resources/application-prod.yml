@@ -84,6 +84,14 @@ signup:
 password-reset:
   draft-ttl-minutes: 60
 
+member:
+  withdrawal:
+    grace-period-days: ${MEMBER_WITHDRAWAL_GRACE_PERIOD_DAYS:7}
+    cleanup-cron: ${MEMBER_WITHDRAWAL_CLEANUP_CRON:0 0 3 * * *}
+    anonymized-phone-prefix: ${MEMBER_WITHDRAWAL_ANONYMIZED_PHONE_PREFIX:WD}
+    anonymized-name: ${MEMBER_WITHDRAWAL_ANONYMIZED_NAME:탈퇴한 회원}
+    anonymized-password-hash: ${MEMBER_WITHDRAWAL_ANONYMIZED_PASSWORD_HASH:WITHDRAWN}
+
 gemini:
   base-url: https://generativelanguage.googleapis.com
   model: gemini-2.5-flash-lite

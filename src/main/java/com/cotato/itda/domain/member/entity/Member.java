@@ -1,6 +1,7 @@
 package com.cotato.itda.domain.member.entity;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import com.cotato.itda.global.entity.BaseTimeEntity;
 import com.cotato.itda.global.error.constant.SignupErrorCode;
@@ -35,11 +36,13 @@ import lombok.*;
 )
 public class Member extends BaseTimeEntity {
 
+	public static final int PHONE_NUMBER_MAX_LENGTH = 15;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(name = "phone_number", nullable = false, length = 15)
+	@Column(name = "phone_number", nullable = false, length = PHONE_NUMBER_MAX_LENGTH)
 	private String phoneNumber;
 
 	// YYYY-MM-DD
@@ -65,6 +68,9 @@ public class Member extends BaseTimeEntity {
 
 	@Column(name = "password_hash", nullable = false, length = 200)
 	private String passwordHash;
+
+	@Column(name = "withdrawn_at")
+	private OffsetDateTime withdrawnAt;
 
 	@Column(name = "nutrient_count", nullable = false)
 	@Builder.Default
@@ -115,6 +121,29 @@ public class Member extends BaseTimeEntity {
 
 	public void activate() {
 		this.status = MemberStatus.ACTIVE;
+	}
+
+	public void withdraw() {
+		this.status = MemberStatus.WITHDRAWAL_PENDING;
+		this.withdrawnAt = OffsetDateTime.now();
+	}
+
+	public void restore() {
+		this.status = MemberStatus.ACTIVE;
+		this.withdrawnAt = null;
+	}
+
+	public void finalizeWithdrawal(
+		String anonymizedPhoneNumber,
+		String anonymizedName,
+		String anonymizedPasswordHash
+	) {
+		this.status = MemberStatus.WITHDRAWN;
+		this.phoneNumber = anonymizedPhoneNumber;
+		this.name = anonymizedName;
+		this.passwordHash = anonymizedPasswordHash;
+		this.profileImageUrl = null;
+		this.inviteCode = null;
 	}
 
     public void updateProfile(String profileImageUrl) {

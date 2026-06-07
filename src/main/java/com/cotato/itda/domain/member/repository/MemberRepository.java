@@ -1,5 +1,7 @@
 package com.cotato.itda.domain.member.repository;
 
+import java.util.List;
+import java.time.OffsetDateTime;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -7,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import com.cotato.itda.domain.member.entity.Member;
+import com.cotato.itda.domain.member.entity.MemberStatus;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
 	Optional<Member> findByPhoneNumber(String phoneNumber);
@@ -25,4 +28,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 	void updatePasswordByPhoneNumber(String encodedPassword, String phoneNumber);
 
 	Optional<Member> findByInviteCode(String inviteCode);
+
+	List<Member> findAllByStatusAndWithdrawnAtBefore(MemberStatus status, OffsetDateTime withdrawnAt);
 }

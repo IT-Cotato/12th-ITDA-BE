@@ -1,11 +1,16 @@
 package com.cotato.itda.domain.auth.service;
 
+import java.time.OffsetDateTime;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.cotato.itda.domain.auth.dto.LoginRequest;
 import com.cotato.itda.domain.auth.dto.Tokens;
+import com.cotato.itda.domain.member.config.MemberWithdrawalProperties;
 import com.cotato.itda.domain.member.entity.Member;
+import com.cotato.itda.domain.member.entity.MemberStatus;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.AuthErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -23,7 +28,9 @@ public class AuthService {
 	private final MemberRepository memberRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final JwtTokenProvider jwtTokenProvider;
+	private final MemberWithdrawalProperties memberWithdrawalProperties;
 
+	@Transactional
 	public Tokens login(LoginRequest request) {
 		// 1. 전화번호 검증
 		log.info("입력받은 전화번호: {}", request.phoneNumber());
@@ -36,6 +43,10 @@ public class AuthService {
 		Member savedMember = memberRepository.findByPhoneNumber(phoneNumber)
 			.orElseThrow(() -> new BusinessException(AuthErrorCode.INVALID_CREDENTIALS));
 		log.info("전화번호로 Member 조회 성공");
+		if (savedMember.getStatus() != MemberStatus.ACTIVE
+			&& savedMember.getStatus() != MemberStatus.WITHDRAWAL_PENDING) {
+			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
+		}
 
 		// 3. DB에서 조회한 유저의 해시 변환된 비밀번호와 비교
 		String inputPassword = request.password();
@@ -45,6 +56,14 @@ public class AuthService {
 			throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
 		}
 		log.info("입력받은 비밀번호와 DB저장된 비밀번호 검증 통과");
+
+		if (savedMember.getStatus() == MemberStatus.WITHDRAWAL_PENDING) {
+			if (isWithdrawalGracePeriodExpired(savedMember)) {
+				throw new BusinessException(AuthErrorCode.INVALID_CREDENTIALS);
+			}
+			savedMember.restore();
+			log.info("탈퇴 유예 기간 내 로그인으로 회원 복구 완료: memberId={}", savedMember.getId());
+		}
 
 		// 4. access token 생성
 		IssuedToken issuedAccessToken = jwtTokenProvider.createAccessToken(savedMember.getId(), "ROLE_USER");
@@ -62,6 +81,16 @@ public class AuthService {
 				issuedRefreshToken.expiresAt()
 			)
 		);
+	}
+
+	private boolean isWithdrawalGracePeriodExpired(Member member) {
+		if (member.getWithdrawnAt() == null) {
+			return true;
+		}
+
+		OffsetDateTime expiresAt = member.getWithdrawnAt()
+			.plusDays(memberWithdrawalProperties.getGracePeriodDays());
+		return !OffsetDateTime.now().isBefore(expiresAt);
 	}
 
 	private String normalizePhone(String phoneNumber) {
