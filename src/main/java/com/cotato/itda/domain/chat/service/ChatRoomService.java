@@ -238,10 +238,15 @@ public class ChatRoomService {
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
 
-		chatRoomMember.leave();
+        // 나가기 직전 이 채팅방의 가장 마지막 메시지 시퀀스를 가져옴
+        Long lastRoomSeqObj = chatRoom.getLastMessageSeq();
+        long lastRoomSeq = (lastRoomSeqObj == null) ? 0L : lastRoomSeqObj;
 
+        // 내 멤버십의 시작선(joinSeq)을 현재 방의 최신 메시지 번호로 변경
+        chatRoomMember.leaveWithResetHistory(lastRoomSeq);
 
-	}
+        log.info("[채팅방 나가기 완료] memberId={}, roomId={}, 나가기 시점의 lastRoomSeq={}", memberId, roomId, lastRoomSeq);
+    }
 
 	// AI 모드 토글
 	@Transactional
