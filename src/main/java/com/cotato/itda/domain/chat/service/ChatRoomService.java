@@ -3,8 +3,11 @@ package com.cotato.itda.domain.chat.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.cotato.itda.domain.member.entity.Member;
+import com.cotato.itda.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +42,7 @@ public class ChatRoomService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	private final FriendshipRepository friendshipRepository;
+	private final MemberRepository memberRepository;
 
 	public ChatRoomSliceResponse getMyRooms(
 		Long memberId,
@@ -59,12 +63,9 @@ public class ChatRoomService {
 			memberId, cursorAt, cursorRoomId, limitPlusOne
 		);
 
-		List<MyRoomRow> fetched = chatRoomQueryRepository.findMyRoomsSlice(
-			memberId,
-			cursorAt,
-			cursorRoomId,
-			limitPlusOne
-		);
+        List<MyRoomRow> fetched = chatRoomQueryRepository.findMyRoomsSlice(
+                memberId, cursorAt, cursorRoomId, limitPlusOne
+        );
 
 		log.info("[내 채팅방 목록 조회 결과] fetchedSize={}", fetched.size());
 
@@ -134,9 +135,14 @@ public class ChatRoomService {
 					? opponentMap.get(row.roomId())
 					: null;
 
-				Friendship friendship = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(memberId, opponentMap.get(row.roomId()).memberId(),
-					FriendshipStatus.ACTIVE)
-					.orElseThrow(()-> new BusinessException(ChatErrorCode.FRIENDSHIP_NOT_FOUND));
+                // 친구가 아니여도 프로필(opp) 유지
+                Long friendshipId = null;
+                if (row.roomType() == RoomType.DIRECT && opp != null) {
+                    friendshipId = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(
+                                    memberId, opp.memberId(), FriendshipStatus.ACTIVE)
+                            .map(Friendship::getId)
+                            .orElse(null);
+                }
 
 				// 각 row마다 핵심값 로그 (너무 많으면 INFO가 과하니, 필요하면 DEBUG로 내려도 됨)
 				log.info("[방 아이템 계산] roomId={}, roomType={}, lastMessageSeq={}, lastReadSeq={}, joinSeq={}, effectiveReadSeq={}, unread={}, opponentMemberId={}",
@@ -157,11 +163,11 @@ public class ChatRoomService {
 					.lastMessageId(row.lastMessageId())
 					.lastMessageSeq(row.lastMessageSeq())
 					.lastMessageAt(row.lastMessageAt())
-					.friendShipId(friendship.getId())
+					.friendShipId(friendshipId)
 					.lastMessagePreview(row.lastMessagePreview())
 					.lastMessageType(row.lastMessageType())
 					.unreadCount(unread)
-					.opponent(row.roomType() == RoomType.DIRECT ? opp : null)
+					.opponent(opp)
 					.build();
 			})
 			.toList();
@@ -278,23 +284,35 @@ public class ChatRoomService {
 				return new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
 			});
 
-		ChatRoomMember myMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId)
-			.orElseThrow(() -> {
-				log.warn("[채팅방 ENTER 실패] 멤버십 없음. memberId={}, roomId={}", memberId, roomId);
-				return new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND);
-			});
+        Optional<ChatRoomMember> maybeMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId);
+        ChatRoomMember myMembership;
 
-		if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
-			log.warn("[채팅방 ENTER 거절] ACTIVE 아님. memberId={}, roomId={}, status={}",
-				memberId, roomId, myMembership.getStatus()
-			);
-			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
-		}
+        Long lastMessageSeqObj = room.getLastMessageSeq();
+        Long lastMessageId = room.getLastMessageId();
+        long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
 
-		Long lastMessageSeqObj = room.getLastMessageSeq();
-		Long lastMessageId = room.getLastMessageId();
+        // 이력이 없는 멤버
+        if (maybeMembership.isEmpty()) {
+            log.info("[채팅방 ENTER] 최초 입장 멤버 생성. memberId={}, roomId={}", memberId, roomId);
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
 
-		long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
+            myMembership = ChatRoomMember.create(member, room);
+            chatRoomMemberRepository.save(myMembership);
+            chatRoomMemberRepository.flush();
+        } else {
+            // 과거 이력이 존재하는 멤버 (예: LEFT 상태)
+            myMembership = maybeMembership.get();
+
+            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
+                        memberId, roomId, myMembership.getStatus());
+
+                // 기존 레코드를 ACTIVE로 복구
+                myMembership.rejoin(lastSeq);
+                chatRoomMemberRepository.flush();
+            }
+        }
 
 		// 메시지 없으면 읽음 처리할 것도 없음
 		if (lastSeq <= 0L) {
