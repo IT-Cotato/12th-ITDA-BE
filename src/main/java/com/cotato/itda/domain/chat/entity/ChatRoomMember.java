@@ -172,4 +172,11 @@ public class ChatRoomMember extends BaseTimeEntity {
 		this.inactiveAt = null;
 		this.joinSeq = newJoinSeq;
 	}
+
+    public void leaveWithResetHistory(long lastRoomSeq) {
+        this.status = MemberRoomStatus.LEFT;
+        this.inactiveAt = java.time.LocalDateTime.now();
+        this.joinSeq = lastRoomSeq;
+        this.lastReadSeq = lastRoomSeq;
+    }
 }

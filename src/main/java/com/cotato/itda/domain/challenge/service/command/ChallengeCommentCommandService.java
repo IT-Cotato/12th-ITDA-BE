@@ -43,8 +43,20 @@ public class ChallengeCommentCommandService {
 
         // 댓글 생성
         ChallengeComment comment = ChallengeCommentConverter.toEntity(challenge, member, request);
-        ChallengeComment savedComment = challengeCommentRepository.save(comment);
 
+        if (request.parentId() != null) {
+            ChallengeComment parentComment = challengeCommentRepository.findById(request.parentId())
+                    .orElseThrow(() -> new BusinessException(ChallengeErrorCode.COMMENT_NOT_FOUND));
+
+            // 댓글이 같은 챌린지의 댓글인지 한 번 더 검증
+            if (!parentComment.getChallenge().getId().equals(challengeId)) {
+                throw new BusinessException(ChallengeErrorCode.COMMENT_NOT_FOUND);
+            }
+
+            comment.setParent(parentComment);
+        }
+
+        ChallengeComment savedComment = challengeCommentRepository.save(comment);
         challenge.increaseComment();
 
         return ChallengeCommentConverter.toResponse(savedComment, member);

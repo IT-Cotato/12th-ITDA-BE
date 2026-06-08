@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -44,23 +45,50 @@ public class DiaryCommentQueryService {
 
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<DiaryComment> commentSlice = diaryCommentRepository.findComments(diaryId, memberId, lastId, pageRequest);
-        List<DiaryComment> comments = commentSlice.getContent();
+        List<DiaryComment> rootComments = commentSlice.getContent();
 
         // 작성자의 friendship nickname Map 조회
-        Map<Long, String> friendshipNicknameMap = getFriendNicknameMap(memberId, comments);
+        Map<Long, String> friendshipNicknameMap = getFriendNicknameMap(memberId, rootComments);
 
-        List<DiaryCommentListResponse.CommentItem> commentItems = comments.stream()
-                .map(comment -> {
-                    Member writer = comment.getMember();
+        List<DiaryCommentListResponse.CommentItem> commentItems = rootComments.stream()
+                .map(root -> {
+                    Member writer = root.getMember();
                     boolean isMe = writer.getId().equals(memberId);
+
+                    // 대댓글 변환: 부모댓글이 가지고 있는 대댓글 리스트를 순회하며 DTO 리스트로 변환
+                    List<DiaryCommentListResponse.CommentItem> childItems = root.getChildComments().stream()
+                            .filter(child -> !child.getIsDeleted()) // 삭제된 댓글은 화면에서 숨김
+                            .map(child -> {
+                                boolean isChildMe = child.getMember().getId().equals(memberId);
+                                WriterInfo childWriter = DiaryCommentConverter.toWriterInfo(child.getMember(), child.getMember().getName(), isChildMe);
+
+                                // 대댓글은 하위에 자식이 없으므로 childComments 자리에 null을 넘김
+                                return DiaryCommentConverter.toListItem(child, childWriter, null);
+                            })
+                            .toList();
+
+                    // 부모 댓글이 삭제 상태인 경우
+                    if (root.getIsDeleted()) {
+                        if (childItems.isEmpty()) {
+                            return null;
+                        }
+                        WriterInfo unknownWriter = WriterInfo.builder()
+                                .memberId(null)
+                                .nickname("(알 수 없음)")
+                                .isMe(false)
+                                .build();
+
+                        return DiaryCommentConverter.toDeletedListItem(root, unknownWriter, childItems);
+                    }
 
                     String nickname = isMe
                             ? writer.getName()
                             : friendshipNicknameMap.getOrDefault(writer.getId(), writer.getName());
 
                     WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(writer, nickname, isMe);
-                    return DiaryCommentConverter.toListItem(comment, writerInfo);
+                    return DiaryCommentConverter.toListItem(root, writerInfo, childItems);
                 })
+                .filter(Objects::nonNull)
                 .toList();
 
         // 커서 ID 계산

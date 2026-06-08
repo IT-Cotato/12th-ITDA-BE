@@ -5,6 +5,7 @@ import com.cotato.itda.domain.challenge.dto.request.ChallengeCreateRequest;
 import com.cotato.itda.domain.challenge.dto.response.ChallengeResponse;
 import com.cotato.itda.domain.challenge.entity.Challenge;
 import com.cotato.itda.domain.challenge.entity.ChallengeView;
+import com.cotato.itda.domain.challenge.repository.ChallengeCommentRepository;
 import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
 import com.cotato.itda.domain.challenge.repository.ChallengeViewRepository;
 import com.cotato.itda.domain.member.entity.Member;
@@ -31,6 +32,7 @@ public class ChallengeCommandService {
     private final MissionRepository missionRepository;
     private final ChallengeRepository challengeRepository;
     private final ChallengeViewRepository challengeViewRepository;
+    private final ChallengeCommentRepository challengeCommentRepository;
 
     @Transactional
     public ChallengeResponse createChallenge(Long memberId, ChallengeCreateRequest request) {
@@ -71,6 +73,7 @@ public class ChallengeCommandService {
         }
 
         challenge.delete();
+        challengeCommentRepository.softDeleteAllByChallengeId(challengeId);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

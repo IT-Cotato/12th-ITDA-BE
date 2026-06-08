@@ -50,21 +50,46 @@ public class ChallengeCommentConverter {
 
     public static ChallengeCommentListResponse.CommentItem toListItem(
             ChallengeComment comment,
-            ChallengeCommentListResponse.WriterInfo writerInfo
+            ChallengeCommentListResponse.WriterInfo writerInfo,
+            List<ChallengeCommentListResponse.CommentItem> childItems
     ) {
         return ChallengeCommentListResponse.CommentItem.builder()
                 .commentId(comment.getId())
                 .writerInfo(writerInfo)
                 .content(comment.getContent())
+                .childComments(childItems)
                 .createdAt(comment.getCreatedAt())
+                .isDeleted(false)
                 .build();
     }
 
     public static ChallengeCommentListResponse.WriterInfo toListWriterInfo(Member member, String nickname) {
+        if (member == null) {
+            return ChallengeCommentListResponse.WriterInfo.builder()
+                    .memberId(null)
+                    .nickname(nickname)
+                    .profileImageUrl(null)
+                    .build();
+        }
         return ChallengeCommentListResponse.WriterInfo.builder()
                 .memberId(member.getId())
                 .nickname(nickname)
                 .profileImageUrl(member.getProfileImageUrl())
+                .build();
+    }
+
+    public static ChallengeCommentListResponse.CommentItem toDeletedListItem(
+            ChallengeComment root,
+            ChallengeCommentListResponse.WriterInfo unknownWriter,
+            List<ChallengeCommentListResponse.CommentItem> childItems
+    ) {
+        return ChallengeCommentListResponse.CommentItem.builder()
+                .commentId(root.getId())
+                .writerInfo(unknownWriter)
+                .content("삭제된 댓글입니다.")
+                .childComments(childItems)
+                .createdAt(root.getCreatedAt())
+                .isDeleted(true)
                 .build();
     }
 }

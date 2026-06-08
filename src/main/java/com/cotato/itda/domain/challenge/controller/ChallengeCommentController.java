@@ -27,11 +27,13 @@ public class ChallengeCommentController {
     private final ChallengeCommentQueryService challengeCommentQueryService;
 
     @Operation(
-            summary = "챌린지 댓글 등록 API",
+            summary = "챌린지 댓글/대댓글 등록 API",
             description = """
                     pathVariable로 전달받은 특정 챌린지에 댓글을 등록합니다. 
                     - 등록 후 댓글 정보와 작성자 정보가 반환됩니다.
                     - 본인 또는 친구의 챌린지에만 댓글을 등록할 수 있습니다.
+                    - 대댓글 작성 시, Request Body에 부모 댓글 ID(`parentId`)를 포함해야 합니다.
+                    - 대댓글에 다시 대댓글을 달 경우 400 에러가 발생합니다.
                     """
     )
     @ApiResponses({
@@ -56,11 +58,13 @@ public class ChallengeCommentController {
     }
 
     @Operation(
-            summary = "챌린지 댓글 삭제 API",
+            summary = "챌린지 댓글/대댓글 삭제 API",
             description = """
                     특정 댓글을 삭제합니다. 
                     - 작성자 본인만 삭제 가능합니다. 
                     - DB에서 완전히 삭제되지 않고, 삭제 상태로 변경되어 조회되지 않습니다.
+                    - 부모 댓글을 삭제한 경우, "삭제된 댓글입니다."로 마스킹 처리되어 반환됩니다.
+                    - 자식 댓글이 남아 있는 경우, 그대로 반환됩니다.
                     """
     )
     @ApiResponses({

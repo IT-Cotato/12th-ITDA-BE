@@ -1,5 +1,6 @@
 package com.cotato.itda.domain.challenge.dto.response;
 
+import com.cotato.itda.domain.diary.dto.response.DiaryCommentListResponse;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -36,7 +37,13 @@ public record ChallengeCommentListResponse(
             String content,
 
             @Schema(description = "작성 시간", example = "2026-01-10T10:00:00")
-            LocalDateTime createdAt
+            LocalDateTime createdAt,
+
+            @Schema(description = "대댓글 목록, 없을 경우 빈 배열이 반환됩니다.")
+            List<ChallengeCommentListResponse.CommentItem> childComments,
+
+            @Schema(description = "댓글 삭제 여부", example = "false")
+            boolean isDeleted
     ) {
     }
 

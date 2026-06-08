@@ -42,7 +42,7 @@ public class ChatRoomService {
 	private final ChatRoomRepository chatRoomRepository;
 	private final ChatRoomMemberRepository chatRoomMemberRepository;
 	private final FriendshipRepository friendshipRepository;
-    private final MemberRepository memberRepository;
+	private final MemberRepository memberRepository;
 
 	public ChatRoomSliceResponse getMyRooms(
 		Long memberId,
@@ -63,12 +63,9 @@ public class ChatRoomService {
 			memberId, cursorAt, cursorRoomId, limitPlusOne
 		);
 
-		List<MyRoomRow> fetched = chatRoomQueryRepository.findMyRoomsSlice(
-			memberId,
-			cursorAt,
-			cursorRoomId,
-			limitPlusOne
-		);
+        List<MyRoomRow> fetched = chatRoomQueryRepository.findMyRoomsSlice(
+                memberId, cursorAt, cursorRoomId, limitPlusOne
+        );
 
 		log.info("[내 채팅방 목록 조회 결과] fetchedSize={}", fetched.size());
 
@@ -138,12 +135,13 @@ public class ChatRoomService {
 					? opponentMap.get(row.roomId())
 					: null;
 
+                // 친구가 아니여도 프로필(opp) 유지
                 Long friendshipId = null;
                 if (row.roomType() == RoomType.DIRECT && opp != null) {
                     friendshipId = friendshipRepository.findByMember_IdAndFriend_IdAndStatus(
                                     memberId, opp.memberId(), FriendshipStatus.ACTIVE)
                             .map(Friendship::getId)
-                            .orElse(null); // 혹은 예외를 꼭 던져야 한다면 프로젝트 정책에 맞게 처리하되, null 방어가 우선입니다.
+                            .orElse(null);
                 }
 
 				// 각 row마다 핵심값 로그 (너무 많으면 INFO가 과하니, 필요하면 DEBUG로 내려도 됨)
@@ -169,7 +167,7 @@ public class ChatRoomService {
 					.lastMessagePreview(row.lastMessagePreview())
 					.lastMessageType(row.lastMessageType())
 					.unreadCount(unread)
-					.opponent(row.roomType() == RoomType.DIRECT ? opp : null)
+					.opponent(opp)
 					.build();
 			})
 			.toList();
@@ -240,8 +238,15 @@ public class ChatRoomService {
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
 
-		chatRoomMember.leave();
-	}
+        // 나가기 직전 이 채팅방의 가장 마지막 메시지 시퀀스를 가져옴
+        Long lastRoomSeqObj = chatRoom.getLastMessageSeq();
+        long lastRoomSeq = (lastRoomSeqObj == null) ? 0L : lastRoomSeqObj;
+
+        // 내 멤버십의 시작선(joinSeq)을 현재 방의 최신 메시지 번호로 변경
+        chatRoomMember.leaveWithResetHistory(lastRoomSeq);
+
+        log.info("[채팅방 나가기 완료] memberId={}, roomId={}, 나가기 시점의 lastRoomSeq={}", memberId, roomId, lastRoomSeq);
+    }
 
 	// AI 모드 토글
 	@Transactional
@@ -284,14 +289,35 @@ public class ChatRoomService {
 				return new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND);
 			});
 
-        // 기존 멤버십 기록 조회
         Optional<ChatRoomMember> maybeMembership = chatRoomMemberRepository.findByRoomIdAndMemberId(roomId, memberId);
         ChatRoomMember myMembership;
 
-		Long lastMessageSeqObj = room.getLastMessageSeq();
-		Long lastMessageId = room.getLastMessageId();
+        Long lastMessageSeqObj = room.getLastMessageSeq();
+        Long lastMessageId = room.getLastMessageId();
+        long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
 
-		long lastSeq = (lastMessageSeqObj == null) ? 0L : lastMessageSeqObj;
+        // 이력이 없는 멤버
+        if (maybeMembership.isEmpty()) {
+            log.info("[채팅방 ENTER] 최초 입장 멤버 생성. memberId={}, roomId={}", memberId, roomId);
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+
+            myMembership = ChatRoomMember.create(member, room);
+            chatRoomMemberRepository.save(myMembership);
+            chatRoomMemberRepository.flush();
+        } else {
+            // 과거 이력이 존재하는 멤버 (예: LEFT 상태)
+            myMembership = maybeMembership.get();
+
+            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
+                        memberId, roomId, myMembership.getStatus());
+
+                // 기존 레코드를 ACTIVE로 복구
+                myMembership.rejoin(lastSeq);
+                chatRoomMemberRepository.flush();
+            }
+        }
 
         if (maybeMembership.isEmpty()) {
             // 처음 입장하는 멤버이면 신규 생성

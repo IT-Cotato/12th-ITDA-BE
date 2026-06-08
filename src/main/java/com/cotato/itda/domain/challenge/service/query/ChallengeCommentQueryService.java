@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,26 +45,48 @@ public class ChallengeCommentQueryService {
         // 1. 댓글 조회
         PageRequest pageRequest = PageRequest.of(0, size);
         Slice<ChallengeComment> commentSlice = challengeCommentRepository.findComments(challengeId, memberId, lastId, pageRequest);
-        List<ChallengeComment> comments = commentSlice.getContent();
+        List<ChallengeComment> rootComments = commentSlice.getContent();
 
         // 2. 작성자 nickname Map 생성
-        Map<Long, String> nicknameMap = getFriendNicknameMap(memberId, comments);
+        Map<Long, String> nicknameMap = getFriendNicknameMap(memberId, rootComments);
 
-        // 3. Entity -> DTO 변환
-        List<ChallengeCommentListResponse.CommentItem> commentItems = comments.stream()
-                .map(comment -> {
-                    Member writer = comment.getMember();
+        List<ChallengeCommentListResponse.CommentItem> commentItems = rootComments.stream()
+                .map(root -> {
+                    Member writer = root.getMember();
+                    boolean isMe = writer.getId().equals(memberId);
 
-                    String nickname = writer.getId().equals(memberId)
+                    // 대댓글 변환: 부모댓글이 가지고 있는 대댓글 리스트를 순회하며 DTO 리스트로 변환
+                    List<ChallengeCommentListResponse.CommentItem> childItems = root.getChildComments().stream()
+                            .filter(child -> !child.getIsDeleted()) // 삭제된 댓글은 화면에서 숨김
+                            .map(child -> {
+                                boolean isChildMe = child.getMember().getId().equals(memberId);
+                                ChallengeCommentListResponse.WriterInfo childWriter = ChallengeCommentConverter.toListWriterInfo(child.getMember(), child.getMember().getName());
+
+                                // 대댓글은 하위에 자식이 없으므로 childComments 자리에 null을 넘김
+                                return ChallengeCommentConverter.toListItem(child, childWriter, null);
+                            })
+                            .toList();
+
+                    // 부모 댓글이 삭제 상태인 경우
+                    if (root.getIsDeleted()) {
+                        if (childItems.isEmpty()) {
+                            return null;
+                        }
+                        ChallengeCommentListResponse.WriterInfo unknownWriter =
+                                ChallengeCommentConverter.toListWriterInfo(null, "(알 수 없음)");
+
+                        return ChallengeCommentConverter.toDeletedListItem(root, unknownWriter, childItems);
+                    }
+
+                    String nickname = isMe
                             ? writer.getName()
                             : nicknameMap.getOrDefault(writer.getId(), writer.getName());
 
                     ChallengeCommentListResponse.WriterInfo writerInfo = ChallengeCommentConverter.toListWriterInfo(writer, nickname);
-
-                    return ChallengeCommentConverter.toListItem(comment, writerInfo);
+                    return ChallengeCommentConverter.toListItem(root, writerInfo, childItems);
                 })
+                .filter(Objects::nonNull)
                 .toList();
-
 
         // 4. 커서 ID 계산
         Long newLastId = commentItems.isEmpty() ? null : commentItems.get(commentItems.size() - 1).commentId();
@@ -91,5 +114,4 @@ public class ChallengeCommentQueryService {
                         Friendship::getDisplayName
                 ));
     }
-
 }

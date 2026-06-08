@@ -19,7 +19,8 @@ public enum DiaryErrorCode implements ErrorCode {
 
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 댓글을 찾을 수 없습니다.", "DIARY_ERROR_404_COMMENT_NOT_FOUND"),
     COMMENT_FORBIDDEN(HttpStatus.FORBIDDEN, "해당 댓글에 대한 권한이 없습니다.", "DIARY_ERROR_403_COMMENT_FORBIDDEN"),
-
+    REPLY_DEPTH_LIMIT(HttpStatus.BAD_REQUEST, "대댓글에는 추가 대댓글을 작성할 수 없습니다.", "DIARY_ERROR_400_REPLY_DEPTH_LIMIT"),
+    PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 부모 댓글을 찾을 수 없습니다.", "DIARY_ERROR_404_PARENT_COMMENT_NOT_FOUND"),
     ;
     private final HttpStatus httpStatus;
     private final String message;

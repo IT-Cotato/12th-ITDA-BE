@@ -4,6 +4,7 @@ import com.cotato.itda.domain.challenge.entity.ChallengeComment;
 import com.cotato.itda.domain.challenge.entity.QChallengeComment;
 import com.cotato.itda.domain.member.entity.QMember;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ public class CustomChallengeCommentRepositoryImpl implements CustomChallengeComm
     private final JPAQueryFactory jpaQueryFactory;
     QChallengeComment challengeComment = QChallengeComment.challengeComment;
     QMember member = QMember.member;
+    QChallengeComment child = new QChallengeComment("child");
 
     @Override
     public Slice<ChallengeComment> findComments(Long challengeId, Long memberId, Long lastId, PageRequest pageRequest) {
@@ -25,12 +27,23 @@ public class CustomChallengeCommentRepositoryImpl implements CustomChallengeComm
         List<ChallengeComment> comments = jpaQueryFactory
                 .selectFrom(challengeComment)
                 .join(challengeComment.member, member).fetchJoin()
+                .leftJoin(challengeComment.childComments, child).fetchJoin()
                 .where(
                         challengeComment.challenge.id.eq(challengeId),
-                        cursorCondition(lastId)
+                        challengeComment.parentComment.isNull(),
+                        cursorCondition(lastId),
+
+                        challengeComment.isDeleted.isFalse()
+                                .or(
+                                        JPAExpressions.selectFrom(child)
+                                                .where(child.parentComment.eq(challengeComment)
+                                                        .and(child.isDeleted.isFalse()))
+                                                .exists()
+                                )
                 )
                 .orderBy(challengeComment.id.asc())
                 .limit(pageRequest.getPageSize() + 1)
+                .distinct()
                 .fetch();
 
         boolean hasNext = comments.size() > pageRequest.getPageSize();

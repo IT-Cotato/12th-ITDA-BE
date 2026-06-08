@@ -42,8 +42,14 @@ public class DiaryCommentCommandService {
         // 일기 권한 검증
         diaryAccessValidator.validateDiaryAccess(memberId, diary);
 
-        // 댓글 생성
         DiaryComment comment = DiaryCommentConverter.toEntity(diary, member, request);
+
+        if (request.parentId() != null) {
+            DiaryComment parent = diaryCommentRepository.findById(request.parentId())
+                    .orElseThrow(() -> new BusinessException(DiaryErrorCode.PARENT_COMMENT_NOT_FOUND));
+            comment.setParent(parent);
+        }
+
         DiaryComment savedComment = diaryCommentRepository.save(comment);
 
         diary.increaseComment();
