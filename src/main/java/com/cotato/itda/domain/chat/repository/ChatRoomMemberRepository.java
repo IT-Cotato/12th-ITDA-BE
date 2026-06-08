@@ -55,4 +55,6 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
 		@Param("status") MemberRoomStatus status,
 		@Param("roomIds") List<Long> roomIds
 	);
+
+    List<ChatRoomMember> findAllByRoomId(Long roomId);
 }

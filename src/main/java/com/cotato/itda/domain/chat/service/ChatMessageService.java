@@ -159,20 +159,28 @@ public class ChatMessageService {
 		long lastSeq = (lastMessageSeq == null) ? 0L : lastMessageSeq;
 		long nextSeq = lastSeq + 1;
 
+        // 내가 나간 상태였다면 채팅방 복구
 		if (myMembership.getStatus() == MemberRoomStatus.LEFT) {
 			myMembership.rejoin(nextSeq);
 		}
+
+        // 내가 메시지를 보냈을 때, 상대방이 나가기(LEFT) 상태라면 상대방의 방 상태를 ACTIVE로 복구시키고 joinSeq 보정
+        List<ChatRoomMember> allMembers = chatRoomMemberRepository.findAllByRoomId(roomId);
+        for (ChatRoomMember member : allMembers) {
+            if (!member.getMember().getId().equals(senderMemberId)) {
+                if (member.getStatus() == MemberRoomStatus.LEFT) {
+                    log.info("[상대방 방 강제 복구] opponentMemberId={}, joinSeq 보정={}", member.getMember().getId(), lastSeq);
+                    member.rejoin(lastSeq);
+                }
+            }
+        }
 		log.info("[seq 발급] roomId={}, lastSeq={}, nextSeq={}", roomId, lastSeq, nextSeq);
 
-		ChatMessage message = ChatMessage.createChatMessage(
-			sender,
-			room,
-			nextSeq,
-			req.messageType(),
-			req.content()
-		);
+        ChatMessage message = ChatMessage.createChatMessage(
+                sender, room, nextSeq, req.messageType(), req.content()
+        );
+        chatMessageRepository.save(message);
 
-		chatMessageRepository.save(message);
 		log.info("[메시지 저장 완료] roomId={}, messageId={}, messageSeq={}, senderMemberId={}, messageType={}",
 			roomId, message.getId(), message.getMessageSeq(), senderMemberId, req.messageType()
 		);
@@ -225,9 +233,11 @@ public class ChatMessageService {
 		);
 
 		// ===== [7] 상대 ID 추출 =====
-		Long opponentId = chatRoomMemberRepository
-			.findOpponentMemberId(roomId, senderMemberId, MemberRoomStatus.ACTIVE)
-			.orElse(null);
+        Long opponentId = allMembers.stream()
+                .map(m -> m.getMember().getId())
+                .filter(id -> !id.equals(senderMemberId))
+                .findFirst()
+                .orElse(null);
 
 		log.info("[상대 조회] roomId={}, senderMemberId={}, opponentId={}",
 			roomId, senderMemberId, opponentId
@@ -321,17 +331,10 @@ public class ChatMessageService {
 			senderMemberId, userQueueDest, roomId, message.getId(), nextSeq
 		);
 
-		if (opponentId != null) {
-			messagingTemplate.convertAndSendToUser(
-				String.valueOf(opponentId),
-				userQueueDest,
-				listUpdated
-			);
-
-			log.info("[개인 이벤트 발행] (ROOM_LIST_UPDATED) toUser={}, dest=/user{}, roomId={}, lastMessageId={}, lastSeq={}",
-				opponentId, userQueueDest, roomId, message.getId(), nextSeq
-			);
-		} else {
+        if (opponentId != null) {
+            messagingTemplate.convertAndSendToUser(String.valueOf(opponentId), userQueueDest, listUpdated);
+            log.info("[실시간 목록 갱신 발행 완료] 수신 유저: {}", opponentId);
+        } else {
 			log.warn("[상대 없음] 1:1방에서 상대가 나갔거나 ACTIVE 아님. roomId={}, senderMemberId={}", roomId, senderMemberId);
 		}
 
