@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.cotato.itda.domain.chat.controller.dto.ChatRoomListItemDto;
@@ -131,6 +132,8 @@ public class ChatRoomService {
 				long lastMessageSeq = (row.lastMessageSeq() == null) ? 0L : row.lastMessageSeq();
 				long unread = Math.max(0L, lastMessageSeq - effectiveReadSeq);
 
+                boolean isPastMessage = lastMessageSeq < row.joinSeq();
+
 				OpponentSummaryDto opp = (row.roomType() == RoomType.DIRECT)
 					? opponentMap.get(row.roomId())
 					: null;
@@ -160,12 +163,12 @@ public class ChatRoomService {
 					.roomId(row.roomId())
 					.roomType(row.roomType())
 					.roomName(row.roomName())
-					.lastMessageId(row.lastMessageId())
-					.lastMessageSeq(row.lastMessageSeq())
+                    .lastMessageId(isPastMessage ? null : row.lastMessageId())
+                    .lastMessageSeq(isPastMessage ? null : row.lastMessageSeq())
 					.lastMessageAt(row.lastMessageAt())
 					.friendShipId(friendshipId)
-					.lastMessagePreview(row.lastMessagePreview())
-					.lastMessageType(row.lastMessageType())
+                    .lastMessagePreview(isPastMessage ? null : row.lastMessagePreview())
+                    .lastMessageType(isPastMessage ? null : row.lastMessageType())
 					.unreadCount(unread)
 					.opponent(opp)
 					.build();
@@ -303,20 +306,19 @@ public class ChatRoomService {
                     .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
 
             myMembership = ChatRoomMember.create(member, room);
+            myMembership.changeStatus(MemberRoomStatus.ACTIVE);
             chatRoomMemberRepository.save(myMembership);
-            chatRoomMemberRepository.flush();
         } else {
             // 과거 이력이 존재하는 멤버 (예: LEFT 상태)
             myMembership = maybeMembership.get();
 
-            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
-                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
-                        memberId, roomId, myMembership.getStatus());
+            log.info("[채팅방 ENTER] 기존 이력 존재 멤버 처리. memberId={}, roomId={}, 기존 status={}",
+                    memberId, roomId, myMembership.getStatus());
 
-                // 기존 레코드를 ACTIVE로 복구
-                myMembership.rejoin(lastSeq);
-                chatRoomMemberRepository.flush();
-            }
+            myMembership.changeStatus(MemberRoomStatus.ACTIVE);
+
+            chatRoomMemberRepository.saveAndFlush(myMembership);
+            log.info("[채팅방 ENTER] 변경 완료 후 즉시 플러시 성공. status={}", myMembership.getStatus());
         }
 
 		// 메시지 없으면 읽음 처리할 것도 없음
@@ -333,7 +335,13 @@ public class ChatRoomService {
 			return;
 		}
 
-		// 복구되거나 새로 생성된 멤버십 상태에서 최종 읽음 처리 수행
+        if (myMembership.getJoinSeq() > lastSeq) {
+            log.info("[채팅방 ENTER] 재입장 유저이므로 기존 읽음 처리 스킵 (joinSeq={}, lastSeq={})",
+                    myMembership.getJoinSeq(), lastSeq);
+            return;
+        }
+
+		// 최초 입장했거나 정상 대화 중인 멤버만 최종 읽음 처리 수행
 		myMembership.markRead(lastSeq, lastMessageId);
 
 		log.info("[채팅방 ENTER 완료] memberId={}, roomId={}, readSeq={}, readMessageId={}",

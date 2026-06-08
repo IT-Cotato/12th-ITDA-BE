@@ -129,7 +129,7 @@ public class ChatRoomQueryRepository {
 				chatRoomMember.room.id.in(roomIds)
 					// ne: not equal -> 같지 않은 값
 					.and(chatRoomMember.member.id.ne(myMemberId))
-					.and(chatRoomMember.status.eq(MemberRoomStatus.ACTIVE))
+                    .and(chatRoomMember.status.ne(MemberRoomStatus.KICKED))
 			)
 			.fetch();
 	}

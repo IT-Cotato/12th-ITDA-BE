@@ -181,4 +181,9 @@ public class ChatRoomMember extends BaseTimeEntity {
         this.joinSeq = nextSeqPoint;
         this.lastReadSeq = nextSeqPoint;
     }
+
+    public void changeStatus(MemberRoomStatus status) {
+        this.status = status;
+        this.inactiveAt = null;
+    }
 }
