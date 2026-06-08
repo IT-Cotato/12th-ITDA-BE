@@ -350,24 +350,21 @@ public class ChatMessageService {
 			memberId, roomId, limit, cursorSeq
 		);
 
-		// 권한 체크
-		chatRoomMemberRepository
-			.findOneByRoomMemberStatus(roomId, memberId, MemberRoomStatus.ACTIVE)
-			.orElseThrow(() -> {
-				log.warn("[히스토리 권한 실패] memberId={} 는 roomId={} ACTIVE 멤버 아님", memberId, roomId);
-				return new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
-			});
-
 		int safeLimit = (limit == null) ? 30 : Math.min(Math.max(limit, 1), 100);
 		int limitPlusOne = safeLimit + 1;
 
-		log.info("[히스토리 조회 파라미터] safeLimit={}, limitPlusOne={}, cursorSeq={}", safeLimit, limitPlusOne, cursorSeq);
-		ChatRoomMember myMembership = chatRoomMemberRepository
-			.findByRoomIdAndMemberId(roomId, memberId)
-			.orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+        // 권한 체크
+        ChatRoomMember myMembership = chatRoomMemberRepository
+                .findByRoomIdAndMemberId(roomId, memberId)
+                .orElseThrow(() -> {
+                    log.warn("[히스토리 권한 실패] memberId={} 는 roomId={} ACTIVE 멤버 아님", memberId, roomId);
+                    return new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND);
+                });
+
 		if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
 			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
 		}
+
 		// 내가 볼 수 있는 최초 메시지 시퀀스
 		// 재입장 이후 메시지부터 보임
 		// null이면 처음부터 다 보여줌
