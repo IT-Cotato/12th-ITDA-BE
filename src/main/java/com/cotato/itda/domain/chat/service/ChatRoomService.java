@@ -319,29 +319,6 @@ public class ChatRoomService {
             }
         }
 
-        if (maybeMembership.isEmpty()) {
-            // 처음 입장하는 멤버이면 신규 생성
-            log.info("[채팅방 ENTER] 최초 입장 멤버 생성. memberId={}, roomId={}", memberId, roomId);
-            Member member = memberRepository.findById(memberId) // 필요 시 주입받아 사용
-                    .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
-
-            myMembership = ChatRoomMember.create(member, room);
-            chatRoomMemberRepository.save(myMembership);
-            chatRoomMemberRepository.flush();
-
-        } else {
-            // 기존 기록이 있는 멤버
-            myMembership = maybeMembership.get();
-
-            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
-                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
-                        memberId, roomId, myMembership.getStatus());
-
-                myMembership.rejoin(lastSeq);
-                chatRoomMemberRepository.flush();
-            }
-        }
-
 		// 메시지 없으면 읽음 처리할 것도 없음
 		if (lastSeq <= 0L) {
 			log.info("[채팅방 ENTER 읽음처리 생략] roomId={}, memberId={} (메시지 없음)", roomId, memberId);
