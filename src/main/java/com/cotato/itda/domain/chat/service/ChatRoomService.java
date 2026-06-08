@@ -233,7 +233,7 @@ public class ChatRoomService {
 		ChatRoom chatRoom = chatRoomRepository.findById(roomId)
 			.orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_NOT_FOUND));
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(()-> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
@@ -253,7 +253,7 @@ public class ChatRoomService {
 	public void toggleAiMode(Long memberId, Long roomId, boolean enabled) {
 		log.info("[AI 모드 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
@@ -266,7 +266,7 @@ public class ChatRoomService {
 	public void toggleNotification(Long memberId, Long roomId, boolean enabled) {
 		log.info("[알림 설정 토글 시작] memberId={}, roomId={}, enabled={}", memberId, roomId, enabled);
 
-		//현재 ACTIVE로 속해있는지 확인
+		// 현재 ACTIVE로 속해있는지 확인
 		ChatRoomMember chatRoomMember = chatRoomMemberRepository.findOneByRoomMemberStatus(
 			roomId, memberId, MemberRoomStatus.ACTIVE
 		).orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_STATUS_INVALID));
@@ -319,6 +319,29 @@ public class ChatRoomService {
             }
         }
 
+        if (maybeMembership.isEmpty()) {
+            // 처음 입장하는 멤버이면 신규 생성
+            log.info("[채팅방 ENTER] 최초 입장 멤버 생성. memberId={}, roomId={}", memberId, roomId);
+            Member member = memberRepository.findById(memberId) // 필요 시 주입받아 사용
+                    .orElseThrow(() -> new BusinessException(ChatErrorCode.CHAT_MEMBER_NOT_FOUND));
+
+            myMembership = ChatRoomMember.create(member, room);
+            chatRoomMemberRepository.save(myMembership);
+            chatRoomMemberRepository.flush();
+
+        } else {
+            // 기존 기록이 있는 멤버
+            myMembership = maybeMembership.get();
+
+            if (myMembership.getStatus() != MemberRoomStatus.ACTIVE) {
+                log.info("[채팅방 ENTER] 퇴장 유저 재입장 처리. memberId={}, roomId={}, 기존 status={}",
+                        memberId, roomId, myMembership.getStatus());
+
+                myMembership.rejoin(lastSeq);
+                chatRoomMemberRepository.flush();
+            }
+        }
+
 		// 메시지 없으면 읽음 처리할 것도 없음
 		if (lastSeq <= 0L) {
 			log.info("[채팅방 ENTER 읽음처리 생략] roomId={}, memberId={} (메시지 없음)", roomId, memberId);
@@ -333,13 +356,11 @@ public class ChatRoomService {
 			return;
 		}
 
-		// 여기서 “현재 마지막 seq까지” 읽음 처리
+		// 복구되거나 새로 생성된 멤버십 상태에서 최종 읽음 처리 수행
 		myMembership.markRead(lastSeq, lastMessageId);
 
 		log.info("[채팅방 ENTER 완료] memberId={}, roomId={}, readSeq={}, readMessageId={}",
 			memberId, roomId, lastSeq, lastMessageId
 		);
-	}
-
-
+    }
 }
