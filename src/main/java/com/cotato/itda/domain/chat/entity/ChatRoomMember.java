@@ -177,9 +177,8 @@ public class ChatRoomMember extends BaseTimeEntity {
         this.status = MemberRoomStatus.LEFT;
         this.inactiveAt = java.time.LocalDateTime.now();
 
-        long nextSeqPoint = lastRoomSeq + 1;
-        this.joinSeq = nextSeqPoint;
-        this.lastReadSeq = nextSeqPoint;
+        this.joinSeq = lastRoomSeq + 1;
+        this.lastReadSeq = lastRoomSeq;
     }
 
     public void changeStatus(MemberRoomStatus status) {
