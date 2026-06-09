@@ -128,8 +128,8 @@ public class ChatRoomService {
 		// ===== [4] unread_count 계산 + DTO 조립 =====
 		List<ChatRoomListItemDto> items = page.stream()
 			.map(row -> {
-				long effectiveReadSeq = Math.max(row.lastReadSeq(), row.joinSeq());
-				long lastMessageSeq = (row.lastMessageSeq() == null) ? 0L : row.lastMessageSeq();
+                long effectiveReadSeq = Math.max(row.lastReadSeq(), row.joinSeq() - 1L);
+                long lastMessageSeq = (row.lastMessageSeq() == null) ? 0L : row.lastMessageSeq();
 				long unread = Math.max(0L, lastMessageSeq - effectiveReadSeq);
 
                 boolean isPastMessage = lastMessageSeq < row.joinSeq();
