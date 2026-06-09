@@ -143,7 +143,6 @@ public class ChatMessageService {
 			throw new BusinessException(ChatErrorCode.CHAT_ROOM_MEMBER_CREATE_FORBIDDEN);
 		}
 
-
 		log.info("[권한 체크 성공] senderMemberId={} 는 roomId={} ACTIVE 멤버", senderMemberId, roomId);
 
 		// ===== [4] seq 발급 + 메시지 저장 (비관적 락) =====
@@ -169,8 +168,8 @@ public class ChatMessageService {
         for (ChatRoomMember member : allMembers) {
             if (!member.getMember().getId().equals(senderMemberId)) {
                 if (member.getStatus() == MemberRoomStatus.LEFT) {
-                    log.info("[상대방 방 강제 복구] opponentMemberId={}, joinSeq 시작선={}", member.getMember().getId(), lastSeq);
-                    member.rejoin(lastSeq);
+                    log.info("[상대방 방 강제 복구] opponentMemberId={}, joinSeq 시작선={}", member.getMember().getId(), nextSeq);
+                    member.rejoin(nextSeq);
                 }
             }
         }
