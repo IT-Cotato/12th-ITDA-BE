@@ -169,8 +169,9 @@ public class ChatMessageService {
         for (ChatRoomMember member : allMembers) {
             if (!member.getMember().getId().equals(senderMemberId)) {
                 if (member.getStatus() == MemberRoomStatus.LEFT) {
-                    log.info("[상대방 방 강제 복구] opponentMemberId={}, joinSeq 보정={}", member.getMember().getId(), lastSeq);
-                    member.rejoin(lastSeq);
+                    log.info("[상대방 방 강제 복구 완료] opponentMemberId={}, joinSeq 시작선 싱크={}",
+                            member.getMember().getId(), nextSeq);
+                    member.rejoin(nextSeq);
                 }
             }
         }
