@@ -1,5 +1,6 @@
 package com.cotato.itda.domain.friendship.entity;
 
+import com.cotato.itda.domain.chattopic.entity.ChatTopic;
 import com.cotato.itda.domain.friendship.entity.mapping.FriendshipTopic;
 import com.cotato.itda.domain.friendship.enums.ChatGoal;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
@@ -12,6 +13,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Builder
@@ -65,6 +68,29 @@ public class Friendship extends BaseEntity {
             this.chatGoal = chatGoal;
         if (status != null)
             this.status = status;
+    }
+
+    public void replaceTopics(List<ChatTopic> topics) {
+        Set<String> requestedCodes = topics.stream()
+                .map(ChatTopic::getCode)
+                .collect(Collectors.toSet());
+
+        friendshipTopics.removeIf(friendshipTopic ->
+                !requestedCodes.contains(friendshipTopic.getChatTopic().getCode()));
+
+        Set<String> existingCodes = friendshipTopics.stream()
+                .map(friendshipTopic -> friendshipTopic.getChatTopic().getCode())
+                .collect(Collectors.toSet());
+
+        List<FriendshipTopic> topicsToAdd = topics.stream()
+                .filter(topic -> !existingCodes.contains(topic.getCode()))
+                .map(topic -> FriendshipTopic.builder()
+                        .friendship(this)
+                        .chatTopic(topic)
+                        .build())
+                .toList();
+
+        friendshipTopics.addAll(topicsToAdd);
     }
 
     public String getDisplayName() {

@@ -8,12 +8,10 @@ import com.cotato.itda.domain.chattopic.exception.ChatTopicException;
 import com.cotato.itda.domain.chattopic.exception.code.ChatTopicErrorCode;
 import com.cotato.itda.domain.chattopic.repository.ChatTopicRepository;
 import com.cotato.itda.domain.friendship.entity.Friendship;
-import com.cotato.itda.domain.friendship.entity.mapping.FriendshipTopic;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.exception.FriendshipException;
 import com.cotato.itda.domain.friendship.exception.code.FriendshipErrorCode;
 import com.cotato.itda.domain.friendship.repository.FriendshipRepository;
-import com.cotato.itda.domain.friendship.repository.FriendshipTopicRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
 import com.cotato.itda.global.error.constant.UserErrorCode;
@@ -35,7 +33,6 @@ public class FriendshipCommandServiceImpl implements FriendshipCommandService {
         private final FriendshipRepository friendshipRepository;
         private final MemberRepository memberRepository;
         private final ChatTopicRepository chatTopicRepository;
-        private final FriendshipTopicRepository friendshipTopicRepository;
 
         @Transactional
         @Override
@@ -89,14 +86,8 @@ public class FriendshipCommandServiceImpl implements FriendshipCommandService {
         }
 
         private void updateFriendshipTopics(Friendship friendship, List<String> topicCodes) {
-                // 1. 요청한 주제 검증 및 조회
                 List<ChatTopic> requestedTopics = validateAndFetchTopics(topicCodes);
-
-                // 2. 기존 주제 조회
-                List<FriendshipTopic> existingTopics = friendship.getFriendshipTopics();
-
-                // 3. 변경분 계산 및 처리
-                updateTopicChanges(friendship, requestedTopics, existingTopics);
+                friendship.replaceTopics(requestedTopics);
         }
 
         private List<ChatTopic> validateAndFetchTopics(List<String> topicCodes) {
@@ -117,41 +108,6 @@ public class FriendshipCommandServiceImpl implements FriendshipCommandService {
                 }
 
                 return topics;
-        }
-
-        private void updateTopicChanges(
-                        Friendship friendship,
-                        List<ChatTopic> requestedTopics,
-                        List<FriendshipTopic> existingTopics) {
-                Set<String> requestedCodes = requestedTopics.stream()
-                                .map(ChatTopic::getCode)
-                                .collect(Collectors.toSet());
-
-                Set<String> existingCodes = existingTopics.stream()
-                                .map(ft -> ft.getChatTopic().getCode())
-                                .collect(Collectors.toSet());
-
-                // 삭제할 항목 (기존에 있었는데 요청에 없는 것)
-                List<FriendshipTopic> topicsToDelete = existingTopics.stream()
-                                .filter(ft -> !requestedCodes.contains(ft.getChatTopic().getCode()))
-                                .toList();
-
-                // 추가할 항목 (요청에 있는데 기존에 없는 것)
-                List<FriendshipTopic> topicsToAdd = requestedTopics.stream()
-                                .filter(topic -> !existingCodes.contains(topic.getCode()))
-                                .map(topic -> FriendshipTopic.builder()
-                                                .friendship(friendship)
-                                                .chatTopic(topic)
-                                                .build())
-                                .toList();
-
-                // 저장
-                if (!topicsToDelete.isEmpty()) {
-                        friendshipTopicRepository.deleteAll(topicsToDelete);
-                }
-                if (!topicsToAdd.isEmpty()) {
-                        friendshipTopicRepository.saveAll(topicsToAdd);
-                }
         }
 
         @Override
