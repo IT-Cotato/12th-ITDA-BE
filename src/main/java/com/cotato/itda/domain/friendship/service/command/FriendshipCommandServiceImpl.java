@@ -8,7 +8,6 @@ import com.cotato.itda.domain.chattopic.exception.ChatTopicException;
 import com.cotato.itda.domain.chattopic.exception.code.ChatTopicErrorCode;
 import com.cotato.itda.domain.chattopic.repository.ChatTopicRepository;
 import com.cotato.itda.domain.friendship.entity.Friendship;
-import com.cotato.itda.domain.friendship.entity.mapping.FriendshipTopic;
 import com.cotato.itda.domain.friendship.enums.FriendshipStatus;
 import com.cotato.itda.domain.friendship.exception.FriendshipException;
 import com.cotato.itda.domain.friendship.exception.code.FriendshipErrorCode;
@@ -87,14 +86,8 @@ public class FriendshipCommandServiceImpl implements FriendshipCommandService {
         }
 
         private void updateFriendshipTopics(Friendship friendship, List<String> topicCodes) {
-                // 1. 요청한 주제 검증 및 조회
                 List<ChatTopic> requestedTopics = validateAndFetchTopics(topicCodes);
-
-                // 2. 기존 주제 조회
-                List<FriendshipTopic> existingTopics = friendship.getFriendshipTopics();
-
-                // 3. 요청한 주제 목록이 최종 상태가 되도록 교체
-                replaceTopicChanges(friendship, requestedTopics, existingTopics);
+                friendship.replaceTopics(requestedTopics);
         }
 
         private List<ChatTopic> validateAndFetchTopics(List<String> topicCodes) {
@@ -115,31 +108,6 @@ public class FriendshipCommandServiceImpl implements FriendshipCommandService {
                 }
 
                 return topics;
-        }
-
-        private void replaceTopicChanges(
-                        Friendship friendship,
-                        List<ChatTopic> requestedTopics,
-                        List<FriendshipTopic> existingTopics) {
-                Set<String> requestedCodes = requestedTopics.stream()
-                                .map(ChatTopic::getCode)
-                                .collect(Collectors.toSet());
-
-                Set<String> existingCodes = existingTopics.stream()
-                                .map(ft -> ft.getChatTopic().getCode())
-                                .collect(Collectors.toSet());
-
-                // 추가할 항목 (요청에 있는데 기존에 없는 것)
-                List<FriendshipTopic> topicsToAdd = requestedTopics.stream()
-                                .filter(topic -> !existingCodes.contains(topic.getCode()))
-                                .map(topic -> FriendshipTopic.builder()
-                                                .friendship(friendship)
-                                                .chatTopic(topic)
-                                                .build())
-                                .toList();
-
-                existingTopics.removeIf(ft -> !requestedCodes.contains(ft.getChatTopic().getCode()));
-                existingTopics.addAll(topicsToAdd);
         }
 
         @Override
