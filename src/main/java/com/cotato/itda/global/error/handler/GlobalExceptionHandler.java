@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.cotato.itda.global.common.response.ApiResponse;
 import com.cotato.itda.global.error.constant.GlobalErrorCode;
@@ -102,6 +104,63 @@ public class GlobalExceptionHandler {
 		);
 
 		// 10. HTTP 상태 코드와 에러 바디를 담은 ResponseEntity를 최종 반환한다.
+		return ResponseEntity
+			.status(GlobalErrorCode.VALIDATION_ERROR.getHttpStatus())
+			.body(body);
+	}
+
+	/**
+	 * 메서드 파라미터 Bean Validation 실패 – @RequestParam, @PathVariable 등에 붙은
+	 * @Min, @Max, @NotNull 같은 제약 조건 위반을 처리한다.
+	 */
+	@ExceptionHandler(ConstraintViolationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(
+		ConstraintViolationException ex,
+		HttpServletRequest request
+	) {
+		Map<String, Object> reasons = new HashMap<>();
+		ex.getConstraintViolations().forEach(violation ->
+			reasons.put(violation.getPropertyPath().toString(), violation.getMessage())
+		);
+
+		log.warn("[Validation] path={}, reasons={}", request.getRequestURI(), reasons);
+
+		ApiResponse<Void> body = ApiResponse.error(
+			GlobalErrorCode.VALIDATION_ERROR,
+			request.getRequestURI(),
+			reasons
+		);
+
+		return ResponseEntity
+			.status(GlobalErrorCode.VALIDATION_ERROR.getHttpStatus())
+			.body(body);
+	}
+
+	/**
+	 * Spring MVC 메서드 검증 실패 – Spring 6에서 컨트롤러 메서드 파라미터 검증 실패 시
+	 * 발생할 수 있는 예외를 공통 Validation 응답으로 변환한다.
+	 */
+	@ExceptionHandler(HandlerMethodValidationException.class)
+	public ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(
+		HandlerMethodValidationException ex,
+		HttpServletRequest request
+	) {
+		Map<String, Object> reasons = new HashMap<>();
+		ex.getAllErrors().forEach(error -> {
+			String key = error.getCodes() != null && error.getCodes().length > 0
+				? error.getCodes()[0]
+				: "validation";
+			reasons.put(key, error.getDefaultMessage());
+		});
+
+		log.warn("[Validation] path={}, reasons={}", request.getRequestURI(), reasons);
+
+		ApiResponse<Void> body = ApiResponse.error(
+			GlobalErrorCode.VALIDATION_ERROR,
+			request.getRequestURI(),
+			reasons
+		);
+
 		return ResponseEntity
 			.status(GlobalErrorCode.VALIDATION_ERROR.getHttpStatus())
 			.body(body);
