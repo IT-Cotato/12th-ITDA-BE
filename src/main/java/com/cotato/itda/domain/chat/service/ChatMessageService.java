@@ -370,7 +370,7 @@ public class ChatMessageService {
 		// null이면 한 번도 나가지 않은 것
 		Long visibleFromSeq = myMembership.getJoinSeq();
 
-		List<MessageRow> fetched = chatRoomQueryRepository.findRoomMessagesSlice(roomId, cursorSeq,visibleFromSeq, limitPlusOne);
+		List<MessageRow> fetched = chatRoomQueryRepository.findRoomMessagesSlice(roomId, memberId, cursorSeq,visibleFromSeq, limitPlusOne);
 
 		boolean hasNext = fetched.size() > safeLimit;
 		List<MessageRow> page = hasNext ? fetched.subList(0, safeLimit) : fetched;

@@ -10,6 +10,7 @@ import com.cotato.itda.domain.chat.entity.QChatMessage;
 import com.cotato.itda.domain.chat.entity.QChatMessageAttachment;
 import com.cotato.itda.domain.chat.entity.QChatRoom;
 import com.cotato.itda.domain.chat.entity.QChatRoomMember;
+import com.cotato.itda.domain.friendship.entity.QFriendship;
 import com.cotato.itda.domain.chat.enums.MemberRoomStatus;
 import com.cotato.itda.domain.chat.enums.RoomType;
 import com.cotato.itda.domain.chat.repository.dto.MessageRow;
@@ -177,12 +178,18 @@ public class ChatRoomQueryRepository {
 	 */
 	public List<MessageRow> findRoomMessagesSlice(
 		Long roomId,
+        Long memberId,
 		Long cursorSeq,
 		Long visibleFromSeq, //이 seq부터는 이 사람이 볼 수 있다 (재입장 이후)
 		int limitPlusOne
 	){
+
 		QChatMessage m = QChatMessage.chatMessage;
 		QChatMessageAttachment a = QChatMessageAttachment.chatMessageAttachment;
+
+        QChatMessage parentMsg = new QChatMessage("parentMsg");
+        QMember parentSender = new QMember("parentSender");
+        QFriendship friendship = QFriendship.friendship;
 
 		BooleanBuilder where = new BooleanBuilder();
 		where.and(m.room.id.eq(roomId));
@@ -220,10 +227,26 @@ public class ChatRoomQueryRepository {
 				a.mimeType,
 				a.sizeBytes,
 				a.status,
-				a.durationMs
+				a.durationMs,
+
+                // MessageRow 생성자에 부모 메시지 정보 순서대로 매핑
+                parentMsg.id,
+                parentSender.id,
+                // 친구 닉네임 없으면 원래 멤버의 이름 사용(coalesce)
+                friendship.nickname.coalesce(parentSender.name),
+                parentMsg.messageType,
+                parentMsg.content
 			))
 			.from(m)
 			.leftJoin(a).on(a.message.eq(m))
+
+            .leftJoin(m.parentMessage, parentMsg)      // 내 메시지 -> 부모 메시지 연결
+            .leftJoin(parentMsg.sender, parentSender)   // 부모 메시지 -> 부모 발신자 연결
+            .leftJoin(friendship).on(                  // 부모 발신자 -> 친구 목록 매핑 조건
+                   friendship.member.id.eq(memberId)
+                        .and(friendship.friend.id.eq(parentSender.id))
+                )
+
 			.where(where)
 			.orderBy(m.messageSeq.desc())
 			.limit(limitPlusOne)
