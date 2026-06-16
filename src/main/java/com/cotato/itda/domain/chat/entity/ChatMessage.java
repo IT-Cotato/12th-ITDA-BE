@@ -14,7 +14,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -71,6 +70,10 @@ public class ChatMessage extends BaseTimeEntity {
 
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_message_id")
+    private ChatMessage parentMessage;
 
 	@Builder
 	private ChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType, String content) {
