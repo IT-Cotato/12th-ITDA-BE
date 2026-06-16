@@ -30,7 +30,10 @@ public record ChatMessageItemDto(
 	LocalDateTime createdAt,
 
 	@Schema(description = "첨부 메타(없으면 null)")
-	AttachmentMeta attachment
+	AttachmentMeta attachment,
+
+    @Schema(description = "답장 대상 메시지 정보 (일반 메시지면 null)")
+    ReplyTargetInfo replyTarget
 ) {
 	/**
 	 * 첨부 메타(voice/image/file 공통)
@@ -55,4 +58,25 @@ public record ChatMessageItemDto(
 		@Schema(description = "음성 길이(ms) - 음성이 아니면 null", example = "4300")
 		Integer durationMs
 	) {}
+
+    /**
+     * 답장 대상 메시지 정보
+     */
+    @Builder
+    public record ReplyTargetInfo(
+            @Schema(description = "원본 메시지 ID", example = "1")
+            Long messageId,
+
+            @Schema(description = "원본 메시지 발신자 ID", example = "1")
+            Long senderId,
+
+            @Schema(description = "원본 메시지 발신자 닉네임", example = "홍길동")
+            String senderNickname,
+
+            @Schema(description = "원본 메시지 타입(TEXT/ATTACHMENT)", example = "TEXT")
+            MessageType messageType,
+
+            @Schema(description = "원본 메시지 내용 미리보기 (텍스트면 본문 내용, 사진이면 '[사진]')", example = "오늘 회의 몇 시야?")
+            String contentPreview
+    ) {}
 }
