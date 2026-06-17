@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.cotato.itda.domain.notification.entity.Notification;
+import com.cotato.itda.domain.notification.enums.NotificationTargetType;
+import com.cotato.itda.domain.notification.enums.NotificationType;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
 
@@ -18,6 +20,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
 	List<Notification> findByReceiverIdAndIdLessThanOrderByIdDesc(Long receiverId, Long lastId, Pageable pageable);
 
 	long countByReceiverIdAndReadFalse(Long receiverId);
+
+	boolean existsByReceiverIdAndTypeAndTargetTypeAndTargetIdAndCreatedAtAfter(
+		Long receiverId,
+		NotificationType type,
+		NotificationTargetType targetType,
+		Long targetId,
+		LocalDateTime createdAt
+	);
 
 	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Query("""

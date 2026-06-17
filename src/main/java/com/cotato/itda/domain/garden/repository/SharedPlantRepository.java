@@ -29,6 +29,13 @@ public interface SharedPlantRepository extends JpaRepository<SharedPlant, Long> 
     List<SharedPlant> findAllByStatusAndIsPlantedTrue(SharedPlantStatus status);
 
     @Query("SELECT sp FROM SharedPlant sp " +
+            "JOIN FETCH sp.memberA " +
+            "JOIN FETCH sp.memberB " +
+            "WHERE sp.status = :status " +
+            "AND sp.isPlanted = true")
+    List<SharedPlant> findAllByStatusAndIsPlantedTrueWithMembers(@Param("status") SharedPlantStatus status);
+
+    @Query("SELECT sp FROM SharedPlant sp " +
             "WHERE (sp.memberA.id = :memberId OR sp.memberB.id = :memberId) " +
             "AND sp.status = com.cotato.itda.domain.garden.enums.SharedPlantStatus.GROWING " +
             "AND sp.isPlanted = true " +

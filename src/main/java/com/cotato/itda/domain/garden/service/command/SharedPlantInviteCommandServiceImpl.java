@@ -22,6 +22,7 @@ import com.cotato.itda.domain.garden.repository.SharedPlantInviteRepository;
 import com.cotato.itda.domain.garden.repository.SharedPlantRepository;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
+import com.cotato.itda.domain.notification.service.command.NotificationCommandService;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
     private final FriendshipRepository friendshipRepository;
     private final SharedPlantRepository sharedPlantRepository;
     private final SharedPlantInviteRepository sharedPlantInviteRepository;
+    private final NotificationCommandService notificationCommandService;
 
     @Override
     public PlantInviteResDTO.CreateSharedPlantInviteResDTO createInvite(Long inviterId,
@@ -86,6 +88,7 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
                 .build();
 
         SharedPlantInvite savedInvite = sharedPlantInviteRepository.save(invite);
+        notificationCommandService.createPlantInviteNotification(inviter, savedInvite);
 
         return SharedPlantInviteConverter.toCreateSharedPlantInviteResDTO(savedInvite);
     }
@@ -133,6 +136,9 @@ public class SharedPlantInviteCommandServiceImpl implements SharedPlantInviteCom
         }
 
         invite.updateStatus(dto.status());
+        if (sharedPlant != null) {
+            notificationCommandService.createPlantInviteAcceptedNotification(invite.getInvitee(), invite, sharedPlant);
+        }
 
         return SharedPlantInviteConverter.toUpdateSharedPlantInviteResDTO(invite, sharedPlant);
     }
