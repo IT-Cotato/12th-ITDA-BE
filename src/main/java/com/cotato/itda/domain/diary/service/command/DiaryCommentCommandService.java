@@ -11,6 +11,7 @@ import com.cotato.itda.domain.diary.repository.DiaryRepository;
 import com.cotato.itda.domain.diary.validator.DiaryAccessValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
+import com.cotato.itda.domain.notification.service.command.NotificationCommandService;
 import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -29,6 +30,7 @@ public class DiaryCommentCommandService {
     private final DiaryRepository diaryRepository;
     private final DiaryCommentRepository diaryCommentRepository;
     private final DiaryAccessValidator diaryAccessValidator;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public DiaryCommentResponse createComment(Long memberId, Long diaryId, DiaryCommentRequest request) {
@@ -53,6 +55,7 @@ public class DiaryCommentCommandService {
         DiaryComment savedComment = diaryCommentRepository.save(comment);
 
         diary.increaseComment();
+        notificationCommandService.createDiaryCommentNotification(member, diary);
 
         // 작성자 정보 생성
         WriterInfo writerInfo = DiaryCommentConverter.toWriterInfo(member, member.getName(), true);

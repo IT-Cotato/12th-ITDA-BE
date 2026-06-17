@@ -1,6 +1,5 @@
-package com.cotato.itda.domain.notification.service;
+package com.cotato.itda.domain.notification.service.query;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
@@ -11,19 +10,18 @@ import com.cotato.itda.domain.notification.converter.NotificationConverter;
 import com.cotato.itda.domain.notification.dto.NotificationListResponse;
 import com.cotato.itda.domain.notification.dto.UnreadNotificationCountResponse;
 import com.cotato.itda.domain.notification.entity.Notification;
-import com.cotato.itda.domain.notification.exception.NotificationException;
-import com.cotato.itda.domain.notification.exception.code.NotificationErrorCode;
 import com.cotato.itda.domain.notification.repository.NotificationRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationService {
+@Transactional(readOnly = true)
+public class NotificationQueryServiceImpl implements NotificationQueryService {
 
 	private final NotificationRepository notificationRepository;
 
-	@Transactional(readOnly = true)
+	@Override
 	public NotificationListResponse getNotifications(Long memberId, Long lastId, int limit) {
 		PageRequest pageRequest = PageRequest.of(0, limit + 1);
 		List<Notification> fetched = lastId == null
@@ -41,27 +39,10 @@ public class NotificationService {
 		return NotificationConverter.toListResponse(items, nextLastId, hasNext);
 	}
 
-	@Transactional(readOnly = true)
+	@Override
 	public UnreadNotificationCountResponse getUnreadCount(Long memberId) {
 		return UnreadNotificationCountResponse.builder()
 			.count(notificationRepository.countByReceiverIdAndReadFalse(memberId))
 			.build();
-	}
-
-	@Transactional
-	public void markAsRead(Long memberId, Long notificationId) {
-		Notification notification = notificationRepository.findById(notificationId)
-			.orElseThrow(() -> new NotificationException(NotificationErrorCode.NOTIFICATION_NOT_FOUND));
-
-		if (!notification.isOwnedBy(memberId)) {
-			throw new NotificationException(NotificationErrorCode.NOTIFICATION_FORBIDDEN);
-		}
-
-		notification.markAsRead(LocalDateTime.now());
-	}
-
-	@Transactional
-	public void markAllAsRead(Long memberId) {
-		notificationRepository.markAllAsReadByReceiverId(memberId, LocalDateTime.now());
 	}
 }

@@ -8,6 +8,7 @@ import com.cotato.itda.domain.challenge.repository.ChallengeRepository;
 import com.cotato.itda.domain.challenge.service.validator.ChallengeAccessValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
+import com.cotato.itda.domain.notification.service.command.NotificationCommandService;
 import com.cotato.itda.domain.challenge.exception.code.ChallengeErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -26,6 +27,7 @@ public class ChallengeLikeCommandService {
     private final ChallengeRepository challengeRepository;
     private final ChallengeLikeRepository challengeLikeRepository;
     private final ChallengeAccessValidator challengeAccessValidator;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public ChallengeLikeResponse addLike(Long memberId, Long challengeId) {
@@ -49,6 +51,7 @@ public class ChallengeLikeCommandService {
 
         challengeLikeRepository.save(like);
         challenge.increaseLike();
+        notificationCommandService.createChallengeLikeNotification(member, challenge);
 
         return new ChallengeLikeResponse(challenge.getLikeCount());
     }

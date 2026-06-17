@@ -8,6 +8,7 @@ import com.cotato.itda.domain.diary.repository.DiaryRepository;
 import com.cotato.itda.domain.diary.validator.DiaryAccessValidator;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
+import com.cotato.itda.domain.notification.service.command.NotificationCommandService;
 import com.cotato.itda.domain.diary.exception.code.DiaryErrorCode;
 import com.cotato.itda.global.error.constant.UserErrorCode;
 import com.cotato.itda.global.error.exception.BusinessException;
@@ -26,6 +27,7 @@ public class DiaryLikeCommandService {
     private final DiaryRepository diaryRepository;
     private final DiaryLikeRepository diaryLikeRepository;
     private final DiaryAccessValidator diaryAccessValidator;
+    private final NotificationCommandService notificationCommandService;
 
     @Transactional
     public DiaryLikeResponse addLike(Long memberId, Long diaryId) {
@@ -50,6 +52,7 @@ public class DiaryLikeCommandService {
 
         diaryLikeRepository.save(like);
         diary.increaseLike();
+        notificationCommandService.createDiaryLikeNotification(member, diary);
 
         return new DiaryLikeResponse(diary.getLikeCount());
     }

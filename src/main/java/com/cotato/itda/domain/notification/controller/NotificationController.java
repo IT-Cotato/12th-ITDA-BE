@@ -10,7 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.cotato.itda.domain.notification.dto.NotificationListResponse;
 import com.cotato.itda.domain.notification.dto.UnreadNotificationCountResponse;
-import com.cotato.itda.domain.notification.service.NotificationService;
+import com.cotato.itda.domain.notification.service.command.NotificationCommandService;
+import com.cotato.itda.domain.notification.service.query.NotificationQueryService;
 import com.cotato.itda.global.common.response.ApiResponse;
 import com.cotato.itda.global.security.jwt.principal.JwtPrincipal;
 
@@ -29,7 +30,8 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Notification", description = "인앱 알림 API")
 public class NotificationController {
 
-	private final NotificationService notificationService;
+	private final NotificationQueryService notificationQueryService;
+	private final NotificationCommandService notificationCommandService;
 
 	@Operation(
 		summary = "내 알림 목록 조회",
@@ -57,7 +59,7 @@ public class NotificationController {
 		@Max(value = 50, message = "limit은 50 이하이어야 합니다.")
 		int limit
 	) {
-		NotificationListResponse response = notificationService.getNotifications(jwtPrincipal.memberId(), lastId, limit);
+		NotificationListResponse response = notificationQueryService.getNotifications(jwtPrincipal.memberId(), lastId, limit);
 		return ApiResponse.success(response);
 	}
 
@@ -67,7 +69,7 @@ public class NotificationController {
 	public ApiResponse<UnreadNotificationCountResponse> getUnreadCount(
 		@Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal
 	) {
-		UnreadNotificationCountResponse response = notificationService.getUnreadCount(jwtPrincipal.memberId());
+		UnreadNotificationCountResponse response = notificationQueryService.getUnreadCount(jwtPrincipal.memberId());
 		return ApiResponse.success(response);
 	}
 
@@ -84,7 +86,7 @@ public class NotificationController {
 		@Parameter(description = "읽음 처리할 알림 ID", required = true, example = "1")
 		@PathVariable Long notificationId
 	) {
-		notificationService.markAsRead(jwtPrincipal.memberId(), notificationId);
+		notificationCommandService.markAsRead(jwtPrincipal.memberId(), notificationId);
 		return ApiResponse.success(null);
 	}
 
@@ -94,7 +96,7 @@ public class NotificationController {
 	public ApiResponse<Void> markAllAsRead(
 		@Parameter(hidden = true) @AuthenticationPrincipal JwtPrincipal jwtPrincipal
 	) {
-		notificationService.markAllAsRead(jwtPrincipal.memberId());
+		notificationCommandService.markAllAsRead(jwtPrincipal.memberId());
 		return ApiResponse.success(null);
 	}
 }
