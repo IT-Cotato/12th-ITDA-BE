@@ -11,11 +11,14 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.cotato.itda.domain.garden.entity.SharedPlant;
+import com.cotato.itda.domain.garden.entity.SharedPlantInvite;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.notification.entity.Notification;
 import com.cotato.itda.domain.notification.enums.NotificationSection;
@@ -88,9 +91,29 @@ class NotificationCommandServiceImplTest {
 		verify(notificationRepository).markAllAsReadByReceiverId(any(), any());
 	}
 
+	@Test
+	void createPlantInviteAcceptedNotification_uses_actor_profile_image() {
+		Member inviter = member(1L, "초대한 사람", null);
+		Member invitee = member(2L, "수락한 사람", "https://example.com/invitee-profile.jpg");
+		SharedPlantInvite invite = SharedPlantInvite.builder()
+			.inviter(inviter)
+			.invitee(invitee)
+			.build();
+		SharedPlant sharedPlant = SharedPlant.builder().build();
+		ReflectionTestUtils.setField(sharedPlant, "id", 10L);
+
+		notificationCommandService.createPlantInviteAcceptedNotification(invitee, invite, sharedPlant);
+
+		ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+		verify(notificationRepository).save(notificationCaptor.capture());
+
+		Notification notification = notificationCaptor.getValue();
+		assertThat(notification.getType()).isEqualTo(NotificationType.PLANT_INVITE_ACCEPTED);
+		assertThat(notification.getImageUrl()).isEqualTo(invitee.getProfileImageUrl());
+	}
+
 	private Notification notification(Long notificationId, Long receiverId, boolean isRead) {
-		Member receiver = Member.builder().build();
-		ReflectionTestUtils.setField(receiver, "id", receiverId);
+		Member receiver = member(receiverId, null, null);
 
 		Notification notification = Notification.builder()
 			.receiver(receiver)
@@ -106,5 +129,14 @@ class NotificationCommandServiceImplTest {
 		ReflectionTestUtils.setField(notification, "id", notificationId);
 		ReflectionTestUtils.setField(notification, "createdAt", LocalDateTime.of(2026, 6, 14, 12, 0));
 		return notification;
+	}
+
+	private Member member(Long memberId, String name, String profileImageUrl) {
+		Member member = Member.builder()
+			.name(name)
+			.profileImageUrl(profileImageUrl)
+			.build();
+		ReflectionTestUtils.setField(member, "id", memberId);
+		return member;
 	}
 }
