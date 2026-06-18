@@ -123,7 +123,7 @@ public class NotificationCommandServiceImpl implements NotificationCommandServic
 			NotificationSection.GARDEN,
 			NotificationType.PLANT_INVITE_ACCEPTED,
 			actor.getName() + "님이 초대장을 수락했어요.",
-			null,
+			actor.getProfileImageUrl(),
 			NotificationTargetType.SHARED_PLANT,
 			sharedPlant.getId()
 		);
