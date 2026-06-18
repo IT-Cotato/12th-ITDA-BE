@@ -173,6 +173,16 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi NotificationApi() {
+        return GroupedOpenApi.builder()
+                .group("Notification")
+                .displayName("Notification API")
+                .packagesToScan("com.cotato.itda.domain.notification.controller")
+                .pathsToMatch("/api/notifications/**")
+                .build();
+    }
+
     // === 공통 에러 응답 자동 추가 (선택) ===
     @Bean
     public OperationCustomizer addGlobalResponses() {
