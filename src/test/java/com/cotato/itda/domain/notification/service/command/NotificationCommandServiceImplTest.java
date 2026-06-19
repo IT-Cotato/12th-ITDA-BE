@@ -92,6 +92,26 @@ class NotificationCommandServiceImplTest {
 	}
 
 	@Test
+	void createPlantInviteNotification_uses_actor_profile_image() {
+		Member inviter = member(1L, "초대한 사람", "https://example.com/inviter-profile.jpg");
+		Member invitee = member(2L, "초대받은 사람", null);
+		SharedPlantInvite invite = SharedPlantInvite.builder()
+			.inviter(inviter)
+			.invitee(invitee)
+			.build();
+		ReflectionTestUtils.setField(invite, "id", 10L);
+
+		notificationCommandService.createPlantInviteNotification(inviter, invite);
+
+		ArgumentCaptor<Notification> notificationCaptor = ArgumentCaptor.forClass(Notification.class);
+		verify(notificationRepository).save(notificationCaptor.capture());
+
+		Notification notification = notificationCaptor.getValue();
+		assertThat(notification.getType()).isEqualTo(NotificationType.PLANT_INVITE);
+		assertThat(notification.getImageUrl()).isEqualTo(inviter.getProfileImageUrl());
+	}
+
+	@Test
 	void createPlantInviteAcceptedNotification_uses_actor_profile_image() {
 		Member inviter = member(1L, "초대한 사람", null);
 		Member invitee = member(2L, "수락한 사람", "https://example.com/invitee-profile.jpg");
