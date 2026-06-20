@@ -1,4 +1,4 @@
-package com.cotato.itda.domain.chat.repository.dto;
+package com.cotato.itda.domain.chat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -21,7 +21,8 @@ public record ChatRoomMessageDto(
 	MessageType messageType,
 	String content,
 	LocalDateTime createdAt,
-	ChatMessageItemDto.AttachmentMeta attachment
+	ChatMessageItemDto.AttachmentMeta attachment,
+    ReplyTargetInfo replyTarget
 ) {
 	@Builder
 	public record Attachment(
@@ -32,4 +33,13 @@ public record ChatRoomMessageDto(
 		AttachmentStatus status,
 		Integer durationMs
 	) {}
+
+    @Builder
+    public record ReplyTargetInfo(
+            Long messageId,
+            Long senderId,
+            String senderNickname,
+            MessageType messageType,
+            String contentPreview   // TEXT면 내용 일부, ATTACHMENT면 타입별 별칭([사진], [음성 메시지] 등)
+    ) {}
 }

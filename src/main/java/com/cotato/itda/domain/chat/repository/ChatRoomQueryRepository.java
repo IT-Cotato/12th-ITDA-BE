@@ -188,6 +188,7 @@ public class ChatRoomQueryRepository {
 		QChatMessageAttachment a = QChatMessageAttachment.chatMessageAttachment;
 
         QChatMessage parentMsg = new QChatMessage("parentMsg");
+        QChatMessageAttachment parentAttachment = new QChatMessageAttachment("parentAttachment");
         QMember parentSender = new QMember("parentSender");
         QFriendship friendship = QFriendship.friendship;
 
@@ -235,14 +236,16 @@ public class ChatRoomQueryRepository {
                 // 친구 닉네임 없으면 원래 멤버의 이름 사용(coalesce)
                 friendship.nickname.coalesce(parentSender.name),
                 parentMsg.messageType,
-                parentMsg.content
+                parentMsg.content,
+                parentAttachment.attachmentType
 			))
 			.from(m)
 			.leftJoin(a).on(a.message.eq(m))
 
-            .leftJoin(m.parentMessage, parentMsg)      // 내 메시지 -> 부모 메시지 연결
-            .leftJoin(parentMsg.sender, parentSender)   // 부모 메시지 -> 부모 발신자 연결
-            .leftJoin(friendship).on(                  // 부모 발신자 -> 친구 목록 매핑 조건
+            .leftJoin(m.parentMessage, parentMsg)
+            .leftJoin(parentMsg.sender, parentSender)
+            .leftJoin(parentAttachment).on(parentAttachment.message.eq(parentMsg))
+            .leftJoin(friendship).on(
                    friendship.member.id.eq(memberId)
                         .and(friendship.friend.id.eq(parentSender.id))
                 )

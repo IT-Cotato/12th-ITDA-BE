@@ -55,7 +55,14 @@ public enum ChatErrorCode implements ErrorCode {
 		"CHAT_ERROR_400_INVALID_CURSOR"
 	),
 
-	// 쫓겨난 상태에서는 다시 방에 참여할 수 없음
+    // 유효하지 않은 채팅방
+    INVALID_CHAT_ROOM(
+        HttpStatus.BAD_REQUEST,
+        "유효하지 않은 채팅방입니다.",
+        "CHAT_ERROR_400_INVALID_CHAT_ROOM"
+    ),
+
+    // 쫓겨난 상태에서는 다시 방에 참여할 수 없음
 	CHAT_ROOM_MEMBER_CREATE_FORBIDDEN(
 		HttpStatus.FORBIDDEN,
 		"채팅 방에 참여할 수 있는 권한이 없습니다.",
@@ -85,7 +92,7 @@ public enum ChatErrorCode implements ErrorCode {
 		"CHAT_ERROR_404_MESSAGE_NOT_FOUND"
 	);
 
-	private final HttpStatus httpStatus;
+    private final HttpStatus httpStatus;
 	private final String message;
 	private final String code;
 }

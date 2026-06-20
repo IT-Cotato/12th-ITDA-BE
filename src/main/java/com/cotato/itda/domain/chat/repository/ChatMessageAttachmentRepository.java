@@ -9,7 +9,9 @@ import org.springframework.data.repository.query.Param;
 import com.cotato.itda.domain.chat.entity.ChatMessageAttachment;
 
 public interface ChatMessageAttachmentRepository extends JpaRepository<ChatMessageAttachment,Long> {
-	interface AttachmentAccessView {
+    Optional<ChatMessageAttachment> findByMessageId(Long messageId);
+
+    interface AttachmentAccessView {
 		Long getAttachmentId();
 		Long getRoomId();
 		Long getMessageId();

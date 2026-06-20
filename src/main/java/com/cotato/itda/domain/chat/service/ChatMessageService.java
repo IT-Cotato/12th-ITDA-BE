@@ -24,7 +24,7 @@ import com.cotato.itda.domain.chat.repository.ChatMessageAttachmentRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomMemberRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomQueryRepository;
 import com.cotato.itda.domain.chat.repository.ChatRoomRepository;
-import com.cotato.itda.domain.chat.repository.dto.ChatMessageRepository;
+import com.cotato.itda.domain.chat.repository.ChatMessageRepository;
 import com.cotato.itda.domain.chat.repository.dto.MessageRow;
 import com.cotato.itda.domain.member.entity.Member;
 import com.cotato.itda.domain.member.repository.MemberRepository;
@@ -38,6 +38,8 @@ import com.cotato.itda.global.error.exception.BusinessException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.cotato.itda.domain.chat.enums.AttachmentType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -175,8 +177,21 @@ public class ChatMessageService {
         }
 		log.info("[seq 발급] roomId={}, lastSeq={}, nextSeq={}", roomId, lastSeq, nextSeq);
 
+        ChatMessage parentMessage = null;
+        if (req.parentMessageId() != null) {
+            parentMessage = chatMessageRepository.findById(req.parentMessageId())
+                    .orElseThrow(() -> {
+                        log.warn("[답장 실패] 원본 메시지 없음 parentMessageId={}", req.parentMessageId());
+                        return new BusinessException(ChatErrorCode.CHAT_MESSAGE_NOT_FOUND);
+                    });
+            if (!parentMessage.getRoom().getId().equals(roomId)) {
+                throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM);
+            }
+        }
+
+
         ChatMessage message = ChatMessage.createChatMessage(
-                sender, room, nextSeq, req.messageType(), req.content()
+                sender, room, nextSeq, req.messageType(), req.content(), parentMessage
         );
         chatMessageRepository.save(message);
 
@@ -256,6 +271,32 @@ public class ChatMessageService {
 
 
 		// ===== [8] 방 토픽 발행 =====
+        ChatRoomMessageDto.ReplyTargetInfo replyTargetDto = null;
+
+        if (parentMessage != null) {
+            String replyPreview;
+            ChatMessageAttachment parentAttachment = chatMessageAttachmentRepository.findByMessageId(parentMessage.getId()).orElse(null);
+
+            if (parentMessage.getMessageType() == MessageType.ATTACHMENT && parentAttachment != null) {
+                replyPreview = switch (parentAttachment.getAttachmentType()) {
+                    case IMAGE -> "[사진]";
+                    case VOICE -> "[음성 메시지]";
+                    case FILE  -> "[파일]";
+                    default    -> "[첨부파일]";
+                };
+            } else {
+                replyPreview = parentMessage.getContent();
+            }
+
+            replyTargetDto = ChatRoomMessageDto.ReplyTargetInfo.builder()
+                    .messageId(parentMessage.getId())
+                    .senderId(parentMessage.getSender().getId())
+                    .senderNickname(parentMessage.getSender().getName())
+                    .messageType(parentMessage.getMessageType())
+                    .contentPreview(replyPreview)
+                    .build();
+        }
+
 		ChatRoomMessageDto roomMessageDto = ChatRoomMessageDto.builder()
 			.roomId(roomId)
 			.messageId(message.getId())
@@ -265,6 +306,7 @@ public class ChatMessageService {
 			.content(req.content())
 			.createdAt(now)
 			.attachment(meta)
+            .replyTarget(replyTargetDto)
 			.build();
 
 		String roomTopicDest = "/topic/chat/rooms/" + roomId;
@@ -380,22 +422,49 @@ public class ChatMessageService {
 		);
 
 		List<ChatMessageItemDto> items = page.stream()
-			.map(row -> ChatMessageItemDto.builder()
-				.messageId(row.messageId())
-				.messageSeq(row.messageSeq())
-				.senderMemberId(row.senderId())
-				.messageType(row.messageType())
-				.content(row.content())
-				.createdAt(row.createdAt())
-				.attachment(row.attachmentType() == null ? null : ChatMessageItemDto.AttachmentMeta.builder()
-					.attachmentType(row.attachmentType())
-					.objectKey(row.objectKey())
-					.mimeType(row.mimeType())
-					.sizeBytes(row.sizeBytes())
-					.status(row.attachmentStatus())
-					.durationMs(row.durationMs())
-					.build())
-				.build())
+			.map(row -> {
+
+                ChatMessageItemDto.ReplyTargetInfo replyTarget = null;
+                if (row.parentMessageId() != null) {
+                    String preview;
+                    if (row.parentMessageType() == MessageType.ATTACHMENT && row.parentAttachmentType() != null) {
+                        preview = switch (row.parentAttachmentType()) {
+                            case IMAGE -> "[사진]";
+                            case VOICE -> "[음성 메시지]";
+                            case FILE -> "[파일]";
+                            default -> "[첨부파일]";
+                        };
+                    } else {
+                       preview = row.parentContent();
+                    }
+
+                    replyTarget = ChatMessageItemDto.ReplyTargetInfo.builder()
+                         .messageId(row.parentMessageId())
+                         .senderId(row.parentSenderId())
+                         .senderNickname(row.parentSenderNickname())
+                         .messageType(row.parentMessageType())
+                         .contentPreview(preview)
+                         .build();
+                    }
+
+                    return ChatMessageItemDto.builder()
+                        .messageId(row.messageId())
+                        .messageSeq(row.messageSeq())
+                        .senderMemberId(row.senderId())
+                        .messageType(row.messageType())
+                        .content(row.content())
+                        .createdAt(row.createdAt())
+                        .attachment(row.attachmentType() == null ? null : ChatMessageItemDto.AttachmentMeta.builder()
+                                .attachmentType(row.attachmentType())
+                                .objectKey(row.objectKey())
+                                .mimeType(row.mimeType())
+                                .sizeBytes(row.sizeBytes())
+                                .status(row.attachmentStatus())
+                                .durationMs(row.durationMs())
+                                .build())
+                        .replyTarget(replyTarget)
+                        .build();
+            })
 			.toList();
 
 		Long nextCursor = null;

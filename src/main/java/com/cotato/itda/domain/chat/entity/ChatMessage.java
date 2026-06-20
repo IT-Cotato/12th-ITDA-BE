@@ -76,12 +76,13 @@ public class ChatMessage extends BaseTimeEntity {
     private ChatMessage parentMessage;
 
 	@Builder
-	private ChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType, String content) {
+	private ChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType, String content, ChatMessage parentMessage) {
 		this.sender = sender;
 		this.room = room;
 		this.messageSeq = messageSeq;
 		this.messageType = messageType;
 		this.content = content;
+        this.parentMessage = parentMessage;
 	}
 
 	public void markAsEdited(String newContent, LocalDateTime editedAt) {
@@ -95,13 +96,14 @@ public class ChatMessage extends BaseTimeEntity {
 
 	// 채팅 메시지 생성
 	public static ChatMessage createChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType,
-		String content) {
+		String content, ChatMessage parentMessage) {
 		return ChatMessage.builder()
 			.sender(sender)
 			.room(room)
 			.messageSeq(messageSeq)
 			.messageType(messageType)
 			.content(content)
+            .parentMessage(parentMessage)
 			.build();
 	}
 
