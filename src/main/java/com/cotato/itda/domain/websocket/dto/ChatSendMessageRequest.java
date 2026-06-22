@@ -22,6 +22,7 @@ public record ChatSendMessageRequest(
 	Long opponentMemberId, // roomId가 없을 때 필수
 	@NotNull MessageType messageType,
 	String content,
-	ChatAttachmentRequest attachment
+	ChatAttachmentRequest attachment,
+    Long parentMessageId
 	){
 }

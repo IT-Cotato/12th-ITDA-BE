@@ -14,7 +14,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -72,13 +71,18 @@ public class ChatMessage extends BaseTimeEntity {
 	@Column(name = "deleted_at")
 	private LocalDateTime deletedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_message_id")
+    private ChatMessage parentMessage;
+
 	@Builder
-	private ChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType, String content) {
+	private ChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType, String content, ChatMessage parentMessage) {
 		this.sender = sender;
 		this.room = room;
 		this.messageSeq = messageSeq;
 		this.messageType = messageType;
 		this.content = content;
+        this.parentMessage = parentMessage;
 	}
 
 	public void markAsEdited(String newContent, LocalDateTime editedAt) {
@@ -92,13 +96,14 @@ public class ChatMessage extends BaseTimeEntity {
 
 	// 채팅 메시지 생성
 	public static ChatMessage createChatMessage(Member sender, ChatRoom room, long messageSeq, MessageType messageType,
-		String content) {
+		String content, ChatMessage parentMessage) {
 		return ChatMessage.builder()
 			.sender(sender)
 			.room(room)
 			.messageSeq(messageSeq)
 			.messageType(messageType)
 			.content(content)
+            .parentMessage(parentMessage)
 			.build();
 	}
 
