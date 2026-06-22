@@ -184,6 +184,10 @@ public class ChatMessageService {
                         log.warn("[답장 실패] 원본 메시지 없음 parentMessageId={}", req.parentMessageId());
                         return new BusinessException(ChatErrorCode.CHAT_MESSAGE_NOT_FOUND);
                     });
+            if (parentMessage.getDeletedAt() != null) {
+                log.warn("[답장 실패] 삭제된 메시지에 답장 시도 parentMessageId={}", req.parentMessageId());
+                throw new BusinessException(ChatErrorCode.CHAT_MESSAGE_DELETED);
+            }
             if (!parentMessage.getRoom().getId().equals(roomId)) {
                 throw new BusinessException(ChatErrorCode.INVALID_CHAT_ROOM);
             }

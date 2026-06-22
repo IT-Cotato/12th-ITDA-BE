@@ -90,6 +90,13 @@ public enum ChatErrorCode implements ErrorCode {
 		HttpStatus.NOT_FOUND,
 		"채팅 메시지를 찾을 수 없습니다.",
 		"CHAT_ERROR_404_MESSAGE_NOT_FOUND"
+	),
+
+	// 삭제된 메시지에는 답장 불가
+	CHAT_MESSAGE_DELETED(
+		HttpStatus.BAD_REQUEST,
+		"삭제된 메시지에는 답장할 수 없습니다.",
+		"CHAT_ERROR_400_MESSAGE_DELETED"
 	);
 
     private final HttpStatus httpStatus;
